@@ -1137,6 +1137,11 @@ export default function Page() {
                         className={`modal-plan ${sel ? "selected" : ""}`}
                         onClick={() => setCantidad(k)}
                       >
+                        {p.tag && (
+                          <div className={`modal-plan-tag ${p.tag.gold ? "gold" : ""}`}>
+                            {p.tag.texto}
+                          </div>
+                        )}
                         <div className="modal-plan-img">
                           <Image
                             src={`/img/bundle-${p.frascos}.png`}
