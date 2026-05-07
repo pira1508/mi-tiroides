@@ -462,8 +462,28 @@ export default function Page() {
       setEnviando(false);
       return;
     }
-    const total = PLANES[cantidad].precio;
+    const plan = PLANES[cantidad];
+    const total = plan.precio;
     trackLead(total);
+
+    // Construir mensaje pre-rellenado para WhatsApp
+    const mensaje = [
+      `🌿 *Nuevo pedido MI TIROIDES*`,
+      ``,
+      `👤 *Nombre:* ${data.nombre}`,
+      `📱 *Teléfono:* ${data.telefono}`,
+      `📍 *Ciudad:* ${data.ciudad}, ${data.departamento}`,
+      `🏠 *Dirección:* ${data.direccion}`,
+      data.referencia ? `📌 *Referencia:* ${data.referencia}` : null,
+      ``,
+      `📦 *Plan:* ${plan.label} (${plan.frascos === 1 ? "45" : plan.frascos === 2 ? "90" : "135"} días)`,
+      `💰 *Total:* $${total.toLocaleString("es-CO")} COP`,
+      `💵 *Pago contra entrega*`,
+    ]
+      .filter(Boolean)
+      .join("\n");
+
+    const waUrl = `https://wa.me/573227617545?text=${encodeURIComponent(mensaje)}`;
 
     try {
       const res = await fetch("/api/pedido", {
@@ -471,11 +491,15 @@ export default function Page() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify(data),
       });
-      if (!res.ok) throw new Error("error");
-      trackPurchase(total);
+      // Aunque la API falle, no bloqueamos al cliente — abre WhatsApp igual
+      if (res.ok) trackPurchase(total);
       setOk(true);
+      // Abrir WhatsApp en nueva pestaña con pedido prellenado
+      window.open(waUrl, "_blank");
     } catch {
-      setError("No pudimos registrar tu pedido. Intenta de nuevo en un momento.");
+      // Si falla la red, igual mostramos éxito y abrimos WhatsApp — el cliente no debe perderse
+      setOk(true);
+      window.open(waUrl, "_blank");
     } finally {
       setEnviando(false);
     }
@@ -1118,10 +1142,21 @@ export default function Page() {
               <div className="modal-success">
                 <h3>¡Recibimos tu pedido! 🎉</h3>
                 <p>
-                  En las próximas horas un asesor te contactará por WhatsApp para confirmar tu
-                  dirección y la fecha de entrega.
+                  Abrimos <strong>WhatsApp</strong> para que confirmes tu pedido directamente con
+                  nosotros. Si no se abrió, haz click en el botón de abajo.
                 </p>
-                <button className="btn btn-block" onClick={closeModal}>Cerrar</button>
+                <a
+                  className="btn btn-block"
+                  href={`https://wa.me/573227617545?text=${encodeURIComponent("Hola, acabo de hacer un pedido en la página de MI TIROIDES y quiero confirmarlo.")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ textDecoration: "none", marginBottom: 10 }}
+                >
+                  Abrir WhatsApp
+                </a>
+                <button className="btn btn-ghost btn-block" onClick={closeModal}>
+                  Cerrar
+                </button>
               </div>
             ) : (
               <>
