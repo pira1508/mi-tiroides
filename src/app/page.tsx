@@ -407,17 +407,38 @@ export default function Page() {
     setOk(false);
     setError(null);
     setModalOpen(true);
+    // Meta Pixel: usuario inició proceso de compra (abrió modal)
+    const value = PLANES[cantidad].precio;
+    window.fbq?.("track", "InitiateCheckout", {
+      value,
+      currency: "COP",
+      content_ids: [`mi-tiroides-${cantidad}-frascos`],
+      content_type: "product",
+      num_items: PLANES[cantidad].frascos,
+    });
+    window.gtag?.("event", "begin_checkout", { value, currency: "COP" });
   }
   function closeModal() {
     setModalOpen(false);
   }
 
   function trackLead(value: number) {
-    window.fbq?.("track", "Lead", { value, currency: "COP" });
+    window.fbq?.("track", "Lead", {
+      value,
+      currency: "COP",
+      content_ids: [`mi-tiroides-${cantidad}-frascos`],
+      content_name: PLANES[cantidad].label,
+    });
     window.gtag?.("event", "generate_lead", { value, currency: "COP" });
   }
   function trackPurchase(value: number) {
-    window.fbq?.("track", "Purchase", { value, currency: "COP" });
+    window.fbq?.("track", "Purchase", {
+      value,
+      currency: "COP",
+      content_ids: [`mi-tiroides-${cantidad}-frascos`],
+      content_type: "product",
+      num_items: PLANES[cantidad].frascos,
+    });
     window.gtag?.("event", "purchase", { value, currency: "COP" });
   }
 
