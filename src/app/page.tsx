@@ -466,19 +466,23 @@ export default function Page() {
     const total = plan.precio;
     trackLead(total);
 
-    // Construir mensaje pre-rellenado para WhatsApp
+    // Construir mensaje pre-rellenado para WhatsApp (tono cliente real)
     const mensaje = [
-      `🌿 *Nuevo pedido MI TIROIDES*`,
+      `¡Hola! 🌿 Acabo de realizar mi pedido de *MI TIROIDES* y estos son mis datos de entrega:`,
       ``,
-      `👤 *Nombre:* ${data.nombre}`,
-      `📱 *Teléfono:* ${data.telefono}`,
-      `📍 *Ciudad:* ${data.ciudad}, ${data.departamento}`,
+      `🙋‍♀️ *Nombre:* ${data.nombre}`,
+      `📞 *Teléfono:* ${data.telefono}`,
+      `🏙️ *Ciudad:* ${data.ciudad}, ${data.departamento}`,
       `🏠 *Dirección:* ${data.direccion}`,
-      data.referencia ? `📌 *Referencia:* ${data.referencia}` : null,
+      data.referencia && data.referencia !== "Opcional"
+        ? `📍 *Referencia:* ${data.referencia}`
+        : null,
       ``,
-      `📦 *Plan:* ${plan.label} (${plan.frascos === 1 ? "45" : plan.frascos === 2 ? "90" : "135"} días)`,
-      `💰 *Total:* $${total.toLocaleString("es-CO")} COP`,
-      `💵 *Pago contra entrega*`,
+      `🛒 *Mi pedido:* ${plan.label} (${plan.frascos === 1 ? "45" : plan.frascos === 2 ? "90" : "135"} días)`,
+      `💰 *Total a pagar:* $${total.toLocaleString("es-CO")} COP`,
+      `💵 *Forma de pago:* Contra entrega`,
+      ``,
+      `¡Quedo atenta a la confirmación! 🙏✨`,
     ]
       .filter(Boolean)
       .join("\n");
