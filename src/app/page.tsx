@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { DEPARTAMENTOS, NOMBRES_DEPARTAMENTOS } from "./colombia";
 
@@ -403,6 +403,15 @@ export default function Page() {
     return shuffled;
   }, [seedBase, avatarStackShuffled, testiCortosShuffled]);
 
+  // Track view (1 vez por pageload)
+  useEffect(() => {
+    fetch("/api/track", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ tipo: "view" }),
+    }).catch(() => {});
+  }, []);
+
   function openModal() {
     setOk(false);
     setError(null);
@@ -417,6 +426,12 @@ export default function Page() {
       num_items: PLANES[cantidad].frascos,
     });
     window.gtag?.("event", "begin_checkout", { value, currency: "COP" });
+    // Track apertura de form
+    fetch("/api/track", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ tipo: "open_form" }),
+    }).catch(() => {});
   }
   function closeModal() {
     setModalOpen(false);

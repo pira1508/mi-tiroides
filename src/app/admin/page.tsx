@@ -27,6 +27,10 @@ type Stats = {
   entregados: number;
   cancelados: number;
   ingresosTotales: number;
+  visitasHoy?: number;
+  aperturasHoy?: number;
+  visitasTotal?: number;
+  aperturasTotal?: number;
 };
 
 const ESTADOS: Pedido["estado"][] = ["nuevo", "confirmado", "despachado", "entregado", "cancelado"];
@@ -134,10 +138,19 @@ export default function AdminPage() {
       <main style={{ maxWidth: 1280, margin: "0 auto", padding: "24px" }}>
         {error && <div style={{ background: "#fde2e2", color: "#a01919", padding: 12, borderRadius: 8, marginBottom: 16 }}>{error}</div>}
 
-        {/* Métricas */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 14, marginBottom: 24 }}>
-          <Metric label="Pedidos hoy" value={String(pedidosHoy.length)} />
-          <Metric label="Ingresos hoy" value={fmtCOP(ingresosHoy)} />
+        {/* Métricas — embudo */}
+        <h3 style={{ margin: "0 0 10px", fontSize: 13, color: "#6d7175", textTransform: "uppercase", letterSpacing: 0.6 }}>Embudo de hoy</h3>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 14, marginBottom: 20 }}>
+          <Metric label="👁️ Visitas hoy" value={String(stats?.visitasHoy ?? 0)} />
+          <Metric label="📝 Abrieron form" value={String(stats?.aperturasHoy ?? 0)} sub={stats?.visitasHoy ? `${pct(stats.aperturasHoy ?? 0, stats.visitasHoy)} de visitas` : undefined} />
+          <Metric label="🛒 Pedidos hoy" value={String(pedidosHoy.length)} sub={stats?.aperturasHoy ? `${pct(pedidosHoy.length, stats.aperturasHoy ?? 0)} de aperturas` : undefined} />
+          <Metric label="💰 Ingresos hoy" value={fmtCOP(ingresosHoy)} />
+        </div>
+
+        <h3 style={{ margin: "0 0 10px", fontSize: 13, color: "#6d7175", textTransform: "uppercase", letterSpacing: 0.6 }}>Totales</h3>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 14, marginBottom: 24 }}>
+          <Metric label="Visitas total" value={String(stats?.visitasTotal ?? 0)} />
+          <Metric label="Aperturas total" value={String(stats?.aperturasTotal ?? 0)} />
           <Metric label="Total pedidos" value={String(stats?.total ?? 0)} />
           <Metric label="Ingresos totales" value={fmtCOP(stats?.ingresosTotales ?? 0)} />
           <Metric label="Ticket promedio" value={fmtCOP(ticketProm)} />
@@ -287,13 +300,18 @@ function Th({ children }: { children: React.ReactNode }) {
 function Td({ children }: { children: React.ReactNode }) {
   return <td style={{ padding: "12px 16px", verticalAlign: "top" }}>{children}</td>;
 }
-function Metric({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
+function Metric({ label, value, highlight, sub }: { label: string; value: string; highlight?: boolean; sub?: string }) {
   return (
     <div style={{ background: "#fff", border: `1px solid ${highlight ? "#b25d00" : "#e1e3e5"}`, borderRadius: 10, padding: 16 }}>
       <div style={{ fontSize: 12, color: "#6d7175", marginBottom: 6 }}>{label}</div>
       <div style={{ fontSize: 22, fontWeight: 700, color: highlight ? "#b25d00" : "#202223" }}>{value}</div>
+      {sub && <div style={{ fontSize: 11, color: "#6d7175", marginTop: 4 }}>{sub}</div>}
     </div>
   );
+}
+function pct(num: number, den: number) {
+  if (!den) return "0%";
+  return ((num / den) * 100).toFixed(1) + "%";
 }
 function FiltroBtn({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
