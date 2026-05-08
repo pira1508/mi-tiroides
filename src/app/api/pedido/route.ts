@@ -47,11 +47,24 @@ export async function POST(req: Request) {
   const secret = process.env.BOT_CONFIRMADOR_SECRET;
   if (url && secret) {
     try {
-      await fetch(url, {
+      // Bot espera shape plano: nombre, telefono, cantidad, ciudad, ...
+      const payloadBot = {
+        nombre: pedido.cliente.nombre,
+        telefono: pedido.cliente.telefono,
+        ciudad: pedido.cliente.ciudad,
+        departamento: pedido.cliente.departamento,
+        direccion: pedido.cliente.direccion,
+        referencia: pedido.cliente.referencia,
+        cantidad: String(pedido.plan.cantidad),
+      };
+      const r = await fetch(url, {
         method: "POST",
         headers: { "content-type": "application/json", "x-secret": secret },
-        body: JSON.stringify({ ...pedido, ts: Date.now() }),
+        body: JSON.stringify(payloadBot),
       });
+      if (!r.ok) {
+        console.warn("[PEDIDO] bot respondió", r.status, await r.text());
+      }
     } catch (e) {
       console.warn("[PEDIDO] bot-confirmador falló (ignorado):", e);
     }
