@@ -504,11 +504,18 @@ export default function Page() {
 
     const waUrl = `https://wa.me/573227617545?text=${encodeURIComponent(mensaje)}`;
 
+    // Beacon de respaldo: lo enviamos sin esperar para que sobreviva la redirección a WhatsApp
+    try {
+      const blob = new Blob([JSON.stringify(data)], { type: "application/json" });
+      navigator.sendBeacon?.("/api/pedido", blob);
+    } catch {}
+
     try {
       const res = await fetch("/api/pedido", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify(data),
+        keepalive: true,
       });
       // Aunque la API falle, no bloqueamos al cliente — abre WhatsApp igual
       if (res.ok) trackPurchase(total);
