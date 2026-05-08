@@ -446,15 +446,15 @@ export default function Page() {
     });
     window.gtag?.("event", "generate_lead", { value, currency: "COP" });
   }
-  function trackPurchase(value: number) {
+  function trackPurchase(value: number, eventId: string) {
     window.fbq?.("track", "Purchase", {
       value,
       currency: "COP",
       content_ids: [`mi-tiroides-${cantidad}-frascos`],
       content_type: "product",
       num_items: PLANES[cantidad].frascos,
-    });
-    window.gtag?.("event", "purchase", { value, currency: "COP" });
+    }, { eventID: eventId });
+    window.gtag?.("event", "purchase", { value, currency: "COP", transaction_id: eventId });
   }
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -479,6 +479,21 @@ export default function Page() {
     }
     const plan = PLANES[cantidad];
     const total = plan.precio;
+
+    // Anti-duplicado: si ya hicieron Purchase en los últimos 10 min con mismo telefono+plan, no fires Pixel de nuevo
+    const fingerprint = `${data.telefono}-${cantidad}`;
+    const lastKey = "mit_last_purchase";
+    let alreadyFired = false;
+    try {
+      const raw = localStorage.getItem(lastKey);
+      if (raw) {
+        const last = JSON.parse(raw);
+        if (last.fp === fingerprint && Date.now() - last.ts < 10 * 60 * 1000) {
+          alreadyFired = true;
+        }
+      }
+    } catch {}
+
     trackLead(total);
 
     // Construir mensaje pre-rellenado para WhatsApp (tono cliente real)
@@ -518,7 +533,12 @@ export default function Page() {
         keepalive: true,
       });
       // Aunque la API falle, no bloqueamos al cliente — abre WhatsApp igual
-      if (res.ok) trackPurchase(total);
+      if (res.ok && !alreadyFired) {
+        let pedidoId = `mit-${Date.now()}`;
+        try { const j = await res.clone().json(); if (j?.id) pedidoId = j.id; } catch {}
+        trackPurchase(total, pedidoId);
+        try { localStorage.setItem(lastKey, JSON.stringify({ fp: fingerprint, ts: Date.now() })); } catch {}
+      }
       setOk(true);
       // Abrir WhatsApp en nueva pestaña con pedido prellenado
       window.open(waUrl, "_blank");

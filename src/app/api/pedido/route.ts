@@ -56,6 +56,8 @@ export async function POST(req: Request) {
         direccion: pedido.cliente.direccion,
         referencia: pedido.cliente.referencia,
         cantidad: String(pedido.plan.cantidad),
+        // server-side dedup hint: el bot puede ignorar si <10 min con mismo tel+cantidad
+        dedupeKey: `${pedido.cliente.telefono}-${pedido.plan.cantidad}`,
       };
       const r = await fetch(url, {
         method: "POST",
