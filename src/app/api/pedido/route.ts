@@ -1,9 +1,16 @@
 import { NextResponse } from "next/server";
 
-const PRECIOS: Record<string, { precio: number; frascos: number; label: string }> = {
-  "1": { precio: 89900, frascos: 1, label: "1 Frasco" },
-  "2": { precio: 119900, frascos: 2, label: "2 Frascos" },
-  "3": { precio: 139900, frascos: 3, label: "3 Frascos" },
+const PRECIOS_BY_VARIANT: Record<string, Record<string, { precio: number; frascos: number; label: string }>> = {
+  v1: {
+    "1": { precio: 89900, frascos: 1, label: "1 Frasco" },
+    "2": { precio: 119900, frascos: 2, label: "2 Frascos" },
+    "3": { precio: 139900, frascos: 3, label: "3 Frascos" },
+  },
+  v2: {
+    "1": { precio: 99900, frascos: 1, label: "1 Frasco" },
+    "2": { precio: 139900, frascos: 2, label: "2 Frascos" },
+    "3": { precio: 169900, frascos: 3, label: "3 Frascos" },
+  },
 };
 
 export async function POST(req: Request) {
@@ -13,6 +20,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "campos faltantes" }, { status: 400 });
   }
 
+  const variant = data.variant === "v2" ? "v2" : "v1";
+  const PRECIOS = PRECIOS_BY_VARIANT[variant];
   const plan = PRECIOS[String(data.cantidad)] ?? PRECIOS["1"];
   const id = `MIT-${Date.now().toString(36).toUpperCase()}`;
   const ts = new Date().toISOString();
@@ -37,6 +46,7 @@ export async function POST(req: Request) {
       frascos: plan.frascos,
       precio_cop: plan.precio,
     },
+    variant,
     fuente: "landing-mi-tiroides",
   };
   // eslint-disable-next-line no-console
@@ -56,6 +66,7 @@ export async function POST(req: Request) {
         direccion: pedido.cliente.direccion,
         referencia: pedido.cliente.referencia,
         cantidad: String(pedido.plan.cantidad),
+        variant,
         // server-side dedup hint: el bot puede ignorar si <10 min con mismo tel+cantidad
         dedupeKey: `${pedido.cliente.telefono}-${pedido.plan.cantidad}`,
       };

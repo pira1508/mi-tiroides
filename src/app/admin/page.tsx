@@ -19,6 +19,16 @@ type Pedido = {
   estado: "nuevo" | "confirmado" | "despachado" | "entregado" | "cancelado";
 };
 
+type AbStats = {
+  visitasHoy: number;
+  aperturasHoy: number;
+  pedidosHoy: number;
+  visitasTotal: number;
+  aperturasTotal: number;
+  pedidosTotal: number;
+  ingresos: number;
+};
+
 type Stats = {
   total: number;
   nuevos: number;
@@ -31,6 +41,7 @@ type Stats = {
   aperturasHoy?: number;
   visitasTotal?: number;
   aperturasTotal?: number;
+  ab?: { v1?: AbStats; v2?: AbStats };
 };
 
 const ESTADOS: Pedido["estado"][] = ["nuevo", "confirmado", "despachado", "entregado", "cancelado"];
@@ -156,6 +167,19 @@ export default function AdminPage() {
           <Metric label="Ticket promedio" value={fmtCOP(ticketProm)} />
           <Metric label="Por confirmar" value={String(stats?.nuevos ?? 0)} highlight={(stats?.nuevos ?? 0) > 0} />
         </div>
+
+        {/* A/B Testing comparativo */}
+        {stats?.ab && (
+          <>
+            <h3 style={{ margin: "0 0 10px", fontSize: 13, color: "#6d7175", textTransform: "uppercase", letterSpacing: 0.6 }}>
+              🧪 A/B Testing — Variante A ($89.900) vs B ($99.900)
+            </h3>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))", gap: 14, marginBottom: 24 }}>
+              <AbCard label="A (precios actuales)" url="/" data={stats.ab.v1} />
+              <AbCard label="B (precios subidos + ganchos)" url="/v2" data={stats.ab.v2} highlight />
+            </div>
+          </>
+        )}
 
         {/* Filtros */}
         <div style={{ background: "#fff", border: "1px solid #e1e3e5", borderRadius: 10, padding: 16, marginBottom: 16 }}>
@@ -312,6 +336,48 @@ function Metric({ label, value, highlight, sub }: { label: string; value: string
 function pct(num: number, den: number) {
   if (!den) return "0%";
   return ((num / den) * 100).toFixed(1) + "%";
+}
+
+function AbCard({ label, url, data, highlight }: { label: string; url: string; data?: AbStats; highlight?: boolean }) {
+  const d = data || { visitasHoy: 0, aperturasHoy: 0, pedidosHoy: 0, visitasTotal: 0, aperturasTotal: 0, pedidosTotal: 0, ingresos: 0 };
+  return (
+    <div style={{ background: "#fff", border: `2px solid ${highlight ? "#1f3d2b" : "#e1e3e5"}`, borderRadius: 12, padding: 18 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+        <strong style={{ fontSize: 15, color: "#202223" }}>{label}</strong>
+        <code style={{ fontSize: 11, background: "#f6f6f7", padding: "3px 8px", borderRadius: 4 }}>{url}</code>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 14 }}>
+        <MiniStat n={d.visitasHoy} label="Visitas hoy" />
+        <MiniStat n={d.aperturasHoy} label="Aperturas hoy" sub={d.visitasHoy ? pct(d.aperturasHoy, d.visitasHoy) : "—"} />
+        <MiniStat n={d.pedidosHoy} label="Pedidos hoy" sub={d.aperturasHoy ? pct(d.pedidosHoy, d.aperturasHoy) : "—"} />
+      </div>
+      <div style={{ borderTop: "1px solid #f1f2f3", paddingTop: 10, fontSize: 13, color: "#6d7175" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+          <span>Total visitas</span><strong style={{ color: "#202223" }}>{d.visitasTotal}</strong>
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+          <span>Total pedidos</span><strong style={{ color: "#202223" }}>{d.pedidosTotal}</strong>
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+          <span>Ingresos</span><strong style={{ color: "#1f7a3a" }}>{fmtCOP(d.ingresos)}</strong>
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8, paddingTop: 8, borderTop: "1px dashed #e1e3e5" }}>
+          <span>Conversión total (visita → pedido)</span>
+          <strong style={{ color: "#b25d00" }}>{d.visitasTotal ? pct(d.pedidosTotal, d.visitasTotal) : "—"}</strong>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MiniStat({ n, label, sub }: { n: number; label: string; sub?: string }) {
+  return (
+    <div style={{ background: "#f6f6f7", borderRadius: 8, padding: 10, textAlign: "center" }}>
+      <div style={{ fontSize: 22, fontWeight: 700, color: "#202223", lineHeight: 1 }}>{n}</div>
+      <div style={{ fontSize: 11, color: "#6d7175", marginTop: 4 }}>{label}</div>
+      {sub && <div style={{ fontSize: 11, color: "#b25d00", marginTop: 2 }}>{sub}</div>}
+    </div>
+  );
 }
 function FiltroBtn({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
