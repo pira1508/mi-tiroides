@@ -182,7 +182,8 @@ export default function AdminPage() {
     return fp >= from && fp <= to && p.estado !== "cancelado";
   });
   const ingresosRango = pedidosRango.reduce((a, p) => a + p.total, 0);
-  const ticketProm = pedidos.length ? Math.round((stats?.ingresosTotales || 0) / Math.max(1, pedidos.filter((p) => p.estado !== "cancelado").length)) : 0;
+  // Ticket promedio del rango (ingresos del rango / pedidos no cancelados del rango)
+  const ticketProm = pedidosRango.length ? Math.round(ingresosRango / pedidosRango.length) : 0;
   const presets = presetsRango();
   const presetActivo = presets.find((p) => p.from === from && p.to === to);
   const labelRango = presetActivo ? presetActivo.label : fmtRangoLabel(from, to);
@@ -264,6 +265,7 @@ export default function AdminPage() {
           <Metric label="📝 Abrieron form" value={String(stats?.aperturasHoy ?? 0)} sub={stats?.visitasHoy ? `${pct(stats.aperturasHoy ?? 0, stats.visitasHoy)} de visitas` : undefined} />
           <Metric label="🛒 Pedidos" value={String(pedidosRango.length)} sub={stats?.aperturasHoy ? `${pct(pedidosRango.length, stats.aperturasHoy ?? 0)} de aperturas` : undefined} />
           <Metric label="💰 Ingresos" value={fmtCOP(ingresosRango)} />
+          <Metric label="🎫 Ticket promedio" value={fmtCOP(ticketProm)} />
         </div>
 
         <h3 style={{ margin: "0 0 10px", fontSize: 13, color: "#6d7175", textTransform: "uppercase", letterSpacing: 0.6 }}>Totales históricos</h3>
@@ -271,7 +273,6 @@ export default function AdminPage() {
           <Metric label="Visitas histórico" value={String(stats?.visitasTotal ?? 0)} />
           <Metric label="Aperturas histórico" value={String(stats?.aperturasTotal ?? 0)} />
           <Metric label="Total pedidos" value={String(stats?.total ?? 0)} />
-          <Metric label="Ticket promedio" value={fmtCOP(ticketProm)} />
           <Metric label="Por confirmar" value={String(stats?.nuevos ?? 0)} highlight={(stats?.nuevos ?? 0) > 0} />
         </div>
 
