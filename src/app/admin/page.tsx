@@ -39,8 +39,10 @@ type Stats = {
   ingresosTotales: number;
   visitasHoy?: number;
   aperturasHoy?: number;
+  pedidosHoy?: number;
   visitasTotal?: number;
   aperturasTotal?: number;
+  rango?: { from: string; to: string; hoy: string };
   ab?: { v1?: AbStats; v2?: AbStats };
 };
 
@@ -60,6 +62,46 @@ function fmtCOP(n: number) {
 function fmtFecha(iso: string) {
   return new Date(iso).toLocaleString("es-CO", { timeZone: "America/Bogota", dateStyle: "short", timeStyle: "short" });
 }
+// Convierte ISO UTC a YYYY-MM-DD en hora Bogotá
+function fechaBogota(iso: string): string {
+  const d = new Date(iso);
+  const bogota = new Date(d.getTime() - 5 * 60 * 60 * 1000);
+  return bogota.toISOString().slice(0, 10);
+}
+// Hoy en hora Bogotá (YYYY-MM-DD)
+function hoyBogota(): string {
+  const ahora = new Date();
+  const bogota = new Date(ahora.getTime() - 5 * 60 * 60 * 1000);
+  return bogota.toISOString().slice(0, 10);
+}
+function diasAtrasBogota(n: number): string {
+  const ahora = new Date();
+  const bogota = new Date(ahora.getTime() - 5 * 60 * 60 * 1000);
+  bogota.setUTCDate(bogota.getUTCDate() - n);
+  return bogota.toISOString().slice(0, 10);
+}
+function fmtRangoLabel(from: string, to: string): string {
+  if (from === to) {
+    return new Date(from + "T12:00:00").toLocaleDateString("es-CO", { day: "numeric", month: "long", year: "numeric" });
+  }
+  const fa = new Date(from + "T12:00:00").toLocaleDateString("es-CO", { day: "numeric", month: "short" });
+  const fb = new Date(to + "T12:00:00").toLocaleDateString("es-CO", { day: "numeric", month: "short", year: "numeric" });
+  return `${fa} → ${fb}`;
+}
+
+type PresetRango = { label: string; from: string; to: string };
+function presetsRango(): PresetRango[] {
+  const hoy = hoyBogota();
+  return [
+    { label: "Hoy", from: hoy, to: hoy },
+    { label: "Ayer", from: diasAtrasBogota(1), to: diasAtrasBogota(1) },
+    { label: "Últimos 7 días", from: diasAtrasBogota(6), to: hoy },
+    { label: "Últimos 14 días", from: diasAtrasBogota(13), to: hoy },
+    { label: "Últimos 30 días", from: diasAtrasBogota(29), to: hoy },
+    { label: "Este mes", from: hoy.slice(0, 7) + "-01", to: hoy },
+    { label: "Máximo", from: "2026-01-01", to: hoy },
+  ];
+}
 
 export default function AdminPage() {
   const router = useRouter();
@@ -70,9 +112,14 @@ export default function AdminPage() {
   const [busqueda, setBusqueda] = useState("");
   const [seleccionado, setSeleccionado] = useState<Pedido | null>(null);
   const [error, setError] = useState("");
+  // Rango de fechas (default = hoy en Bogotá)
+  const [from, setFrom] = useState<string>(hoyBogota());
+  const [to, setTo] = useState<string>(hoyBogota());
+  const [showPicker, setShowPicker] = useState(false);
 
   async function cargar() {
-    const r = await fetch("/api/admin/pedidos", { cache: "no-store" });
+    const params = new URLSearchParams({ from, to });
+    const r = await fetch(`/api/admin/pedidos?${params}`, { cache: "no-store" });
     if (r.status === 401) {
       router.push("/admin/login");
       return;
@@ -93,7 +140,8 @@ export default function AdminPage() {
     cargar();
     const t = setInterval(cargar, 15000);
     return () => clearInterval(t);
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [from, to]);
 
   async function cambiarEstado(id: string, estado: Pedido["estado"]) {
     const r = await fetch("/api/admin/pedidos", {
@@ -128,10 +176,16 @@ export default function AdminPage() {
     });
   }, [pedidos, filtro, busqueda]);
 
-  const hoyISO = new Date().toISOString().slice(0, 10);
-  const pedidosHoy = pedidos.filter((p) => p.creadoEn.slice(0, 10) === hoyISO && p.estado !== "cancelado");
-  const ingresosHoy = pedidosHoy.reduce((a, p) => a + p.total, 0);
+  // Pedidos del rango filtrado (en hora Bogotá): respeta from/to
+  const pedidosRango = pedidos.filter((p) => {
+    const fp = fechaBogota(p.creadoEn);
+    return fp >= from && fp <= to && p.estado !== "cancelado";
+  });
+  const ingresosRango = pedidosRango.reduce((a, p) => a + p.total, 0);
   const ticketProm = pedidos.length ? Math.round((stats?.ingresosTotales || 0) / Math.max(1, pedidos.filter((p) => p.estado !== "cancelado").length)) : 0;
+  const presets = presetsRango();
+  const presetActivo = presets.find((p) => p.from === from && p.to === to);
+  const labelRango = presetActivo ? presetActivo.label : fmtRangoLabel(from, to);
 
   return (
     <div style={{ minHeight: "100vh", background: "#f6f6f7", fontFamily: "-apple-system, system-ui, sans-serif" }}>
@@ -149,21 +203,74 @@ export default function AdminPage() {
       <main style={{ maxWidth: 1280, margin: "0 auto", padding: "24px" }}>
         {error && <div style={{ background: "#fde2e2", color: "#a01919", padding: 12, borderRadius: 8, marginBottom: 16 }}>{error}</div>}
 
-        {/* Métricas — embudo */}
-        <h3 style={{ margin: "0 0 10px", fontSize: 13, color: "#6d7175", textTransform: "uppercase", letterSpacing: 0.6 }}>Embudo de hoy</h3>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 14, marginBottom: 20 }}>
-          <Metric label="👁️ Visitas hoy" value={String(stats?.visitasHoy ?? 0)} />
-          <Metric label="📝 Abrieron form" value={String(stats?.aperturasHoy ?? 0)} sub={stats?.visitasHoy ? `${pct(stats.aperturasHoy ?? 0, stats.visitasHoy)} de visitas` : undefined} />
-          <Metric label="🛒 Pedidos hoy" value={String(pedidosHoy.length)} sub={stats?.aperturasHoy ? `${pct(pedidosHoy.length, stats.aperturasHoy ?? 0)} de aperturas` : undefined} />
-          <Metric label="💰 Ingresos hoy" value={fmtCOP(ingresosHoy)} />
+        {/* DATE RANGE PICKER estilo Meta */}
+        <div style={{ background: "#fff", border: "1px solid #e1e3e5", borderRadius: 10, padding: 14, marginBottom: 20, position: "relative" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
+            <div>
+              <div style={{ fontSize: 11, color: "#6d7175", textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 4 }}>
+                Rango (hora Colombia)
+              </div>
+              <div style={{ fontSize: 16, fontWeight: 700, color: "#1f3d2b" }}>📅 {labelRango}</div>
+            </div>
+            <button onClick={() => setShowPicker((s) => !s)} style={{ ...btnSec, padding: "10px 16px", fontWeight: 600 }}>
+              {showPicker ? "Cerrar" : "Cambiar rango ▾"}
+            </button>
+          </div>
+
+          {showPicker && (
+            <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid #f1f2f3", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+              <div>
+                <div style={{ fontSize: 12, color: "#6d7175", marginBottom: 8, fontWeight: 600 }}>Presets</div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  {presets.map((p) => {
+                    const active = p.from === from && p.to === to;
+                    return (
+                      <button key={p.label} onClick={() => { setFrom(p.from); setTo(p.to); setShowPicker(false); }}
+                        style={{
+                          textAlign: "left", padding: "8px 12px",
+                          border: `1px solid ${active ? "#1f3d2b" : "#e1e3e5"}`,
+                          background: active ? "#1f3d2b" : "#fff",
+                          color: active ? "#fff" : "#202223",
+                          borderRadius: 6, cursor: "pointer", fontSize: 13, fontWeight: 500,
+                        }}>
+                        {p.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+              <div>
+                <div style={{ fontSize: 12, color: "#6d7175", marginBottom: 8, fontWeight: 600 }}>Personalizado</div>
+                <label style={{ display: "block", fontSize: 12, color: "#6d7175", marginBottom: 4 }}>Desde</label>
+                <input type="date" value={from} max={to} onChange={(e) => setFrom(e.target.value)}
+                  style={{ width: "100%", padding: "8px 10px", border: "1px solid #c9cccf", borderRadius: 6, fontSize: 14, marginBottom: 10, boxSizing: "border-box" }} />
+                <label style={{ display: "block", fontSize: 12, color: "#6d7175", marginBottom: 4 }}>Hasta</label>
+                <input type="date" value={to} min={from} max={hoyBogota()} onChange={(e) => setTo(e.target.value)}
+                  style={{ width: "100%", padding: "8px 10px", border: "1px solid #c9cccf", borderRadius: 6, fontSize: 14, boxSizing: "border-box" }} />
+                <button onClick={() => setShowPicker(false)} style={{ ...btnSec, marginTop: 12, width: "100%", background: "#1f3d2b", color: "#fff", borderColor: "#1f3d2b", fontWeight: 600 }}>
+                  Aplicar
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
-        <h3 style={{ margin: "0 0 10px", fontSize: 13, color: "#6d7175", textTransform: "uppercase", letterSpacing: 0.6 }}>Totales</h3>
+        {/* Métricas — embudo del rango */}
+        <h3 style={{ margin: "0 0 10px", fontSize: 13, color: "#6d7175", textTransform: "uppercase", letterSpacing: 0.6 }}>
+          Embudo · {labelRango}
+        </h3>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 14, marginBottom: 20 }}>
+          <Metric label="👁️ Visitas" value={String(stats?.visitasHoy ?? 0)} />
+          <Metric label="📝 Abrieron form" value={String(stats?.aperturasHoy ?? 0)} sub={stats?.visitasHoy ? `${pct(stats.aperturasHoy ?? 0, stats.visitasHoy)} de visitas` : undefined} />
+          <Metric label="🛒 Pedidos" value={String(pedidosRango.length)} sub={stats?.aperturasHoy ? `${pct(pedidosRango.length, stats.aperturasHoy ?? 0)} de aperturas` : undefined} />
+          <Metric label="💰 Ingresos" value={fmtCOP(ingresosRango)} />
+        </div>
+
+        <h3 style={{ margin: "0 0 10px", fontSize: 13, color: "#6d7175", textTransform: "uppercase", letterSpacing: 0.6 }}>Totales históricos</h3>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 14, marginBottom: 24 }}>
-          <Metric label="Visitas total" value={String(stats?.visitasTotal ?? 0)} />
-          <Metric label="Aperturas total" value={String(stats?.aperturasTotal ?? 0)} />
+          <Metric label="Visitas histórico" value={String(stats?.visitasTotal ?? 0)} />
+          <Metric label="Aperturas histórico" value={String(stats?.aperturasTotal ?? 0)} />
           <Metric label="Total pedidos" value={String(stats?.total ?? 0)} />
-          <Metric label="Ingresos totales" value={fmtCOP(stats?.ingresosTotales ?? 0)} />
           <Metric label="Ticket promedio" value={fmtCOP(ticketProm)} />
           <Metric label="Por confirmar" value={String(stats?.nuevos ?? 0)} highlight={(stats?.nuevos ?? 0) > 0} />
         </div>
@@ -172,7 +279,7 @@ export default function AdminPage() {
         {stats?.ab && (
           <>
             <h3 style={{ margin: "0 0 10px", fontSize: 13, color: "#6d7175", textTransform: "uppercase", letterSpacing: 0.6 }}>
-              🧪 A/B Testing — Variante A ($89.900) vs B ($99.900)
+              🧪 A/B Testing — Variante A ($89.900) vs B ($99.900) · {labelRango}
             </h3>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))", gap: 14, marginBottom: 24 }}>
               <AbCard label="A (precios actuales)" url="/" data={stats.ab.v1} />
@@ -347,22 +454,22 @@ function AbCard({ label, url, data, highlight }: { label: string; url: string; d
         <code style={{ fontSize: 11, background: "#f6f6f7", padding: "3px 8px", borderRadius: 4 }}>{url}</code>
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 14 }}>
-        <MiniStat n={d.visitasHoy} label="Visitas hoy" />
-        <MiniStat n={d.aperturasHoy} label="Aperturas hoy" sub={d.visitasHoy ? pct(d.aperturasHoy, d.visitasHoy) : "—"} />
-        <MiniStat n={d.pedidosHoy} label="Pedidos hoy" sub={d.aperturasHoy ? pct(d.pedidosHoy, d.aperturasHoy) : "—"} />
+        <MiniStat n={d.visitasHoy} label="Visitas" />
+        <MiniStat n={d.aperturasHoy} label="Aperturas" sub={d.visitasHoy ? pct(d.aperturasHoy, d.visitasHoy) : "—"} />
+        <MiniStat n={d.pedidosHoy} label="Pedidos" sub={d.aperturasHoy ? pct(d.pedidosHoy, d.aperturasHoy) : "—"} />
       </div>
       <div style={{ borderTop: "1px solid #f1f2f3", paddingTop: 10, fontSize: 13, color: "#6d7175" }}>
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-          <span>Total visitas</span><strong style={{ color: "#202223" }}>{d.visitasTotal}</strong>
+          <span>Ingresos rango</span><strong style={{ color: "#1f7a3a" }}>{fmtCOP(d.ingresos)}</strong>
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-          <span>Total pedidos</span><strong style={{ color: "#202223" }}>{d.pedidosTotal}</strong>
+          <span>Visitas histórico</span><strong style={{ color: "#202223" }}>{d.visitasTotal}</strong>
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-          <span>Ingresos</span><strong style={{ color: "#1f7a3a" }}>{fmtCOP(d.ingresos)}</strong>
+          <span>Pedidos histórico</span><strong style={{ color: "#202223" }}>{d.pedidosTotal}</strong>
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8, paddingTop: 8, borderTop: "1px dashed #e1e3e5" }}>
-          <span>Conversión total (visita → pedido)</span>
+          <span>Conversión histórica (visita → pedido)</span>
           <strong style={{ color: "#b25d00" }}>{d.visitasTotal ? pct(d.pedidosTotal, d.visitasTotal) : "—"}</strong>
         </div>
       </div>

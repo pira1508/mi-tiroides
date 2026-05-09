@@ -10,13 +10,17 @@ async function checkAuth() {
   return c.get("admin_session")?.value === "ok";
 }
 
-export async function GET() {
+export async function GET(req: Request) {
   if (!(await checkAuth())) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
-  const r = await fetch(`${BOT_BASE}/pedidos?secret=${encodeURIComponent(BOT_SECRET)}`, {
-    cache: "no-store",
-  });
+  const url = new URL(req.url);
+  const from = url.searchParams.get("from");
+  const to = url.searchParams.get("to");
+  const params = new URLSearchParams({ secret: BOT_SECRET });
+  if (from) params.set("from", from);
+  if (to) params.set("to", to);
+  const r = await fetch(`${BOT_BASE}/pedidos?${params}`, { cache: "no-store" });
   if (!r.ok) {
     return NextResponse.json({ error: "bot fetch failed", status: r.status }, { status: 502 });
   }
