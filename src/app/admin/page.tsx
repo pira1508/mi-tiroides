@@ -187,7 +187,7 @@ export default function AdminPage() {
             <FiltroBtn active={filtro === "todos"} onClick={() => setFiltro("todos")}>Todos ({pedidos.length})</FiltroBtn>
             {ESTADOS.map((e) => (
               <FiltroBtn key={e} active={filtro === e} onClick={() => setFiltro(e)}>
-                {e.charAt(0).toUpperCase() + e.slice(1)} ({stats?.[(e + "s") as keyof Stats] ?? 0})
+                {e.charAt(0).toUpperCase() + e.slice(1)} ({(stats?.[(e + "s") as keyof Stats] as number | undefined) ?? 0})
               </FiltroBtn>
             ))}
           </div>
