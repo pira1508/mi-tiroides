@@ -623,8 +623,27 @@ export default function Page() {
               <span className="badge">6 nutrientes</span>
             </div>
             <div className="precio-row">$89.900 COP</div>
+
+            {/* Gancho urgencia psicológica — el cuerpo no espera */}
+            <div
+              style={{
+                background: "rgba(184, 90, 30, .08)",
+                borderLeft: "4px solid #b85a1e",
+                padding: "12px 14px",
+                borderRadius: 8,
+                margin: "10px 0 14px",
+                fontSize: 14,
+                lineHeight: 1.5,
+                color: "#3a2415",
+              }}
+            >
+              ⏰ <strong>Tu metabolismo no espera.</strong> Cada semana sin
+              tratar es otra semana de fatiga, caída de cabello y variaciones
+              en tu peso. Empezar hoy = primeros cambios en <strong>14 días</strong>.
+            </div>
+
             <button className="btn btn-block" onClick={openModal}>
-              Pedir ahora · Pago contra entrega
+              Empezar mi cambio HOY · Pago contra entrega
             </button>
             <div className="hero-checks">
               <div>Sin suscripción</div>
@@ -766,7 +785,49 @@ export default function Page() {
           <h2 className="h2">¿Por qué elegir MI TIROIDES?</h2>
           <p className="lead">Compara de un vistazo cada alternativa para tu tiroides.</p>
 
-          <div className="ctable">
+          {/* Hint mobile: desliza para ver más */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
+              fontSize: 13,
+              color: "var(--gris)",
+              marginBottom: 10,
+              fontStyle: "italic",
+            }}
+            className="ctable-hint-mobile"
+          >
+            <span style={{ animation: "swipeHint 1.6s ease-in-out infinite" }}>👉</span>
+            <span>Desliza la tabla para verla completa</span>
+          </div>
+          <style>{`
+            @keyframes swipeHint {
+              0%, 100% { transform: translateX(0); }
+              50% { transform: translateX(8px); }
+            }
+            @media (min-width: 760px) {
+              .ctable-hint-mobile { display: none !important; }
+            }
+            .ctable-hinted { position: relative; }
+            .ctable-hinted::after {
+              content: "";
+              position: absolute;
+              top: 0;
+              right: 0;
+              width: 40px;
+              height: 100%;
+              background: linear-gradient(to right, transparent, rgba(0,0,0,0.08));
+              pointer-events: none;
+              border-radius: 0 12px 12px 0;
+            }
+            @media (min-width: 760px) {
+              .ctable-hinted::after { display: none; }
+            }
+          `}</style>
+
+          <div className="ctable ctable-hinted">
             <table>
               <thead>
                 <tr>
@@ -825,6 +886,25 @@ export default function Page() {
           <p style={{ textAlign: "center", color: "var(--gris)", marginTop: 18, fontSize: 13 }}>
             * MI TIROIDES no reemplaza tu medicamento — lo complementa con los nutrientes que falta aportar.
           </p>
+
+          {/* Mini-gancho post-tabla: pivotea de comparación a urgencia */}
+          <div
+            style={{
+              maxWidth: 620,
+              margin: "20px auto 0",
+              textAlign: "center",
+              padding: "16px 20px",
+              background: "rgba(31, 61, 43, .06)",
+              borderRadius: 10,
+              fontSize: 15,
+              lineHeight: 1.6,
+              color: "#1f3d2b",
+            }}
+          >
+            La diferencia entre <strong>seguir igual en 60 días</strong> o
+            sentirte como antes empieza con la decisión que estás a punto de
+            tomar.
+          </div>
         </div>
       </section>
 
@@ -1104,6 +1184,48 @@ export default function Page() {
         </div>
       </section>
 
+      {/* GANCHO URGENCIA — el costo del no actuar */}
+      <section className="section section-beige">
+        <div className="container-sm">
+          <div
+            style={{
+              background: "#fff",
+              border: "2px solid #b85a1e",
+              borderRadius: 14,
+              padding: "28px 24px",
+              textAlign: "center",
+            }}
+          >
+            <div
+              style={{
+                color: "#b85a1e",
+                fontSize: 12,
+                fontWeight: 700,
+                letterSpacing: 2,
+                marginBottom: 10,
+              }}
+            >
+              UN MOMENTO ANTES DE SEGUIR
+            </div>
+            <h2 className="h2" style={{ marginBottom: 14, fontSize: 26 }}>
+              ¿Cuánto vale otra semana sintiéndote agotada?
+            </h2>
+            <p style={{ color: "var(--tinta)", fontSize: 16, lineHeight: 1.7, margin: 0 }}>
+              Llevas meses preguntándote si esto va a pasar solo. Pero la
+              tiroides no se regula sola cuando el cortisol está alto y faltan
+              nutrientes específicos. <strong>Cada día que pospones es otro día
+              sumándose al cansancio</strong>, otro día viendo más cabello en el
+              cepillo, otro día con esa niebla que no te deja pensar.
+              <br /><br />
+              <strong style={{ color: "#1f3d2b" }}>
+                $89.900 hoy &nbsp;vs&nbsp; otro mes igual a este.
+              </strong>{" "}
+              Esa es la decisión real.
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* CIERRE */}
       <section className="section section-verde">
         <div className="container-sm" style={{ textAlign: "center" }}>
@@ -1112,8 +1234,11 @@ export default function Page() {
             Más de 2.500 mujeres colombianas ya están recuperando su energía con MI TIROIDES.
           </p>
           <button className="btn btn-light" onClick={openModal}>
-            Pedir mi tratamiento de 3 meses →
+            Sí, quiero empezar mi cambio HOY →
           </button>
+          <p style={{ color: "#d6cdb3", marginTop: 16, fontSize: 14, fontStyle: "italic" }}>
+            Pago contra entrega · Llega en 24-72h · 30 días de garantía
+          </p>
         </div>
       </section>
 
@@ -1181,6 +1306,23 @@ export default function Page() {
                 <span>📦 Envíos rápidos</span>
                 <span>💵 Paga al recibir</span>
                 <span>🇨🇴 Hecho en Colombia</span>
+              </div>
+              {/* Gancho urgencia dentro del modal — el momento más crítico */}
+              <div
+                style={{
+                  background: "rgba(31, 61, 43, .07)",
+                  borderRadius: 8,
+                  padding: "10px 12px",
+                  marginTop: 12,
+                  fontSize: 13,
+                  textAlign: "center",
+                  color: "#1f3d2b",
+                  lineHeight: 1.5,
+                }}
+              >
+                ⏱️ <strong>Tu pedido sale despachado en las próximas 24h.</strong>{" "}
+                Empiezas el tratamiento esta semana = primeros cambios en{" "}
+                <strong>14 días</strong>.
               </div>
             </div>
 
