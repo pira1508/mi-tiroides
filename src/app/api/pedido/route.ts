@@ -7,7 +7,7 @@ const PRECIOS_BY_VARIANT: Record<string, Record<string, { precio: number; frasco
     "3": { precio: 139900, frascos: 3, label: "3 Frascos" },
   },
   v2: {
-    "1": { precio: 99900, frascos: 1, label: "1 Frasco" },
+    "1": { precio: 89900, frascos: 1, label: "1 Frasco" },
     "2": { precio: 139900, frascos: 2, label: "2 Frascos" },
     "3": { precio: 169900, frascos: 3, label: "3 Frascos" },
   },

@@ -279,11 +279,11 @@ export default function AdminPage() {
         {stats?.ab && (
           <>
             <h3 style={{ margin: "0 0 10px", fontSize: 13, color: "#6d7175", textTransform: "uppercase", letterSpacing: 0.6 }}>
-              🧪 A/B Testing — Variante A ($89.900) vs B ($99.900) · {labelRango}
+              🧪 A/B Testing — Variante A (precios actuales) vs B (2 y 3 frascos +$20k) · {labelRango}
             </h3>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))", gap: 14, marginBottom: 24 }}>
-              <AbCard label="A (precios actuales)" url="/" data={stats.ab.v1} />
-              <AbCard label="B (precios subidos + ganchos)" url="/v2" data={stats.ab.v2} highlight />
+              <AbCard label="A · 1f $89.9k · 2f $119.9k · 3f $139.9k" url="/" data={stats.ab.v1} />
+              <AbCard label="B · 1f $89.9k · 2f $139.9k · 3f $169.9k" url="/v2" data={stats.ab.v2} highlight />
             </div>
           </>
         )}

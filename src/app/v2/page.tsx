@@ -181,9 +181,9 @@ const PLANES = {
     dias: "45 DÍAS",
     frascos: 1,
     label: "1 Frasco",
-    precio: 99900,
-    original: 99900,
-    perDia: 2220,
+    precio: 89900,
+    original: 89900,
+    perDia: 1998,
     tag: null as null | { texto: string; gold?: boolean },
   },
   "2": {
@@ -629,7 +629,7 @@ export default function Page() {
               <span className="badge">Registro INVIMA</span>
               <span className="badge">6 nutrientes</span>
             </div>
-            <div className="precio-row">$99.900 COP</div>
+            <div className="precio-row">$89.900 COP</div>
 
             {/* Gancho urgencia psicológica — el cuerpo no espera */}
             <div
@@ -844,7 +844,7 @@ export default function Page() {
                   <th className="ctable-feat">
                     <Image src="/img/bundle-1.png" alt="MI TIROIDES" width={80} height={80} />
                     <span>MI TIROIDES</span>
-                    <small>$99.900 / mes</small>
+                    <small>$89.900 / mes</small>
                     <em className="ctable-tag">RECOMENDADO</em>
                   </th>
                   <th>
@@ -1228,7 +1228,7 @@ export default function Page() {
               cepillo, otro día con esa niebla que no te deja pensar.
               <br /><br />
               <strong style={{ color: "#1f3d2b" }}>
-                $99.900 hoy &nbsp;vs&nbsp; otro mes igual a este.
+                $89.900 hoy &nbsp;vs&nbsp; otro mes igual a este.
               </strong>{" "}
               Esa es la decisión real.
             </p>
