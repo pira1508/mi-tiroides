@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
-import { DEPARTAMENTOS, NOMBRES_DEPARTAMENTOS } from "./colombia";
+import { DEPARTAMENTOS, NOMBRES_DEPARTAMENTOS } from "../colombia";
 
 // Fisher-Yates shuffle determinístico por seed
 function shuffleWithSeed<T>(array: readonly T[], seed: number): T[] {
