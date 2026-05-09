@@ -182,6 +182,7 @@ export default function AdminPage() {
     return fp >= from && fp <= to && p.estado !== "cancelado";
   });
   const ingresosRango = pedidosRango.reduce((a, p) => a + p.total, 0);
+  const frascosRango = pedidosRango.reduce((a, p) => a + (p.cantidad || 0), 0);
   // Ticket promedio del rango (ingresos del rango / pedidos no cancelados del rango)
   const ticketProm = pedidosRango.length ? Math.round(ingresosRango / pedidosRango.length) : 0;
   const presets = presetsRango();
@@ -264,6 +265,7 @@ export default function AdminPage() {
           <Metric label="👁️ Visitas" value={String(stats?.visitasHoy ?? 0)} />
           <Metric label="📝 Abrieron form" value={String(stats?.aperturasHoy ?? 0)} sub={stats?.visitasHoy ? `${pct(stats.aperturasHoy ?? 0, stats.visitasHoy)} de visitas` : undefined} />
           <Metric label="🛒 Pedidos" value={String(pedidosRango.length)} sub={stats?.aperturasHoy ? `${pct(pedidosRango.length, stats.aperturasHoy ?? 0)} de aperturas` : undefined} />
+          <Metric label="🧴 Frascos vendidos" value={String(frascosRango)} sub={pedidosRango.length ? `${(frascosRango / pedidosRango.length).toFixed(2)} frascos/pedido` : undefined} />
           <Metric label="💰 Ingresos" value={fmtCOP(ingresosRango)} />
           <Metric label="🎫 Ticket promedio" value={fmtCOP(ticketProm)} />
         </div>
