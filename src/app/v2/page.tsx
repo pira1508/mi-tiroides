@@ -645,9 +645,8 @@ export default function Page() {
               }}
             >
               ⏰ <strong>Tu metabolismo no espera.</strong> Cada semana sin
-              tratar es otra semana de fatiga, caída de cabello y peso ganado.
-              Empezar hoy = primeros cambios en <strong>14 días</strong>. Empezar
-              el lunes = en 21.
+              tratar es otra semana de fatiga, caída de cabello y variaciones
+              en tu peso. Empezar hoy = primeros cambios en <strong>14 días</strong>.
             </div>
 
             <button className="btn btn-block" onClick={openModal}>
