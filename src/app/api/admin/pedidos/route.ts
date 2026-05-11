@@ -10,74 +10,26 @@ async function checkAuth() {
   return c.get("admin_session")?.value === "ok";
 }
 
-type BotRow = {
-  id: string | number;
-  nombre: string;
-  telefono: string;
-  ciudad?: string;
-  cantidad: number;
-  total: number;
-  estado: "nuevo" | "confirmado" | "despachado" | "entregado" | "cancelado";
-  guia?: string;
-  creado_en: string;
-};
-
-function fechaBogota(iso: string): string {
-  const d = new Date(iso);
-  const bogota = new Date(d.getTime() - 5 * 60 * 60 * 1000);
-  return bogota.toISOString().slice(0, 10);
-}
-
 export async function GET(req: Request) {
   if (!(await checkAuth())) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
   const url = new URL(req.url);
-  const from = url.searchParams.get("from") ?? "";
-  const to = url.searchParams.get("to") ?? "";
-
-  const r = await fetch(`${BOT_BASE}/admin/pedidos`, {
+  const from = url.searchParams.get("from");
+  const to = url.searchParams.get("to");
+  const params = new URLSearchParams();
+  if (from) params.set("from", from);
+  if (to) params.set("to", to);
+  const qs = params.toString();
+  const r = await fetch(`${BOT_BASE}/pedidos${qs ? `?${qs}` : ""}`, {
     cache: "no-store",
     headers: { "x-secret": BOT_SECRET },
   });
   if (!r.ok) {
     return NextResponse.json({ error: "bot fetch failed", status: r.status }, { status: 502 });
   }
-  const rows = (await r.json()) as BotRow[];
-
-  const pedidos = rows.map((row) => ({
-    id: String(row.id),
-    nombre: row.nombre || "—",
-    telefonoCliente: row.telefono || "",
-    ciudad: row.ciudad || "",
-    departamento: "",
-    direccion: "",
-    cantidad: Number(row.cantidad || 0),
-    diasTratamiento: Number(row.cantidad || 0) * 30,
-    total: Number(row.total || 0),
-    creadoEn: row.creado_en,
-    estado: row.estado,
-  }));
-
-  // stats agregados
-  const stats = {
-    total: pedidos.length,
-    nuevos: pedidos.filter((p) => p.estado === "nuevo").length,
-    confirmados: pedidos.filter((p) => p.estado === "confirmado").length,
-    despachados: pedidos.filter((p) => p.estado === "despachado").length,
-    entregados: pedidos.filter((p) => p.estado === "entregado").length,
-    cancelados: pedidos.filter((p) => p.estado === "cancelado").length,
-    ingresosTotales: pedidos.filter((p) => p.estado !== "cancelado").reduce((a, p) => a + p.total, 0),
-    visitasHoy: 0,
-    aperturasHoy: 0,
-    pedidosHoy: 0,
-    visitasTotal: 0,
-    aperturasTotal: 0,
-    rango: { from, to, hoy: fechaBogota(new Date().toISOString()) },
-    ab: undefined,
-  };
-
-  return NextResponse.json({ pedidos, stats });
+  const data = await r.json();
+  return NextResponse.json(data);
 }
 
 export async function PATCH(req: Request) {
@@ -85,8 +37,8 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
   const { id, estado } = await req.json();
-  const r = await fetch(`${BOT_BASE}/pedido/${encodeURIComponent(id)}/estado`, {
-    method: "POST",
+  const r = await fetch(`${BOT_BASE}/pedidos/${encodeURIComponent(id)}`, {
+    method: "PATCH",
     headers: { "content-type": "application/json", "x-secret": BOT_SECRET },
     body: JSON.stringify({ estado }),
   });
