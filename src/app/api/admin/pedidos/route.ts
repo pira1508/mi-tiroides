@@ -41,14 +41,26 @@ export async function GET() {
   const BOT_BASE = BOT_URL.replace(/\/pedido\/?$/, "");
   const BOT_SECRET = process.env.BOT_CONFIRMADOR_SECRET || "";
 
-  const r = await fetch(`${BOT_BASE}/admin/pedidos`, {
-    cache: "no-store",
-    headers: { "x-secret": BOT_SECRET },
-  });
+  const [r, rEv] = await Promise.all([
+    fetch(`${BOT_BASE}/admin/pedidos`, {
+      cache: "no-store",
+      headers: { "x-secret": BOT_SECRET },
+    }),
+    fetch(`${BOT_BASE}/admin/eventos`, {
+      cache: "no-store",
+      headers: { "x-secret": BOT_SECRET },
+    }).catch(() => null),
+  ]);
   if (!r.ok) {
     return NextResponse.json({ error: "bot fetch failed", status: r.status }, { status: 502 });
   }
   const rows = (await r.json()) as BotRow[];
+
+  // Eventos por variant (visitas + aperturas)
+  type EventRow = { tipo: string; variant: string | null; total: number };
+  const eventos: EventRow[] = rEv && rEv.ok ? await rEv.json().catch(() => []) : [];
+  const evCount = (tipo: string, variant: string) =>
+    eventos.find((e) => e.tipo === tipo && e.variant === variant)?.total ?? 0;
 
   const pedidos = rows.map((row) => ({
     id: row.id,
@@ -75,8 +87,8 @@ export async function GET() {
       visitasHoy: 0,
       aperturasHoy: 0,
       pedidosHoy: 0,
-      visitasTotal: 0, // TODO: traer del bot cuando exponga eventos
-      aperturasTotal: 0,
+      visitasTotal: evCount("view", "v1"),
+      aperturasTotal: evCount("open_form", "v1"),
       pedidosTotal: v1Rows.length,
       ingresos: v1Rows.reduce((a, r) => a + Number(r.total || 0), 0),
     },
@@ -84,8 +96,8 @@ export async function GET() {
       visitasHoy: 0,
       aperturasHoy: 0,
       pedidosHoy: 0,
-      visitasTotal: 0,
-      aperturasTotal: 0,
+      visitasTotal: evCount("view", "v2"),
+      aperturasTotal: evCount("open_form", "v2"),
       pedidosTotal: v2Rows.length,
       ingresos: v2Rows.reduce((a, r) => a + Number(r.total || 0), 0),
     },
@@ -102,8 +114,8 @@ export async function GET() {
     visitasHoy: 0,
     aperturasHoy: 0,
     pedidosHoy: 0,
-    visitasTotal: 0,
-    aperturasTotal: 0,
+    visitasTotal: ab.v1.visitasTotal + ab.v2.visitasTotal,
+    aperturasTotal: ab.v1.aperturasTotal + ab.v2.aperturasTotal,
     rango: { from: "", to: "", hoy: fechaBogota(new Date().toISOString()) },
     ab,
   };

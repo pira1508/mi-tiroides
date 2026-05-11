@@ -7,6 +7,7 @@ import { CRM } from "./tabs/crm";
 import { Pipeline } from "./tabs/pipeline";
 import { Shipping } from "./tabs/shipping";
 import { Products } from "./tabs/products";
+import { Atencion } from "./tabs/atencion";
 
 type Pedido = {
   id: string;
@@ -51,7 +52,7 @@ type Stats = {
   ab?: { v1?: AbStats; v2?: AbStats };
 };
 
-type TabId = "dashboard" | "live" | "ab" | "ads" | "crm" | "pipeline" | "shipping" | "products";
+type TabId = "dashboard" | "live" | "ab" | "ads" | "crm" | "pipeline" | "shipping" | "products" | "atencion";
 
 const ESTADOS: Pedido["estado"][] = ["nuevo", "confirmado", "despachado", "entregado", "cancelado"];
 
@@ -264,6 +265,7 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState<TabId>("dashboard");
+  const [atencionTotal, setAtencionTotal] = useState(0);
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [from, setFrom] = useState<string>(hoyBogota());
   const [to, setTo] = useState<string>(hoyBogota());
@@ -302,6 +304,21 @@ export default function AdminPage() {
     return () => clearInterval(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [from, to, paused]);
+
+  useEffect(() => {
+    async function cargarAtencion() {
+      try {
+        const r = await fetch("/api/admin/atencion", { cache: "no-store" });
+        if (r.ok) {
+          const data = await r.json();
+          setAtencionTotal(Array.isArray(data) ? data.length : 0);
+        }
+      } catch {}
+    }
+    cargarAtencion();
+    const t = setInterval(cargarAtencion, 10000);
+    return () => clearInterval(t);
+  }, []);
 
   async function cambiarEstado(id: string, estado: Pedido["estado"]) {
     const r = await fetch("/api/admin/pedidos", {
@@ -412,6 +429,7 @@ export default function AdminPage() {
     { id: "dashboard", label: "Dashboard", icon: "home", group: "Operación" },
     { id: "live", label: "Pedidos en vivo", icon: "activity", group: "Operación", badge: unreadTotal },
     { id: "pipeline", label: "Pipeline pedidos", icon: "activity", group: "Operación" },
+    { id: "atencion", label: "⚠️ Atención", icon: "activity", group: "Operación", badge: atencionTotal },
     { id: "ab", label: "A/B Testing", icon: "flask", group: "Crecimiento" },
     { id: "ads", label: "Ads Manager", icon: "target", group: "Crecimiento" },
     { id: "crm", label: "CRM · WhatsApp", icon: "cart", group: "Clientes" },
@@ -545,6 +563,8 @@ export default function AdminPage() {
 
           {activeTab === "pipeline" && <Pipeline />}
 
+          {activeTab === "atencion" && <Atencion />}
+
           {activeTab === "shipping" && <Shipping />}
 
           {activeTab === "products" && <Products />}
@@ -652,6 +672,8 @@ function Dashboard({
 
   return (
     <>
+      <LiveUsersBar />
+
       {/* KPIs */}
       <div className="kpi-grid" style={{ marginBottom: 16 }}>
         <Kpi
@@ -1214,6 +1236,77 @@ function Row({ label, value }: { label: string; value: React.ReactNode }) {
     <div style={{ display: "flex", justifyContent: "space-between" }}>
       <span className="muted">{label}</span>
       {value}
+    </div>
+  );
+}
+
+function LiveUsersBar() {
+  const [data, setData] = useState<{ active: number; viewsLastMin: number; users5min: number } | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    async function tick() {
+      try {
+        const r = await fetch("/api/admin/live", { cache: "no-store" });
+        if (!r.ok) return;
+        const j = await r.json();
+        if (alive) setData(j);
+      } catch { /* no-op */ }
+    }
+    tick();
+    const t = setInterval(tick, 10000);
+    return () => { alive = false; clearInterval(t); };
+  }, []);
+
+  const active = data?.active ?? 0;
+  const live = active > 0;
+
+  return (
+    <div
+      className="card"
+      style={{
+        marginBottom: 16,
+        padding: "14px 18px",
+        display: "flex",
+        alignItems: "center",
+        gap: 16,
+        borderLeft: `3px solid ${live ? "var(--success)" : "var(--border)"}`,
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <span
+          className="dot pulse"
+          style={{
+            width: 10,
+            height: 10,
+            background: live ? "var(--success)" : "var(--text-muted)",
+            display: "inline-block",
+            borderRadius: 5,
+          }}
+        />
+        <div>
+          <div className="label">En este momento</div>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+            <span className="num" style={{ fontSize: 24, fontWeight: 700, color: live ? "var(--success)" : "var(--text)" }}>
+              {active}
+            </span>
+            <span style={{ fontSize: 13, color: "var(--text-sub)" }}>
+              {active === 1 ? "persona viendo el landing" : "personas viendo el landing"}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div style={{ marginLeft: "auto", display: "flex", gap: 20 }}>
+        <div style={{ textAlign: "right" }}>
+          <div className="label">Vistas último minuto</div>
+          <div className="num" style={{ fontSize: 16, fontWeight: 600 }}>{data?.viewsLastMin ?? 0}</div>
+        </div>
+        <div style={{ textAlign: "right" }}>
+          <div className="label">Usuarios últimos 5 min</div>
+          <div className="num" style={{ fontSize: 16, fontWeight: 600 }}>{data?.users5min ?? 0}</div>
+        </div>
+      </div>
     </div>
   );
 }
