@@ -3,6 +3,10 @@
 import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import "./pira-admin.css";
+import { CRM } from "./tabs/crm";
+import { Pipeline } from "./tabs/pipeline";
+import { Shipping } from "./tabs/shipping";
+import { Products } from "./tabs/products";
 
 type Pedido = {
   id: string;
@@ -47,7 +51,7 @@ type Stats = {
   ab?: { v1?: AbStats; v2?: AbStats };
 };
 
-type TabId = "dashboard" | "live" | "ab" | "ads";
+type TabId = "dashboard" | "live" | "ab" | "ads" | "crm" | "pipeline" | "shipping" | "products";
 
 const ESTADOS: Pedido["estado"][] = ["nuevo", "confirmado", "despachado", "entregado", "cancelado"];
 
@@ -284,8 +288,12 @@ export default function AdminPage() {
   const TABS: { id: TabId; label: string; icon: string; group: string; badge?: number }[] = [
     { id: "dashboard", label: "Dashboard", icon: "home", group: "Operación" },
     { id: "live", label: "Pedidos en vivo", icon: "activity", group: "Operación", badge: unreadTotal },
+    { id: "pipeline", label: "Pipeline pedidos", icon: "activity", group: "Operación" },
     { id: "ab", label: "A/B Testing", icon: "flask", group: "Crecimiento" },
     { id: "ads", label: "Ads Manager", icon: "target", group: "Crecimiento" },
+    { id: "crm", label: "CRM · WhatsApp", icon: "cart", group: "Clientes" },
+    { id: "shipping", label: "Transportadora", icon: "box", group: "Clientes" },
+    { id: "products", label: "Productos", icon: "box", group: "Catálogo" },
   ];
 
   const grouped = TABS.reduce<Record<string, typeof TABS>>((acc, t) => {
@@ -407,6 +415,14 @@ export default function AdminPage() {
           {activeTab === "ab" && <ABTesting stats={stats} />}
 
           {activeTab === "ads" && <AdsManager />}
+
+          {activeTab === "crm" && <CRM />}
+
+          {activeTab === "pipeline" && <Pipeline />}
+
+          {activeTab === "shipping" && <Shipping />}
+
+          {activeTab === "products" && <Products />}
         </main>
       </div>
 
