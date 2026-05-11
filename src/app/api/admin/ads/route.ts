@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
-const META_TOKEN = process.env.META_ACCESS_TOKEN || "";
-const ACT_ID = process.env.META_AD_ACCOUNT_ID || "act_598280937285029";
+export const dynamic = "force-dynamic";
 
 async function checkAuth() {
   const c = await cookies();
@@ -13,6 +12,8 @@ export async function GET() {
   if (!(await checkAuth())) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
+  const META_TOKEN = process.env.META_ACCESS_TOKEN || "";
+  const ACT_ID = process.env.META_AD_ACCOUNT_ID || "act_598280937285029";
   if (!META_TOKEN) {
     return NextResponse.json({ error: "missing META_ACCESS_TOKEN env var" }, { status: 500 });
   }

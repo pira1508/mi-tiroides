@@ -138,6 +138,104 @@ function Sparkline({ data, color = "#0F3D2E", width = 100, height = 32 }: { data
   );
 }
 
+// ============ Line/Area Chart con tooltip ============
+function LineChart({
+  data,
+  height = 200,
+  color = "#0F3D2E",
+  format = (v: number) => String(v),
+  xLabel = (d: { label: string }) => d.label,
+}: {
+  data: { label: string; value: number }[];
+  height?: number;
+  color?: string;
+  format?: (v: number) => string;
+  xLabel?: (d: { label: string }, i: number) => string;
+}) {
+  const [hover, setHover] = useState<number | null>(null);
+  if (!data.length) return null;
+  const W = 800;
+  const padding = { top: 16, right: 14, bottom: 28, left: 56 };
+  const innerW = W - padding.left - padding.right;
+  const innerH = height - padding.top - padding.bottom;
+  const maxV = Math.max(...data.map((d) => d.value), 1) * 1.15;
+  const x = (i: number) => padding.left + (data.length <= 1 ? innerW / 2 : (i / (data.length - 1)) * innerW);
+  const y = (v: number) => padding.top + innerH - (v / maxV) * innerH;
+  const path = data.map((d, i) => `${i ? "L" : "M"} ${x(i)} ${y(d.value)}`).join(" ");
+  const areaPath = path + ` L ${x(data.length - 1)} ${padding.top + innerH} L ${x(0)} ${padding.top + innerH} Z`;
+  const ticks = [0, 0.25, 0.5, 0.75, 1];
+  return (
+    <div style={{ position: "relative" }} onMouseLeave={() => setHover(null)}>
+      <svg viewBox={`0 0 ${W} ${height}`} preserveAspectRatio="none" style={{ width: "100%", height, display: "block" }}>
+        {ticks.map((t, i) => (
+          <g key={i}>
+            <line x1={padding.left} x2={W - padding.right} y1={padding.top + innerH * (1 - t)} y2={padding.top + innerH * (1 - t)}
+              stroke="var(--border)" strokeDasharray={t === 0 ? "" : "2 3"} />
+            <text x={padding.left - 8} y={padding.top + innerH * (1 - t) + 3} fontSize="10" fill="var(--text-muted)" textAnchor="end" fontFamily="var(--font-mono)">
+              {format(maxV * t)}
+            </text>
+          </g>
+        ))}
+        <path d={areaPath} fill={color} opacity="0.12" />
+        <path d={path} fill="none" stroke={color} strokeWidth="2" />
+        {data.map((d, i) => (
+          <g key={i}>
+            <circle cx={x(i)} cy={y(d.value)} r={hover === i ? 5 : 0} fill={color} />
+            {i % Math.max(1, Math.ceil(data.length / 8)) === 0 && (
+              <text x={x(i)} y={height - 10} fontSize="10" fill="var(--text-muted)" textAnchor="middle">{xLabel(d, i)}</text>
+            )}
+            <rect x={x(i) - innerW / data.length / 2} y={padding.top} width={innerW / data.length} height={innerH} fill="transparent"
+              onMouseEnter={() => setHover(i)} />
+          </g>
+        ))}
+      </svg>
+      {hover !== null && (
+        <div style={{
+          position: "absolute",
+          left: `${(x(hover) / W) * 100}%`,
+          top: 4,
+          transform: "translate(-50%, 0)",
+          background: "var(--text)",
+          color: "var(--panel)",
+          padding: "5px 9px",
+          borderRadius: 4,
+          fontSize: 11,
+          fontVariantNumeric: "tabular-nums",
+          pointerEvents: "none",
+          whiteSpace: "nowrap",
+          boxShadow: "var(--shadow)",
+        }}>
+          <div style={{ fontWeight: 600 }}>{xLabel(data[hover], hover)}</div>
+          <div>{format(data[hover].value)}</div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ============ Ring chart (donut) ============
+function Ring({ value, max, color = "#0F3D2E", size = 100, label, sub }: { value: number; max: number; color?: string; size?: number; label: string; sub?: string }) {
+  const r = (size - 12) / 2;
+  const c = 2 * Math.PI * r;
+  const pct = max > 0 ? Math.min(1, value / max) : 0;
+  return (
+    <div style={{ width: size, height: size, position: "relative" }}>
+      <svg width={size} height={size}>
+        <circle cx={size / 2} cy={size / 2} r={r} stroke="var(--panel-sub)" strokeWidth="8" fill="none" />
+        <circle cx={size / 2} cy={size / 2} r={r} stroke={color} strokeWidth="8" fill="none"
+          strokeDasharray={`${c * pct} ${c}`} strokeLinecap="round"
+          transform={`rotate(-90 ${size / 2} ${size / 2})`} />
+      </svg>
+      <div style={{ position: "absolute", inset: 0, display: "grid", placeItems: "center", textAlign: "center" }}>
+        <div>
+          <div className="num" style={{ fontSize: 16, fontWeight: 700, lineHeight: 1 }}>{label}</div>
+          {sub && <div className="muted" style={{ fontSize: 10, marginTop: 2 }}>{sub}</div>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ============ Bar chart simple ============
 function BarChart({ data, height = 200 }: { data: { label: string; value: number }[]; height?: number }) {
   if (!data.length) return null;
@@ -283,6 +381,31 @@ export default function AdminPage() {
     return [...map.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8).map(([label, value]) => ({ label, value }));
   }, [pedidosRango]);
 
+  // Series de tiempo (días entre from y to)
+  const serieDias = useMemo(() => {
+    const result: { date: string; pedidos: number; ingresos: number; frascos: number }[] = [];
+    const start = new Date(from + "T12:00:00");
+    const end = new Date(to + "T12:00:00");
+    for (let d = new Date(start); d <= end; d.setUTCDate(d.getUTCDate() + 1)) {
+      const dateStr = d.toISOString().slice(0, 10);
+      const dayOrders = pedidos.filter((p) => fechaBogota(p.creadoEn) === dateStr && p.estado !== "cancelado");
+      result.push({
+        date: dateStr,
+        pedidos: dayOrders.length,
+        ingresos: dayOrders.reduce((a, p) => a + p.total, 0),
+        frascos: dayOrders.reduce((a, p) => a + p.cantidad, 0),
+      });
+    }
+    return result;
+  }, [pedidos, from, to]);
+
+  // Distribución por cantidad de frascos
+  const distribFrascos = useMemo(() => {
+    const map: Record<number, number> = {};
+    for (const p of pedidosRango) map[p.cantidad] = (map[p.cantidad] || 0) + 1;
+    return Object.entries(map).map(([k, v]) => ({ label: `${k} frasco${Number(k) > 1 ? "s" : ""}`, value: v })).sort((a, b) => Number(b.label[0]) - Number(a.label[0]));
+  }, [pedidosRango]);
+
   const presetActivo = presetsRango().find((p) => p.from === from && p.to === to);
 
   const TABS: { id: TabId; label: string; icon: string; group: string; badge?: number }[] = [
@@ -387,6 +510,8 @@ export default function AdminPage() {
               sparkPedidos={sparkPedidos}
               sparkIngresos={sparkIngresos}
               topCiudades={topCiudades}
+              serieDias={serieDias}
+              distribFrascos={distribFrascos}
               pedidos={pedidos}
               onVerPedido={setSeleccionado}
             />
@@ -503,6 +628,8 @@ function Dashboard({
   sparkPedidos,
   sparkIngresos,
   topCiudades,
+  serieDias,
+  distribFrascos,
   pedidos,
   onVerPedido,
 }: {
@@ -514,6 +641,8 @@ function Dashboard({
   sparkPedidos: number[];
   sparkIngresos: number[];
   topCiudades: { label: string; value: number }[];
+  serieDias: { date: string; pedidos: number; ingresos: number; frascos: number }[];
+  distribFrascos: { label: string; value: number }[];
   pedidos: Pedido[];
   onVerPedido: (p: Pedido) => void;
 }) {
@@ -589,6 +718,125 @@ function Dashboard({
             ) : (
               <BarChart data={topCiudades} />
             )}
+          </div>
+        </div>
+      </div>
+
+      {/* Gráficos clave */}
+      <div className="card" style={{ marginBottom: 16 }}>
+        <div className="card-header">
+          <div className="h2">Ingresos diarios</div>
+          <span className="muted" style={{ fontSize: 11 }}>{serieDias.length} días · total {fmtCOP(ingresosRango)}</span>
+        </div>
+        <div className="card-body">
+          {serieDias.length === 0 || serieDias.every(d => d.ingresos === 0) ? (
+            <div className="muted" style={{ textAlign: "center", padding: 30 }}>Sin datos en el rango</div>
+          ) : (
+            <LineChart
+              data={serieDias.map(d => ({ label: d.date.slice(5), value: d.ingresos }))}
+              height={220}
+              color="#16A34A"
+              format={(v) => "$" + (v >= 1000000 ? (v / 1000000).toFixed(1) + "M" : v >= 1000 ? Math.round(v / 1000) + "k" : Math.round(v))}
+              xLabel={(d) => d.label}
+            />
+          )}
+        </div>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 16, marginBottom: 16 }}>
+        <div className="card">
+          <div className="card-header">
+            <div className="h2">Pedidos diarios</div>
+            <span className="muted" style={{ fontSize: 11 }}>{pedidosRango.length} pedidos · promedio {serieDias.length ? (pedidosRango.length / serieDias.length).toFixed(1) : 0}/día</span>
+          </div>
+          <div className="card-body">
+            {serieDias.length === 0 || serieDias.every(d => d.pedidos === 0) ? (
+              <div className="muted" style={{ textAlign: "center", padding: 30 }}>Sin datos en el rango</div>
+            ) : (
+              <LineChart
+                data={serieDias.map(d => ({ label: d.date.slice(5), value: d.pedidos }))}
+                height={200}
+                color="#0F3D2E"
+                format={(v) => String(Math.round(v))}
+                xLabel={(d) => d.label}
+              />
+            )}
+          </div>
+        </div>
+
+        <div className="card">
+          <div className="card-header">
+            <div className="h2">Distribución de pedidos</div>
+          </div>
+          <div className="card-body" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {distribFrascos.length === 0 ? (
+              <div className="muted" style={{ textAlign: "center", padding: 30 }}>Sin datos</div>
+            ) : (
+              distribFrascos.map((d, i) => {
+                const pct = (d.value / pedidosRango.length) * 100;
+                const colors = ["#0F3D2E", "#635BFF", "#D97706"];
+                return (
+                  <div key={d.label}>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginBottom: 4 }}>
+                      <span style={{ fontWeight: 500 }}>{d.label}</span>
+                      <span className="num"><strong>{d.value}</strong> · {pct.toFixed(0)}%</span>
+                    </div>
+                    <div style={{ height: 8, background: "var(--panel-sub)", borderRadius: 4, overflow: "hidden" }}>
+                      <div style={{ width: `${pct}%`, height: "100%", background: colors[i % 3], borderRadius: 4 }} />
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Conversiones key (rings) */}
+      <div className="card" style={{ marginBottom: 16 }}>
+        <div className="card-header">
+          <div className="h2">Métricas clave del embudo</div>
+        </div>
+        <div className="card-body" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 18, justifyItems: "center" }}>
+          <div style={{ textAlign: "center" }}>
+            <Ring
+              value={stats?.aperturasTotal ?? 0}
+              max={stats?.visitasTotal ?? 0}
+              color="#635BFF"
+              label={stats?.visitasTotal ? `${(((stats.aperturasTotal ?? 0) / stats.visitasTotal) * 100).toFixed(1)}%` : "—"}
+              sub={`${stats?.aperturasTotal ?? 0} / ${stats?.visitasTotal ?? 0}`}
+            />
+            <div className="label" style={{ marginTop: 8 }}>Visita → Form</div>
+          </div>
+          <div style={{ textAlign: "center" }}>
+            <Ring
+              value={stats?.total ?? 0}
+              max={stats?.aperturasTotal ?? 0}
+              color="#16A34A"
+              label={stats?.aperturasTotal ? `${(((stats.total ?? 0) / stats.aperturasTotal) * 100).toFixed(1)}%` : "—"}
+              sub={`${stats?.total ?? 0} / ${stats?.aperturasTotal ?? 0}`}
+            />
+            <div className="label" style={{ marginTop: 8 }}>Form → Pedido</div>
+          </div>
+          <div style={{ textAlign: "center" }}>
+            <Ring
+              value={stats?.total ?? 0}
+              max={stats?.visitasTotal ?? 0}
+              color="#D97706"
+              label={stats?.visitasTotal ? `${(((stats.total ?? 0) / stats.visitasTotal) * 100).toFixed(2)}%` : "—"}
+              sub={`${stats?.total ?? 0} / ${stats?.visitasTotal ?? 0}`}
+            />
+            <div className="label" style={{ marginTop: 8 }}>Conversión total</div>
+          </div>
+          <div style={{ textAlign: "center" }}>
+            <Ring
+              value={frascosRango}
+              max={pedidosRango.length * 3}
+              color="#7C3AED"
+              label={pedidosRango.length ? (frascosRango / pedidosRango.length).toFixed(2) : "—"}
+              sub={`${frascosRango} frascos / ${pedidosRango.length} pedidos`}
+            />
+            <div className="label" style={{ marginTop: 8 }}>Frascos por pedido</div>
           </div>
         </div>
       </div>
