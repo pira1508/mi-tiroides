@@ -24,6 +24,7 @@ type BotRow = {
   transportadora?: string;
   creado_en: string;
   actualizado_en?: string;
+  variant?: string | null;
 };
 
 function fechaBogota(iso: string): string {
@@ -65,6 +66,31 @@ export async function GET() {
     estado: row.estado,
   }));
 
+  // A/B Testing: agrupar por variant
+  const v1Rows = rows.filter((r) => r.variant === "v1" && r.estado !== "cancelado");
+  const v2Rows = rows.filter((r) => r.variant === "v2" && r.estado !== "cancelado");
+
+  const ab = {
+    v1: {
+      visitasHoy: 0,
+      aperturasHoy: 0,
+      pedidosHoy: 0,
+      visitasTotal: 0, // TODO: traer del bot cuando exponga eventos
+      aperturasTotal: 0,
+      pedidosTotal: v1Rows.length,
+      ingresos: v1Rows.reduce((a, r) => a + Number(r.total || 0), 0),
+    },
+    v2: {
+      visitasHoy: 0,
+      aperturasHoy: 0,
+      pedidosHoy: 0,
+      visitasTotal: 0,
+      aperturasTotal: 0,
+      pedidosTotal: v2Rows.length,
+      ingresos: v2Rows.reduce((a, r) => a + Number(r.total || 0), 0),
+    },
+  };
+
   const stats = {
     total: pedidos.length,
     nuevos: pedidos.filter((p) => p.estado === "nuevo").length,
@@ -79,7 +105,7 @@ export async function GET() {
     visitasTotal: 0,
     aperturasTotal: 0,
     rango: { from: "", to: "", hoy: fechaBogota(new Date().toISOString()) },
-    ab: undefined,
+    ab,
   };
 
   return NextResponse.json({ pedidos, stats });

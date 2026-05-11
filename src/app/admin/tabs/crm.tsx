@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type Thread = {
   id: string;
@@ -14,25 +14,95 @@ type Thread = {
   status: "lead" | "comprador" | "soporte";
 };
 
-const SEED_THREADS: Thread[] = [];
+type Message = { from: "bot" | "cliente"; text: string; time: string };
 
-const MOCK_MESSAGES: Record<string, { from: "bot" | "cliente"; text: string; time: string }[]> = {};
+function formatTime(iso: string) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  return d.toLocaleString("es-CO", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit" });
+}
 
 export function CRM() {
-  const [threads] = useState(SEED_THREADS);
+  const [threads, setThreads] = useState<Thread[]>([]);
   const [activeId, setActiveId] = useState<string>("");
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [draft, setDraft] = useState("");
+  const [loadingT, setLoadingT] = useState(true);
+  const [sending, setSending] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Cargar bandeja
+  async function cargarThreads() {
+    try {
+      const r = await fetch("/api/admin/conversaciones", { cache: "no-store" });
+      if (!r.ok) return;
+      const data = (await r.json()) as Thread[];
+      setThreads(data);
+    } finally {
+      setLoadingT(false);
+    }
+  }
+
+  useEffect(() => {
+    cargarThreads();
+    const t = setInterval(cargarThreads, 15000);
+    return () => clearInterval(t);
+  }, []);
+
+  // Cargar mensajes del thread activo
+  async function cargarMensajes(phone: string) {
+    const r = await fetch(`/api/admin/conversaciones?telefono=${encodeURIComponent(phone)}`, { cache: "no-store" });
+    if (!r.ok) return;
+    const data = (await r.json()) as Message[];
+    setMessages(data);
+    setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight }), 50);
+  }
+
+  useEffect(() => {
+    if (!activeId) return;
+    cargarMensajes(activeId);
+    const t = setInterval(() => cargarMensajes(activeId), 5000);
+    return () => clearInterval(t);
+  }, [activeId]);
+
+  async function enviar() {
+    if (!draft.trim() || !activeId) return;
+    setSending(true);
+    try {
+      const r = await fetch("/api/admin/conversaciones", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ telefono: activeId, texto: draft.trim() }),
+      });
+      if (r.ok) {
+        setDraft("");
+        await cargarMensajes(activeId);
+      }
+    } finally {
+      setSending(false);
+    }
+  }
+
   const active = threads.find((t) => t.id === activeId);
-  const messages = MOCK_MESSAGES[activeId] || [];
+
+  if (loadingT) {
+    return (
+      <div className="card">
+        <div className="card-body" style={{ padding: 60, textAlign: "center" }}>
+          <div className="muted">Cargando bandeja…</div>
+        </div>
+      </div>
+    );
+  }
 
   if (threads.length === 0) {
     return (
       <div className="card">
         <div className="card-body" style={{ padding: 60, textAlign: "center" }}>
           <div style={{ fontSize: 36, marginBottom: 8 }}>💬</div>
-          <div className="h2" style={{ marginBottom: 6 }}>CRM WhatsApp · sin integración aún</div>
+          <div className="h2" style={{ marginBottom: 6 }}>Aún no hay conversaciones</div>
           <div className="muted" style={{ fontSize: 13, maxWidth: 480, margin: "0 auto" }}>
-            Aquí verás las conversaciones reales del bot-confirmador con clientes.
-            Pendiente: conectar API <code className="mono">/admin/conversaciones</code> del VPS.
+            Cuando un cliente le escriba al bot por WhatsApp aparecerá acá.
           </div>
         </div>
       </div>
@@ -46,7 +116,7 @@ export function CRM() {
         <div className="card-header" style={{ borderRadius: 0 }}>
           <div className="h2">Bandeja</div>
           <span className="pill success" style={{ marginLeft: "auto" }}>
-            <span className="dot" /> WhatsApp
+            <span className="dot" /> WhatsApp · {threads.length}
           </span>
         </div>
         <div className="crm-chat-list">
@@ -57,17 +127,16 @@ export function CRM() {
               onClick={() => setActiveId(t.id)}
             >
               <div className="chat-avatar" style={{ background: t.color }}>
-                {t.name.split(" ").map((n) => n[0]).slice(0, 2).join("")}
+                {t.name.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase()}
               </div>
               <div className="chat-meta">
                 <div className="chat-name">
                   <span>{t.name}</span>
-                  <span className="chat-time">{t.lastTime}</span>
+                  <span className="chat-time">{formatTime(t.lastTime)}</span>
                 </div>
                 <div className="chat-preview">{t.lastMsg}</div>
                 <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
                   <span className="muted" style={{ fontSize: 10 }}>{t.city}</span>
-                  {t.unread > 0 && <span className="chat-unread">{t.unread}</span>}
                 </div>
               </div>
             </div>
@@ -77,11 +146,11 @@ export function CRM() {
 
       {/* Conversación */}
       <div className="crm-col">
-        {active && (
+        {active ? (
           <>
             <div className="card-header" style={{ borderRadius: 0 }}>
               <div className="chat-avatar" style={{ background: active.color, width: 30, height: 30 }}>
-                {active.name.split(" ").map((n) => n[0]).slice(0, 2).join("")}
+                {active.name.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase()}
               </div>
               <div>
                 <div className="h3">{active.name}</div>
@@ -91,7 +160,7 @@ export function CRM() {
                 {active.status}
               </span>
             </div>
-            <div style={{ flex: 1, padding: 16, overflowY: "auto", display: "flex", flexDirection: "column", gap: 8 }}>
+            <div ref={scrollRef} style={{ flex: 1, padding: 16, overflowY: "auto", display: "flex", flexDirection: "column", gap: 8 }}>
               {messages.map((m, i) => (
                 <div key={i} style={{ alignSelf: m.from === "bot" ? "flex-end" : "flex-start", maxWidth: "80%" }}>
                   <div
@@ -108,13 +177,18 @@ export function CRM() {
                   >
                     {m.text}
                   </div>
-                  <div className="muted" style={{ fontSize: 10, marginTop: 2, textAlign: m.from === "bot" ? "right" : "left" }}>{m.time}</div>
+                  <div className="muted" style={{ fontSize: 10, marginTop: 2, textAlign: m.from === "bot" ? "right" : "left" }}>{formatTime(m.time)}</div>
                 </div>
               ))}
+              {messages.length === 0 && <div className="muted" style={{ textAlign: "center", marginTop: 40 }}>Sin mensajes aún</div>}
             </div>
             <div style={{ padding: 12, borderTop: "1px solid var(--border)", display: "flex", gap: 8 }}>
               <input
-                placeholder="Escribir respuesta..."
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); enviar(); } }}
+                placeholder="Escribir respuesta manual (saltea a Camila)..."
+                disabled={sending}
                 style={{
                   flex: 1,
                   padding: "8px 12px",
@@ -124,9 +198,15 @@ export function CRM() {
                   fontSize: 13,
                 }}
               />
-              <button className="btn primary">Enviar</button>
+              <button className="btn primary" onClick={enviar} disabled={sending || !draft.trim()}>
+                {sending ? "Enviando…" : "Enviar"}
+              </button>
             </div>
           </>
+        ) : (
+          <div style={{ padding: 60, textAlign: "center" }} className="muted">
+            Seleccioná una conversación de la izquierda
+          </div>
         )}
       </div>
 
@@ -161,15 +241,6 @@ export function CRM() {
                 <span className={`pill ${active.status === "comprador" ? "success" : active.status === "soporte" ? "warning" : "accent"}`}>
                   {active.status}
                 </span>
-              </div>
-              <div style={{ borderTop: "1px solid var(--border)", paddingTop: 14 }}>
-                <div className="label" style={{ marginBottom: 8 }}>Acciones rápidas</div>
-                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                  <button className="btn">📞 Llamar</button>
-                  <button className="btn">📋 Copiar datos envío</button>
-                  <button className="btn">🏷️ Marcar como comprador</button>
-                  <button className="btn danger">⛔ Bloquear</button>
-                </div>
               </div>
             </div>
           </>
