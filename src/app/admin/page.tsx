@@ -1120,8 +1120,36 @@ function VariantCard({ letter, label, url, data, color, highlight }: { letter: s
 }
 
 // ============ TAB: ADS MANAGER ============
+type CampaignRow = {
+  id: string;
+  name: string;
+  variant: "A" | "B" | "—";
+  spend: number;
+  impressions: number;
+  clicks: number;
+  ctr: number;
+  cpc: number;
+  cpm: number;
+  reach: number;
+  frequency: number;
+  landingPageViews: number;
+  initiateCheckout: number;
+  leads: number;
+  purchases: number;
+  value: number;
+  roas: number;
+  cpa: number;
+};
+
+type AdsResp = {
+  spend: number; impressions: number; clicks: number; purchases: number; value: number;
+  roas: number; cpa: number; ctr: number; cpc: number;
+  landingPageViews: number; initiateCheckout: number;
+  campaigns: CampaignRow[]; note?: string;
+};
+
 function AdsManager() {
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<AdsResp | null>(null);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
 
@@ -1134,26 +1162,56 @@ function AdsManager() {
 
   if (loading) return <div className="card"><div className="card-body" style={{ padding: 40, textAlign: "center" }}>Cargando Meta Ads…</div></div>;
 
-  if (err) {
+  if (err || !data) {
     return (
       <div className="card">
         <div className="card-header"><div className="h2"><Icon name="fb" size={14} /> Meta Ads</div></div>
         <div className="card-body">
           <div style={{ color: "var(--text-sub)", marginBottom: 12 }}>{err}</div>
-          <div className="muted" style={{ fontSize: 12 }}>
-            Para activar esta pestaña, crea <code className="mono">/api/admin/ads</code> con el endpoint de Meta Marketing API usando las env vars:
-          </div>
-          <pre className="mono" style={{ background: "var(--panel-sub)", padding: 12, borderRadius: 6, fontSize: 11, marginTop: 8 }}>
-{`META_ACCESS_TOKEN=...
-META_AD_ACCOUNT_ID=act_598280937285029`}
-          </pre>
         </div>
       </div>
     );
   }
 
+  const campaigns = data.campaigns ?? [];
+  // Agregados por variant
+  const sumBy = (variant: "A" | "B") => campaigns.filter((c) => c.variant === variant).reduce(
+    (acc, c) => ({
+      spend: acc.spend + c.spend, impr: acc.impr + c.impressions, clicks: acc.clicks + c.clicks,
+      lpv: acc.lpv + c.landingPageViews, ic: acc.ic + c.initiateCheckout, purchases: acc.purchases + c.purchases,
+      value: acc.value + c.value,
+    }), { spend: 0, impr: 0, clicks: 0, lpv: 0, ic: 0, purchases: 0, value: 0 }
+  );
+  const A = sumBy("A");
+  const B = sumBy("B");
+  const variantCard = (label: "A" | "B", v: typeof A, color: string) => (
+    <div className="card">
+      <div className="card-header" style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <div style={{ width: 32, height: 32, borderRadius: 8, background: color, color: "#fff", display: "grid", placeItems: "center", fontWeight: 700 }}>
+          {label}
+        </div>
+        <div style={{ flex: 1 }}>
+          <div className="h2">CBO MI TIROIDES{label === "B" ? " #2" : ""}</div>
+          <div className="muted" style={{ fontSize: 11 }}>Variante {label}</div>
+        </div>
+        <strong className="num" style={{ color: "var(--success)" }}>
+          ROAS {v.spend > 0 ? (v.value / v.spend).toFixed(2) : "—"}x
+        </strong>
+      </div>
+      <div className="card-body" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
+        <MiniStat n={v.impr} label="Impresiones" />
+        <MiniStat n={v.clicks} label="Clicks" sub={v.impr ? ((v.clicks / v.impr) * 100).toFixed(2) + "%" : "—"} />
+        <MiniStat n={v.lpv} label="Landing PV" sub={v.clicks ? ((v.lpv / v.clicks) * 100).toFixed(1) + "%" : "—"} />
+        <MiniStat n={v.ic} label="Init checkout" sub={v.lpv ? ((v.ic / v.lpv) * 100).toFixed(1) + "%" : "—"} />
+        <MiniStat n={v.purchases} label="Compras" sub={v.ic ? ((v.purchases / v.ic) * 100).toFixed(1) + "%" : "—"} />
+        <MiniStat n={v.purchases > 0 ? Math.round(v.spend / v.purchases) : 0} label="CPA" sub={fmtCOP(v.spend)} />
+      </div>
+    </div>
+  );
+
   return (
     <>
+      {/* KPIs agregados */}
       <div className="kpi-grid" style={{ marginBottom: 16 }}>
         <Kpi label="Gasto" value={fmtCOP(data.spend || 0)} />
         <Kpi label="ROAS" value={(data.roas || 0).toFixed(2) + "x"} accent="success" />
@@ -1162,7 +1220,66 @@ META_AD_ACCOUNT_ID=act_598280937285029`}
         <Kpi label="CTR" value={(data.ctr || 0).toFixed(2) + "%"} />
         <Kpi label="CPC" value={fmtCOP(data.cpc || 0)} />
       </div>
-      {data.note && <div className="card"><div className="card-body muted">{data.note}</div></div>}
+
+      {/* Embudo A vs B */}
+      <h3 style={{ fontSize: 13, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 10 }}>
+        Embudo por variante
+      </h3>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 18 }}>
+        {variantCard("A", A, "#635BFF")}
+        {variantCard("B", B, "#0F3D2E")}
+      </div>
+
+      {/* Tabla de campañas con embudo completo */}
+      <div className="card">
+        <div className="card-header">
+          <div className="h2">Campañas Meta Ads</div>
+          <span className="muted" style={{ fontSize: 11 }}>{campaigns.length} campañas</span>
+        </div>
+        <div className="card-body tight" style={{ overflowX: "auto" }}>
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Campaña</th>
+                <th>Var</th>
+                <th className="t-right">Gasto</th>
+                <th className="t-right">Impr</th>
+                <th className="t-right">Clicks</th>
+                <th className="t-right">CTR</th>
+                <th className="t-right">LPV</th>
+                <th className="t-right">IC</th>
+                <th className="t-right">Compras</th>
+                <th className="t-right">CPA</th>
+                <th className="t-right">ROAS</th>
+              </tr>
+            </thead>
+            <tbody>
+              {campaigns.map((c) => (
+                <tr key={c.id}>
+                  <td style={{ maxWidth: 280, overflow: "hidden", textOverflow: "ellipsis" }}>
+                    <div style={{ fontWeight: 500 }}>{c.name}</div>
+                    <div className="mono muted" style={{ fontSize: 10 }}>{c.id}</div>
+                  </td>
+                  <td>
+                    <span className={`pill ${c.variant === "A" ? "accent" : c.variant === "B" ? "brand" : ""}`}>{c.variant}</span>
+                  </td>
+                  <td className="t-right num">{fmtCOP(c.spend)}</td>
+                  <td className="t-right num">{c.impressions.toLocaleString("es-CO")}</td>
+                  <td className="t-right num">{c.clicks.toLocaleString("es-CO")}</td>
+                  <td className="t-right num">{c.ctr.toFixed(2)}%</td>
+                  <td className="t-right num">{c.landingPageViews}</td>
+                  <td className="t-right num">{c.initiateCheckout}</td>
+                  <td className="t-right num"><strong>{c.purchases}</strong></td>
+                  <td className="t-right num">{c.cpa > 0 ? fmtCOP(c.cpa) : "—"}</td>
+                  <td className="t-right num" style={{ color: c.roas >= 1 ? "var(--success)" : "var(--text-muted)" }}>
+                    <strong>{c.roas > 0 ? c.roas.toFixed(2) + "x" : "—"}</strong>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </>
   );
 }

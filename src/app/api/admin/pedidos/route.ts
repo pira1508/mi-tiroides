@@ -58,9 +58,12 @@ export async function GET() {
 
   // Eventos por variant (visitas + aperturas)
   type EventRow = { tipo: string; variant: string | null; total: number };
-  const eventos: EventRow[] = rEv && rEv.ok ? await rEv.json().catch(() => []) : [];
-  const evCount = (tipo: string, variant: string) =>
-    eventos.find((e) => e.tipo === tipo && e.variant === variant)?.total ?? 0;
+  type EventosResp = EventRow[] | { historico: EventRow[]; hoy: EventRow[] };
+  const eventosResp: EventosResp = rEv && rEv.ok ? await rEv.json().catch(() => []) : [];
+  const historico: EventRow[] = Array.isArray(eventosResp) ? eventosResp : (eventosResp.historico ?? []);
+  const hoy: EventRow[] = Array.isArray(eventosResp) ? [] : (eventosResp.hoy ?? []);
+  const evCount = (rows: EventRow[], tipo: string, variant: string) =>
+    rows.find((e) => e.tipo === tipo && e.variant === variant)?.total ?? 0;
 
   const pedidos = rows.map((row) => ({
     id: row.id,
@@ -81,23 +84,26 @@ export async function GET() {
   // A/B Testing: agrupar por variant
   const v1Rows = rows.filter((r) => r.variant === "v1" && r.estado !== "cancelado");
   const v2Rows = rows.filter((r) => r.variant === "v2" && r.estado !== "cancelado");
+  const hoyStr = fechaBogota(new Date().toISOString());
+  const v1Hoy = v1Rows.filter((r) => fechaBogota(r.creado_en) === hoyStr);
+  const v2Hoy = v2Rows.filter((r) => fechaBogota(r.creado_en) === hoyStr);
 
   const ab = {
     v1: {
-      visitasHoy: 0,
-      aperturasHoy: 0,
-      pedidosHoy: 0,
-      visitasTotal: evCount("view", "v1"),
-      aperturasTotal: evCount("open_form", "v1"),
+      visitasHoy: evCount(hoy, "view", "v1"),
+      aperturasHoy: evCount(hoy, "open_form", "v1"),
+      pedidosHoy: v1Hoy.length,
+      visitasTotal: evCount(historico, "view", "v1"),
+      aperturasTotal: evCount(historico, "open_form", "v1"),
       pedidosTotal: v1Rows.length,
       ingresos: v1Rows.reduce((a, r) => a + Number(r.total || 0), 0),
     },
     v2: {
-      visitasHoy: 0,
-      aperturasHoy: 0,
-      pedidosHoy: 0,
-      visitasTotal: evCount("view", "v2"),
-      aperturasTotal: evCount("open_form", "v2"),
+      visitasHoy: evCount(hoy, "view", "v2"),
+      aperturasHoy: evCount(hoy, "open_form", "v2"),
+      pedidosHoy: v2Hoy.length,
+      visitasTotal: evCount(historico, "view", "v2"),
+      aperturasTotal: evCount(historico, "open_form", "v2"),
       pedidosTotal: v2Rows.length,
       ingresos: v2Rows.reduce((a, r) => a + Number(r.total || 0), 0),
     },
@@ -111,12 +117,12 @@ export async function GET() {
     entregados: pedidos.filter((p) => p.estado === "entregado").length,
     cancelados: pedidos.filter((p) => p.estado === "cancelado").length,
     ingresosTotales: pedidos.filter((p) => p.estado !== "cancelado").reduce((a, p) => a + p.total, 0),
-    visitasHoy: 0,
-    aperturasHoy: 0,
-    pedidosHoy: 0,
+    visitasHoy: ab.v1.visitasHoy + ab.v2.visitasHoy,
+    aperturasHoy: ab.v1.aperturasHoy + ab.v2.aperturasHoy,
+    pedidosHoy: ab.v1.pedidosHoy + ab.v2.pedidosHoy,
     visitasTotal: ab.v1.visitasTotal + ab.v2.visitasTotal,
     aperturasTotal: ab.v1.aperturasTotal + ab.v2.aperturasTotal,
-    rango: { from: "", to: "", hoy: fechaBogota(new Date().toISOString()) },
+    rango: { from: "", to: "", hoy: hoyStr },
     ab,
   };
 
