@@ -14,29 +14,30 @@ type Thread = {
   status: "lead" | "comprador" | "soporte";
 };
 
-const SEED_THREADS: Thread[] = [
-  { id: "1", name: "Geraldine Álvarez", phone: "+57 3103564061", city: "Cali", lastMsg: "Pero eso es para que tipo de tiroides ?", lastTime: "21:14", unread: 1, color: "#635BFF", status: "lead" },
-  { id: "2", name: "María Fernández", phone: "+57 3201234567", city: "Bogotá", lastMsg: "Gracias por la atención 🙏", lastTime: "20:42", unread: 0, color: "#16A34A", status: "comprador" },
-  { id: "3", name: "Andrea Castro", phone: "+57 3115678901", city: "Medellín", lastMsg: "Confirmo el pedido de 2 frascos", lastTime: "19:30", unread: 2, color: "#D97706", status: "comprador" },
-  { id: "4", name: "Luisa Pereira", phone: "+57 3009876543", city: "Pereira", lastMsg: "¿Cuándo llega mi guía?", lastTime: "18:15", unread: 1, color: "#DB2777", status: "soporte" },
-  { id: "5", name: "Camila Restrepo", phone: "+57 3145555555", city: "Manizales", lastMsg: "Quiero saber el precio del tratamiento completo", lastTime: "17:00", unread: 0, color: "#0284C7", status: "lead" },
-];
+const SEED_THREADS: Thread[] = [];
 
-const MOCK_MESSAGES: Record<string, { from: "bot" | "cliente"; text: string; time: string }[]> = {
-  "1": [
-    { from: "cliente", text: "Hola, acabo de hacer un pedido en la página de MI TIROIDES y quiero confirmarlo.", time: "20:34" },
-    { from: "bot", text: "Hola buenas noches, ¿cómo estás? Soy parte del equipo de MI TIROIDES", time: "21:11" },
-    { from: "bot", text: "¿Eres Geraldine Álvarez correcto?\n573103564061\nCalle 53 No. 123-103 tierra linda...\n3 frasco(s) - $139.900\nConfirmas tu pedido?", time: "21:11" },
-    { from: "cliente", text: "Si", time: "21:14" },
-    { from: "cliente", text: "Pero eso es para que tipo de tiroides ?", time: "21:14" },
-  ],
-};
+const MOCK_MESSAGES: Record<string, { from: "bot" | "cliente"; text: string; time: string }[]> = {};
 
 export function CRM() {
   const [threads] = useState(SEED_THREADS);
-  const [activeId, setActiveId] = useState<string>("1");
+  const [activeId, setActiveId] = useState<string>("");
   const active = threads.find((t) => t.id === activeId);
   const messages = MOCK_MESSAGES[activeId] || [];
+
+  if (threads.length === 0) {
+    return (
+      <div className="card">
+        <div className="card-body" style={{ padding: 60, textAlign: "center" }}>
+          <div style={{ fontSize: 36, marginBottom: 8 }}>💬</div>
+          <div className="h2" style={{ marginBottom: 6 }}>CRM WhatsApp · sin integración aún</div>
+          <div className="muted" style={{ fontSize: 13, maxWidth: 480, margin: "0 auto" }}>
+            Aquí verás las conversaciones reales del bot-confirmador con clientes.
+            Pendiente: conectar API <code className="mono">/admin/conversaciones</code> del VPS.
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="crm-grid">

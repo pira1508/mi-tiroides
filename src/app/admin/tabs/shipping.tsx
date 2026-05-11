@@ -1,48 +1,22 @@
 "use client";
 
-const CARRIERS = [
-  {
-    id: "hoko",
-    name: "Hoko Envíos",
-    color: "#635BFF",
-    sla: "24-48h",
-    activos: 14,
-    entregados: 86,
-    novedades: 2,
-    tasaExito: 94.5,
-  },
-  {
-    id: "envia",
-    name: "Envía",
-    color: "#0284C7",
-    sla: "48-72h",
-    activos: 9,
-    entregados: 54,
-    novedades: 4,
-    tasaExito: 89.2,
-  },
-  {
-    id: "interrap",
-    name: "Interrapidísimo",
-    color: "#D97706",
-    sla: "24-72h",
-    activos: 11,
-    entregados: 71,
-    novedades: 1,
-    tasaExito: 96.1,
-  },
-];
-
-const GUIAS_ACTIVAS = [
-  { guia: "HK7723", carrier: "Hoko", cliente: "María García", destino: "Bogotá", estado: "En tránsito", horas: 18 },
-  { guia: "EN8821334", carrier: "Envía", cliente: "Luis Rodríguez", destino: "Medellín", estado: "Empacado", horas: 4 },
-  { guia: "IR99231", carrier: "Interrapidísimo", cliente: "Andrea López", destino: "Cali", estado: "En reparto", horas: 32 },
-  { guia: "HK7700", carrier: "Hoko", cliente: "Laura Torres", destino: "Manizales", estado: "En reparto", horas: 28 },
-  { guia: "EN8820999", carrier: "Envía", cliente: "Sebastián Vargas", destino: "Ibagué", estado: "Entregado", horas: 65 },
-  { guia: "IR99000", carrier: "Interrapidísimo", cliente: "Valentina Mejía", destino: "Neiva", estado: "Novedad", horas: 48 },
-];
+const CARRIERS: { id: string; name: string; color: string; sla: string; activos: number; entregados: number; novedades: number; tasaExito: number }[] = [];
+const GUIAS_ACTIVAS: { guia: string; carrier: string; cliente: string; destino: string; estado: string; horas: number }[] = [];
 
 export function Shipping() {
+  if (CARRIERS.length === 0) {
+    return (
+      <div className="card">
+        <div className="card-body" style={{ padding: 60, textAlign: "center" }}>
+          <div style={{ fontSize: 36, marginBottom: 8 }}>🚚</div>
+          <div className="h2" style={{ marginBottom: 6 }}>Transportadora · sin integración aún</div>
+          <div className="muted" style={{ fontSize: 13, maxWidth: 480, margin: "0 auto" }}>
+            Pendiente: conectar APIs de Hoko Envíos, Envía e Interrapidísimo para mostrar guías y SLA en tiempo real.
+          </div>
+        </div>
+      </div>
+    );
+  }
   return (
     <>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14, marginBottom: 16 }}>

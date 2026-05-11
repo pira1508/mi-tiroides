@@ -29,17 +29,7 @@ const STAGES: { id: PipelineOrder["stage"]; label: string; color: string }[] = [
   { id: "devuelto", label: "Devuelto", color: "#94A3B8" },
 ];
 
-const MOCK_PIPELINE: PipelineOrder[] = [
-  { id: "PIRA-10031", customer: "María García", city: "Bogotá", carrier: "hoko", stage: "nuevo" },
-  { id: "PIRA-10030", customer: "Luis Rodríguez", city: "Medellín", carrier: "envia", stage: "confirmado", guia: "EN8821334" },
-  { id: "PIRA-10029", customer: "Andrea López", city: "Cali", carrier: "interrap", stage: "empacado", guia: "IR99231" },
-  { id: "PIRA-10028", customer: "Carlos Pérez", city: "Cartagena", carrier: "hoko", stage: "recogido", guia: "HK7723" },
-  { id: "PIRA-10027", customer: "Diana Ramírez", city: "Bucaramanga", carrier: "envia", stage: "transito", guia: "EN8821112" },
-  { id: "PIRA-10026", customer: "Felipe Gómez", city: "Pereira", carrier: "interrap", stage: "transito", guia: "IR99100" },
-  { id: "PIRA-10025", customer: "Laura Torres", city: "Manizales", carrier: "hoko", stage: "reparto", guia: "HK7700" },
-  { id: "PIRA-10024", customer: "Sebastián Vargas", city: "Ibagué", carrier: "envia", stage: "entregado", guia: "EN8820999" },
-  { id: "PIRA-10023", customer: "Valentina Mejía", city: "Neiva", carrier: "interrap", stage: "novedad", guia: "IR99000" },
-];
+const MOCK_PIPELINE: PipelineOrder[] = [];
 
 export function Pipeline() {
   const [filterCarrier, setFilterCarrier] = useState<"todas" | keyof typeof CARRIERS>("todas");
