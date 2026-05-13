@@ -267,15 +267,40 @@ function SheetLayout({
               </tr>
             </thead>
             <tbody>
-              {/* Producto */}
-              <ItemRow
-                label="Producto"
-                value={inputs.costoProducto}
-                onChange={(v) => upd({ costoProducto: v })}
-                readonly={readonlyInputs.has("costoProducto")}
-                precioEstab={inputs.precioEstablecido}
-                ajustado={inputs.costoProducto * (1 + results.inefectividad) - inputs.costoProducto}
-              />
+              {/* Producto: el VALOR mostrado es el costo PROMEDIO por pedido
+                  = (costoUnitario × unidadesDespachadas) / pedidosDespachados.
+                  Tiene tooltip con el desglose y el costo unitario sigue editable abajo. */}
+              {(() => {
+                const unidadesPorPedido = results.pedidosDespachados > 0
+                  ? results.costoProductoTotal / inputs.costoProducto / results.pedidosDespachados
+                  : (inputs.pedidosFacturados > 0 ? inputs.unidadesFacturadas / inputs.pedidosFacturados : 1);
+                const costoProductoPorPedido = inputs.costoProducto * unidadesPorPedido;
+                const tooltip = `${fmtCOP(inputs.costoProducto)} × ${unidadesPorPedido.toFixed(2)} frascos/pedido = ${fmtCOP(costoProductoPorPedido)} promedio por pedido`;
+                return (
+                  <tr title={tooltip}>
+                    <Td align="left">
+                      Producto
+                      <span style={{ marginLeft: 6, color: "#888", fontSize: 11 }}>(prom/pedido)</span>
+                    </Td>
+                    <Td yellow={!readonlyInputs.has("costoProducto")}>
+                      {readonlyInputs.has("costoProducto") ? (
+                        <span>{fmtCOP(costoProductoPorPedido)}</span>
+                      ) : (
+                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                          <span style={{ fontWeight: 700 }}>{fmtCOP(costoProductoPorPedido)}</span>
+                          <span style={{ color: "#777", fontSize: 10, whiteSpace: "nowrap" }}>
+                            (unit: <input type="number" step={100} value={inputs.costoProducto}
+                              onChange={(e) => upd({ costoProducto: parseFloat(e.target.value) || 0 })}
+                              style={{ ...cellInputStyle, width: 60, textAlign: "right" }} />)
+                          </span>
+                        </div>
+                      )}
+                    </Td>
+                    <Td>{fmtPct0(costoProductoPorPedido / Math.max(inputs.precioEstablecido, 1))}</Td>
+                    <Td>{fmtCOP(costoProductoPorPedido * (1 + results.inefectividad))}</Td>
+                  </tr>
+                );
+              })()}
               {/* Flete */}
               <ItemRow
                 label="Flete Promedio"
