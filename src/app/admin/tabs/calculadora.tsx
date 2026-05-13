@@ -75,14 +75,16 @@ export function Calculadora() {
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
       const data = (await r.json()) as RealData;
       setRealData(data);
-      // Re-hidratar realInputs con los valores reales
+      // Re-hidratar realInputs con los valores reales (TODO lo que viene de DB/Meta)
       setRealInputs((prev) => ({
         ...prev,
         pedidosFacturados: data.pedidos.facturados,
         unidadesFacturadas: data.unidades.facturadas,
         tasaDespachos: data.pedidos.facturados > 0 ? data.pedidos.despachados / data.pedidos.facturados : prev.tasaDespachos,
         tasaDevolucion: data.pedidos.despachados > 0 ? data.pedidos.devueltos / data.pedidos.despachados : prev.tasaDevolucion,
-        pautaGastada: data.finanzas.pautaGastada || prev.pautaGastada,
+        pautaGastada: data.finanzas.pautaGastada || 0,
+        // AOV real del período como precio establecido (no el default $89.900)
+        precioEstablecido: data.finanzas.ticketPromedio > 0 ? Math.round(data.finanzas.ticketPromedio) : prev.precioEstablecido,
       }));
     } catch (e) {
       setErr(e instanceof Error ? e.message : "error");
@@ -122,8 +124,8 @@ export function Calculadora() {
         inputs={activeInputs}
         setInputs={setActiveInputs}
         results={results}
-        readonlyInputs={subtab === "real" ? new Set<keyof CalcInputs>(["pedidosFacturados", "unidadesFacturadas", "tasaDespachos", "tasaDevolucion", "pautaGastada"]) : new Set()}
-        labelExtra={subtab === "real" ? "(amarillo = costos editables · gris = de DB / Meta)" : "(amarillo = editable)"}
+        readonlyInputs={subtab === "real" ? new Set<keyof CalcInputs>(["pedidosFacturados", "unidadesFacturadas", "tasaDespachos", "tasaDevolucion", "pautaGastada", "precioEstablecido"]) : new Set()}
+        labelExtra={subtab === "real" ? "AOV, pauta, facturados, despachos y devoluciones vienen de DB/Meta (no editables). Costos y % publicidad sí son editables." : "(amarillo = editable)"}
       />
     </div>
   );
