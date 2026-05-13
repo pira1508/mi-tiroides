@@ -190,19 +190,19 @@ const PLANES = {
     dias: "90 DÍAS · TRATAMIENTO COMPLETO",
     frascos: 2,
     label: "2 Frascos",
-    precio: 139900,
+    precio: 129900,
     original: 199800,
-    perDia: 1554,
+    perDia: 1443,
     tag: { texto: "EL MÁS COMPRADO · 8 DE CADA 10", gold: false },
   },
   "3": {
     dias: "135 DÍAS · 4,5 MESES",
     frascos: 3,
     label: "3 Frascos",
-    precio: 169900,
+    precio: 159900,
     original: 299700,
-    perDia: 1258,
-    tag: { texto: "EL MÁS BARATO · $1.258/DÍA", gold: true },
+    perDia: 1184,
+    tag: { texto: "EL MÁS BARATO · $1.184/DÍA", gold: true },
   },
 } as const;
 
@@ -478,6 +478,7 @@ export default function Page() {
       direccion: fd.get("direccion"),
       cantidad,
       variant: VARIANT,
+      total: PLANES[cantidad as Cantidad].precio,
     };
     if (!depto || !ciudad) {
       setError("Selecciona tu departamento y ciudad.");

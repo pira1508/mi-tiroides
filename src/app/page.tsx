@@ -471,6 +471,8 @@ export default function Page() {
       referencia: fd.get("referencia"),
       direccion: fd.get("direccion"),
       cantidad,
+      variant: "v1",
+      total: PLANES[cantidad as Cantidad].precio,
     };
     if (!depto || !ciudad) {
       setError("Selecciona tu departamento y ciudad.");
