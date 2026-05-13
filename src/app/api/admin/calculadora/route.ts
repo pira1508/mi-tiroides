@@ -19,6 +19,9 @@ type BotPedido = {
 };
 
 // Conjuntos de estados para clasificar pedidos
+// "cancelado" = el cliente no confirmó / no se despachó → NO cuenta como devolución,
+// solo se excluye del facturado.
+// Devolución = pedido despachado que regresó sin entregarse (pagamos flete igual).
 const ESTADOS_DESPACHADOS = new Set([
   "subido_hoko",
   "en_bodega",
@@ -32,7 +35,8 @@ const ESTADOS_DESPACHADOS = new Set([
   "devolucion",
 ]);
 const ESTADOS_ENTREGADOS = new Set(["entregado"]);
-const ESTADOS_DEVUELTOS = new Set(["devolucion", "cancelado"]);
+const ESTADOS_DEVUELTOS = new Set(["devolucion"]);
+const ESTADOS_CANCELADOS = new Set(["cancelado"]);
 
 function parseDate(s: string | null): Date | null {
   if (!s) return null;
@@ -100,19 +104,30 @@ export async function GET(req: Request) {
     ]);
 
     // Agrupar
+    // Reglas (alineadas con el sheet):
+    // - "nuevo" y "cancelado" NO cuentan como facturado. Cancelado = no se despachó.
+    // - "Facturado" = pedidos confirmados (excluyendo cancelados sin despacho).
+    // - "Despachado" = subset de facturados que salió de bodega.
+    // - "Entregado" = subset de despachados que llegó al cliente.
+    // - "Devolución" = despachado que regresó (paga flete igual).
     let totalPedidos = 0;
     let totalDespachados = 0;
     let totalEntregados = 0;
     let totalDevueltos = 0;
     let totalNovedades = 0;
+    let totalCancelados = 0;
     let facturadoBruto = 0;
     let entregadoFacturado = 0;
     let unidadesFacturadas = 0;
     let unidadesDespachadas = 0;
 
     for (const p of pedidos) {
-      // pedido nuevo NO cuenta como facturado (no confirmó)
       if (p.estado === "nuevo") continue;
+      if (ESTADOS_CANCELADOS.has(p.estado)) {
+        // Cancelado = no se confirmó / no se despachó → solo lo contamos para info.
+        totalCancelados++;
+        continue;
+      }
       totalPedidos++;
       facturadoBruto += Number(p.total) || 0;
       unidadesFacturadas += Number(p.cantidad) || 0;
@@ -142,6 +157,7 @@ export async function GET(req: Request) {
         entregados: totalEntregados,
         devueltos: totalDevueltos,
         novedades: totalNovedades,
+        cancelados: totalCancelados,
       },
       tasas: {
         despachos: tasaDespachos,
