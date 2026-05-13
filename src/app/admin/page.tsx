@@ -9,6 +9,7 @@ import { Shipping } from "./tabs/shipping";
 import { Products } from "./tabs/products";
 import { Atencion } from "./tabs/atencion";
 import { Calculadora } from "./tabs/calculadora";
+import { Novedades } from "./tabs/novedades";
 
 type Pedido = {
   id: string;
@@ -53,7 +54,7 @@ type Stats = {
   ab?: { v1?: AbStats; v2?: AbStats };
 };
 
-type TabId = "dashboard" | "live" | "ab" | "ads" | "crm" | "pipeline" | "shipping" | "products" | "atencion" | "calculadora";
+type TabId = "dashboard" | "live" | "ab" | "ads" | "crm" | "pipeline" | "shipping" | "products" | "atencion" | "calculadora" | "novedades";
 
 const ESTADOS: Pedido["estado"][] = ["nuevo", "confirmado", "despachado", "entregado", "cancelado"];
 
@@ -431,6 +432,7 @@ export default function AdminPage() {
     { id: "live", label: "Pedidos en vivo", icon: "activity", group: "Operación", badge: unreadTotal },
     { id: "pipeline", label: "Pipeline pedidos", icon: "activity", group: "Operación" },
     { id: "atencion", label: "⚠️ Atención", icon: "activity", group: "Operación", badge: atencionTotal },
+    { id: "novedades", label: "🚚 Novedades", icon: "box", group: "Operación" },
     { id: "ab", label: "A/B Testing", icon: "flask", group: "Crecimiento" },
     { id: "ads", label: "Ads Manager", icon: "target", group: "Crecimiento" },
     { id: "calculadora", label: "Calculadora", icon: "flask", group: "Crecimiento" },
@@ -572,6 +574,8 @@ export default function AdminPage() {
           {activeTab === "products" && <Products />}
 
           {activeTab === "calculadora" && <Calculadora />}
+
+          {activeTab === "novedades" && <Novedades />}
         </main>
       </div>
 
