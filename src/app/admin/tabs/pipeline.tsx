@@ -12,7 +12,7 @@ type PipelineOrder = {
   referencia?: string;
   guia?: string;
   carrier: "hoko" | "envia" | "interrap" | "—";
-  stage: "nuevo" | "confirmado" | "subido_hoko" | "guia_generada" | "empacado" | "recogido" | "transito" | "reparto" | "entregado" | "novedad" | "devuelto" | "cancelado";
+  stage: "nuevo" | "confirmado" | "subido_hoko" | "guia_generada" | "guia_activa" | "en_bodega" | "mercancia_recogida" | "en_reparto" | "entregado" | "novedad" | "devolucion" | "cancelado";
   total: number;
   cantidad: number;
   diasTratamiento?: number;
@@ -27,25 +27,27 @@ const CARRIERS = {
   interrap: { name: "Interrapidísimo", color: "#D97706" },
 };
 
+// Estados alineados con Hoko: labels y orden idénticos al panel de Hoko
 const STAGES: { id: PipelineOrder["stage"]; label: string; color: string; estadoBot: string }[] = [
-  { id: "nuevo", label: "Nuevo", color: "#D97706", estadoBot: "nuevo" },
-  { id: "confirmado", label: "Confirmado", color: "#0284C7", estadoBot: "confirmado" },
-  { id: "subido_hoko", label: "Subido a HOKO", color: "#0EA5E9", estadoBot: "subido_hoko" },
-  { id: "guia_generada", label: "Guía generada", color: "#06B6D4", estadoBot: "guia_generada" },
-  { id: "empacado", label: "Empacado", color: "#635BFF", estadoBot: "empacado" },
-  { id: "recogido", label: "Recogido", color: "#7C3AED", estadoBot: "recogido" },
-  { id: "transito", label: "En tránsito", color: "#0F3D2E", estadoBot: "despachado" },
-  { id: "reparto", label: "En reparto", color: "#DB2777", estadoBot: "en_ruta" },
-  { id: "entregado", label: "Entregado", color: "#16A34A", estadoBot: "entregado" },
-  { id: "novedad", label: "Novedad", color: "#DC2626", estadoBot: "novedad" },
-  { id: "devuelto", label: "Devuelto", color: "#94A3B8", estadoBot: "devuelto" },
-  { id: "cancelado", label: "Cancelado", color: "#64748B", estadoBot: "cancelado" },
+  { id: "nuevo",             label: "Nuevo",              color: "#D97706", estadoBot: "nuevo" },
+  { id: "confirmado",        label: "Confirmado",         color: "#0284C7", estadoBot: "confirmado" },
+  { id: "subido_hoko",       label: "Creado en Hoko",     color: "#0EA5E9", estadoBot: "subido_hoko" },
+  { id: "guia_generada",     label: "Guía generada",      color: "#06B6D4", estadoBot: "guia_generada" },
+  { id: "guia_activa",       label: "Guía activa",        color: "#635BFF", estadoBot: "guia_activa" },
+  { id: "en_bodega",         label: "En bodega",          color: "#7C3AED", estadoBot: "en_bodega" },
+  { id: "mercancia_recogida",label: "Mercancía recogida", color: "#0F3D2E", estadoBot: "despachado" },
+  { id: "en_reparto",        label: "En reparto",         color: "#DB2777", estadoBot: "en_reparto" },
+  { id: "entregado",         label: "Entregado",          color: "#16A34A", estadoBot: "entregado" },
+  { id: "novedad",           label: "Novedad",            color: "#DC2626", estadoBot: "novedad" },
+  { id: "devolucion",        label: "Devolución",         color: "#94A3B8", estadoBot: "devolucion" },
+  { id: "cancelado",         label: "Cancelado",          color: "#64748B", estadoBot: "cancelado" },
 ];
 
 function mapStage(estado: string): PipelineOrder["stage"] {
-  if (estado === "despachado") return "transito";
-  if (estado === "en_ruta") return "reparto";
-  // estados directos: nuevo, confirmado, subido_hoko, guia_generada, empacado, recogido, entregado, novedad, devuelto
+  if (estado === "despachado") return "mercancia_recogida";
+  if (estado === "en_ruta") return "en_reparto";
+  if (estado === "devuelto") return "devolucion";
+  // estados directos del bot que coinciden 1:1 con STAGES
   return (estado as PipelineOrder["stage"]) || "nuevo";
 }
 
