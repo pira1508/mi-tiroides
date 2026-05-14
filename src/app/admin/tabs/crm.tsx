@@ -29,7 +29,52 @@ export function CRM() {
   const [draft, setDraft] = useState("");
   const [loadingT, setLoadingT] = useState(true);
   const [sending, setSending] = useState(false);
+  const [botPaused, setBotPaused] = useState<boolean>(false);
+  const [togglingBot, setTogglingBot] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  async function cargarEstadoBot(phone: string) {
+    try {
+      const r = await fetch(`/api/admin/bot?telefono=${encodeURIComponent(phone)}`, { cache: "no-store" });
+      if (!r.ok) return;
+      const data = await r.json();
+      setBotPaused(!!data.paused);
+    } catch {}
+  }
+
+  async function pausarBot() {
+    if (!activeId) return;
+    setTogglingBot(true);
+    try {
+      const r = await fetch("/api/admin/bot", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ telefono: activeId, action: "pause" }),
+      });
+      if (r.ok) setBotPaused(true);
+    } finally {
+      setTogglingBot(false);
+    }
+  }
+
+  async function reanudarBot() {
+    if (!activeId) return;
+    setTogglingBot(true);
+    try {
+      const r = await fetch("/api/admin/bot", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ telefono: activeId, action: "resume" }),
+      });
+      if (r.ok) {
+        setBotPaused(false);
+        // Refrescar mensajes para mostrar la respuesta automática que Camila acaba de mandar
+        setTimeout(() => cargarMensajes(activeId), 800);
+      }
+    } finally {
+      setTogglingBot(false);
+    }
+  }
 
   // Cargar bandeja
   async function cargarThreads() {
@@ -61,6 +106,7 @@ export function CRM() {
   useEffect(() => {
     if (!activeId) return;
     cargarMensajes(activeId);
+    cargarEstadoBot(activeId);
     const t = setInterval(() => cargarMensajes(activeId), 5000);
     return () => clearInterval(t);
   }, [activeId]);
@@ -156,9 +202,32 @@ export function CRM() {
                 <div className="h3">{active.name}</div>
                 <div className="muted" style={{ fontSize: 11 }}>{active.phone} · {active.city}</div>
               </div>
-              <span className={`pill ${active.status === "comprador" ? "success" : active.status === "soporte" ? "warning" : "accent"}`} style={{ marginLeft: "auto" }}>
-                {active.status}
-              </span>
+              <div style={{ marginLeft: "auto", display: "flex", gap: 6, alignItems: "center" }}>
+                <span className={`pill ${active.status === "comprador" ? "success" : active.status === "soporte" ? "warning" : "accent"}`}>
+                  {active.status}
+                </span>
+                {botPaused ? (
+                  <button
+                    className="btn"
+                    onClick={reanudarBot}
+                    disabled={togglingBot}
+                    style={{ background: "#16A34A", color: "#fff", fontSize: 12, padding: "5px 10px" }}
+                    title="Camila lee el historial y envía la siguiente respuesta"
+                  >
+                    {togglingBot ? "..." : "▶ Activar bot"}
+                  </button>
+                ) : (
+                  <button
+                    className="btn"
+                    onClick={pausarBot}
+                    disabled={togglingBot}
+                    style={{ background: "#DC2626", color: "#fff", fontSize: 12, padding: "5px 10px" }}
+                    title="Detener respuestas automáticas de Camila"
+                  >
+                    {togglingBot ? "..." : "⏸ Pausar bot"}
+                  </button>
+                )}
+              </div>
             </div>
             <div ref={scrollRef} style={{ flex: 1, padding: 16, overflowY: "auto", display: "flex", flexDirection: "column", gap: 8 }}>
               {messages.map((m, i) => (
