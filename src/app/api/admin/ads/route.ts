@@ -67,6 +67,46 @@ const VALID_PRESETS = new Set([
   "this_month", "last_month", "maximum",
 ]);
 
+// Mapea preset de Meta a rango YYYY-MM-DD para llamar al bot.
+function presetARango(preset: string): { since: string; until: string } | null {
+  const hoy = new Date();
+  const bogotaOffsetMin = -5 * 60;
+  const ahora = new Date(hoy.getTime() + (hoy.getTimezoneOffset() - bogotaOffsetMin) * 60_000);
+  const fmt = (d: Date) => d.toISOString().slice(0, 10);
+  const restar = (n: number) => { const x = new Date(ahora); x.setDate(x.getDate() - n); return x; };
+  switch (preset) {
+    case "today": return { since: fmt(ahora), until: fmt(ahora) };
+    case "yesterday": { const y = restar(1); return { since: fmt(y), until: fmt(y) }; }
+    case "last_7d": return { since: fmt(restar(7)), until: fmt(restar(1)) };
+    case "last_14d": return { since: fmt(restar(14)), until: fmt(restar(1)) };
+    case "last_30d": return { since: fmt(restar(30)), until: fmt(restar(1)) };
+    case "last_90d": return { since: fmt(restar(90)), until: fmt(restar(1)) };
+    case "this_month": {
+      const start = new Date(ahora.getFullYear(), ahora.getMonth(), 1);
+      return { since: fmt(start), until: fmt(ahora) };
+    }
+    case "last_month": {
+      const start = new Date(ahora.getFullYear(), ahora.getMonth() - 1, 1);
+      const end = new Date(ahora.getFullYear(), ahora.getMonth(), 0);
+      return { since: fmt(start), until: fmt(end) };
+    }
+    case "maximum": return { since: "2026-01-01", until: fmt(ahora) };
+    default: return null;
+  }
+}
+
+async function pedirAlBot(since: string, until: string) {
+  const botUrl = process.env.BOT_CONFIRMADOR_URL || "https://tiroides-bot.poudman.online/pedido";
+  const botBase = botUrl.replace(/\/pedido\/?$/, "");
+  const secret = process.env.BOT_CONFIRMADOR_SECRET || "";
+  const r = await fetch(`${botBase}/admin/pedidos-rango?since=${since}&until=${until}`, {
+    cache: "no-store",
+    headers: { "x-secret": secret },
+  });
+  if (!r.ok) return null;
+  return r.json() as Promise<{ confirmados: number; frascos: number; ingresos: number; pedidos_creados: number }>;
+}
+
 export async function GET(req: Request) {
   if (!(await checkAuth())) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
@@ -179,9 +219,42 @@ export async function GET(req: Request) {
   const totalClicks = campaigns.reduce((a, c) => a + c.clicks, 0);
   const totalLPV = campaigns.reduce((a, c) => a + c.landingPageViews, 0);
   const totalIC = campaigns.reduce((a, c) => a + c.initiateCheckout, 0);
-  const totalPurchases = campaigns.reduce((a, c) => a + c.purchases, 0);
-  const totalValue = campaigns.reduce((a, c) => a + c.value, 0);
-  const totalFrascos = campaigns.reduce((a, c) => a + c.frascos, 0);
+
+  // === REEMPLAZAR purchases/frascos/value de Meta por datos REALES del bot ===
+  // Razón: el pixel de Meta infla las compras (cuenta clicks al WhatsApp como purchase).
+  // La DB del bot es la fuente de verdad: solo pedidos confirmados.
+  const rangoBot = (since && until) ? { since, until } : presetARango(preset);
+  let realPurchases = 0, realFrascos = 0, realValue = 0;
+  let usedRealData = false;
+  if (rangoBot) {
+    try {
+      const datos = await pedirAlBot(rangoBot.since, rangoBot.until);
+      if (datos) {
+        realPurchases = datos.confirmados || 0;
+        realFrascos = datos.frascos || 0;
+        realValue = datos.ingresos || 0;
+        usedRealData = true;
+      }
+    } catch {}
+  }
+
+  // Distribuir purchases/frascos/value por campaña proporcional a LPV (proxy de tráfico real)
+  // Si no hay LPV (ej. preset_today con datos aún no acumulados), usar spend como fallback
+  const totalProxy = totalLPV > 0 ? totalLPV : totalSpend;
+  if (usedRealData && totalProxy > 0) {
+    for (const c of campaigns) {
+      const share = (c.landingPageViews > 0 ? c.landingPageViews : c.spend) / totalProxy;
+      c.purchases = Math.round(realPurchases * share);
+      c.frascos = Math.round(realFrascos * share);
+      c.value = Math.round(realValue * share);
+      c.cpa = c.purchases > 0 ? Math.round(c.spend / c.purchases) : 0;
+      c.roas = c.spend > 0 ? Number((c.value / c.spend).toFixed(2)) : 0;
+    }
+  }
+
+  const totalPurchases = usedRealData ? realPurchases : campaigns.reduce((a, c) => a + c.purchases, 0);
+  const totalValue = usedRealData ? realValue : campaigns.reduce((a, c) => a + c.value, 0);
+  const totalFrascos = usedRealData ? realFrascos : campaigns.reduce((a, c) => a + c.frascos, 0);
 
   return NextResponse.json({
     spend: totalSpend,
@@ -198,5 +271,6 @@ export async function GET(req: Request) {
     initiateCheckout: totalIC,
     campaigns,
     rango: since && until ? `${since} → ${until}` : preset,
+    fuenteVentas: usedRealData ? "bot (datos reales)" : "meta (estimado)",
   });
 }

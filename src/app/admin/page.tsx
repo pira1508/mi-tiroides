@@ -1155,7 +1155,7 @@ type AdsResp = {
   roas: number; cpa: number; ctr: number; cpc: number;
   landingPageViews: number; initiateCheckout: number;
   frascos: number;
-  campaigns: CampaignRow[]; note?: string; rango?: string;
+  campaigns: CampaignRow[]; note?: string; rango?: string; fuenteVentas?: string;
 };
 
 const RANGE_PRESETS: { id: string; label: string }[] = [
@@ -1223,7 +1223,7 @@ function AdsManager() {
         ) : (
           <button onClick={() => setCustomMode(true)} className="btn" style={{ fontSize: 11, padding: "5px 10px" }}>📅 Rango personalizado</button>
         )}
-        {data?.rango && <span className="muted" style={{ marginLeft: "auto", fontSize: 11 }}>{data.rango}</span>}
+        {data?.fuenteVentas && <span className="muted" style={{ marginLeft: "auto", fontSize: 11 }}>📊 Ventas: {data.fuenteVentas}</span>}
       </div>
     </div>
   );
