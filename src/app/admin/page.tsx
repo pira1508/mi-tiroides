@@ -1147,37 +1147,100 @@ type CampaignRow = {
   value: number;
   roas: number;
   cpa: number;
+  frascos: number;
 };
 
 type AdsResp = {
   spend: number; impressions: number; clicks: number; purchases: number; value: number;
   roas: number; cpa: number; ctr: number; cpc: number;
   landingPageViews: number; initiateCheckout: number;
-  campaigns: CampaignRow[]; note?: string;
+  frascos: number;
+  campaigns: CampaignRow[]; note?: string; rango?: string;
 };
+
+const RANGE_PRESETS: { id: string; label: string }[] = [
+  { id: "today", label: "Hoy" },
+  { id: "yesterday", label: "Ayer" },
+  { id: "last_7d", label: "Últimos 7 días" },
+  { id: "last_14d", label: "Últimos 14 días" },
+  { id: "last_30d", label: "Últimos 30 días" },
+  { id: "this_month", label: "Este mes" },
+  { id: "last_month", label: "Mes pasado" },
+  { id: "maximum", label: "Todo el histórico" },
+];
 
 function AdsManager() {
   const [data, setData] = useState<AdsResp | null>(null);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
+  const [preset, setPreset] = useState<string>("last_30d");
+  const [customMode, setCustomMode] = useState(false);
+  const [since, setSince] = useState<string>("");
+  const [until, setUntil] = useState<string>("");
 
-  useEffect(() => {
-    fetch("/api/admin/ads", { cache: "no-store" })
+  function cargar() {
+    setLoading(true);
+    setErr("");
+    const params = new URLSearchParams();
+    if (customMode && since && until) {
+      params.set("since", since);
+      params.set("until", until);
+    } else {
+      params.set("preset", preset);
+    }
+    fetch(`/api/admin/ads?${params.toString()}`, { cache: "no-store" })
       .then((r) => r.ok ? r.json() : Promise.reject(r))
       .then((d) => { setData(d); setLoading(false); })
       .catch(() => { setErr("No se pudo cargar Meta Ads. Configura el token en /api/admin/ads."); setLoading(false); });
-  }, []);
+  }
 
-  if (loading) return <div className="card"><div className="card-body" style={{ padding: 40, textAlign: "center" }}>Cargando Meta Ads…</div></div>;
+  useEffect(() => {
+    cargar();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [preset, customMode, since, until]);
+
+  const filtroBar = (
+    <div className="card" style={{ marginBottom: 14 }}>
+      <div className="card-body" style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+        <div className="label" style={{ marginRight: 4 }}>Rango:</div>
+        {!customMode && RANGE_PRESETS.map((p) => (
+          <button
+            key={p.id}
+            onClick={() => { setPreset(p.id); setCustomMode(false); }}
+            className={`btn ${preset === p.id ? "primary" : ""}`}
+            style={{ fontSize: 11, padding: "5px 10px" }}
+          >
+            {p.label}
+          </button>
+        ))}
+        {customMode ? (
+          <>
+            <input type="date" value={since} onChange={(e) => setSince(e.target.value)} style={{ padding: "5px 8px", fontSize: 12, border: "1px solid var(--border)", borderRadius: 4 }} />
+            <span style={{ fontSize: 12 }}>→</span>
+            <input type="date" value={until} onChange={(e) => setUntil(e.target.value)} style={{ padding: "5px 8px", fontSize: 12, border: "1px solid var(--border)", borderRadius: 4 }} />
+            <button onClick={() => { setCustomMode(false); setSince(""); setUntil(""); }} className="btn" style={{ fontSize: 11, padding: "5px 10px" }}>Cancelar</button>
+          </>
+        ) : (
+          <button onClick={() => setCustomMode(true)} className="btn" style={{ fontSize: 11, padding: "5px 10px" }}>📅 Rango personalizado</button>
+        )}
+        {data?.rango && <span className="muted" style={{ marginLeft: "auto", fontSize: 11 }}>{data.rango}</span>}
+      </div>
+    </div>
+  );
+
+  if (loading) return <>{filtroBar}<div className="card"><div className="card-body" style={{ padding: 40, textAlign: "center" }}>Cargando Meta Ads…</div></div></>;
 
   if (err || !data) {
     return (
-      <div className="card">
-        <div className="card-header"><div className="h2"><Icon name="fb" size={14} /> Meta Ads</div></div>
-        <div className="card-body">
-          <div style={{ color: "var(--text-sub)", marginBottom: 12 }}>{err}</div>
+      <>
+        {filtroBar}
+        <div className="card">
+          <div className="card-header"><div className="h2"><Icon name="fb" size={14} /> Meta Ads</div></div>
+          <div className="card-body">
+            <div style={{ color: "var(--text-sub)", marginBottom: 12 }}>{err}</div>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
@@ -1219,14 +1282,15 @@ function AdsManager() {
 
   return (
     <>
+      {filtroBar}
       {/* KPIs agregados */}
       <div className="kpi-grid" style={{ marginBottom: 16 }}>
         <Kpi label="Gasto" value={fmtCOP(data.spend || 0)} />
         <Kpi label="ROAS" value={(data.roas || 0).toFixed(2) + "x"} accent="success" />
         <Kpi label="CPA" value={fmtCOP(data.cpa || 0)} />
         <Kpi label="Compras" value={String(data.purchases || 0)} />
+        <Kpi label="Frascos" value={String(data.frascos || 0)} />
         <Kpi label="CTR" value={(data.ctr || 0).toFixed(2) + "%"} />
-        <Kpi label="CPC" value={fmtCOP(data.cpc || 0)} />
       </div>
 
       {/* Embudo A vs B */}
@@ -1257,6 +1321,7 @@ function AdsManager() {
                 <th className="t-right">LPV</th>
                 <th className="t-right">IC</th>
                 <th className="t-right">Compras</th>
+                <th className="t-right">Frascos</th>
                 <th className="t-right">CPA</th>
                 <th className="t-right">ROAS</th>
               </tr>
@@ -1278,6 +1343,7 @@ function AdsManager() {
                   <td className="t-right num">{c.landingPageViews}</td>
                   <td className="t-right num">{c.initiateCheckout}</td>
                   <td className="t-right num"><strong>{c.purchases}</strong></td>
+                  <td className="t-right num" style={{ color: "var(--brand-ink)" }}><strong>{c.frascos}</strong></td>
                   <td className="t-right num">{c.cpa > 0 ? fmtCOP(c.cpa) : "—"}</td>
                   <td className="t-right num" style={{ color: c.roas >= 1 ? "var(--success)" : "var(--text-muted)" }}>
                     <strong>{c.roas > 0 ? c.roas.toFixed(2) + "x" : "—"}</strong>
