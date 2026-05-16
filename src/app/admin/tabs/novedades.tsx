@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type NovedadRow = {
   id: string;
@@ -26,6 +26,9 @@ type NovedadRow = {
 
 type Filtro = "activas" | "todas" | "resueltas" | "repetidas";
 
+type Message = { from: "bot" | "user" | "operador"; text: string; time: string };
+type HistorialItem = { tipo: string; etiqueta: string; fecha: string; comentario: string | null };
+
 const TIPOS = {
   no_contesta: { emoji: "📞", label: "No contesta", color: "#FFA726" },
   direccion_mala: { emoji: "📍", label: "Dirección mala", color: "#EF5350" },
@@ -50,12 +53,16 @@ function horasDesde(iso?: string) {
   return (Date.now() - new Date(iso).getTime()) / 3600_000;
 }
 
+function formatTime(iso: string) {
+  return new Date(iso).toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit" });
+}
+
 export function Novedades() {
   const [rows, setRows] = useState<NovedadRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [filtro, setFiltro] = useState<Filtro>("activas");
   const [tipoFiltro, setTipoFiltro] = useState<string>("");
-  const [resolviendo, setResolviendo] = useState<string | null>(null);
+  const [openRow, setOpenRow] = useState<NovedadRow | null>(null);
 
   async function cargar() {
     setLoading(true);
@@ -64,6 +71,11 @@ export function Novedades() {
       if (!r.ok) return;
       const data = (await r.json()) as NovedadRow[];
       setRows(data);
+      // Si hay drawer abierto, refrescar su data
+      if (openRow) {
+        const updated = data.find((d) => d.id === openRow.id);
+        if (updated) setOpenRow(updated);
+      }
     } finally {
       setLoading(false);
     }
@@ -75,22 +87,6 @@ export function Novedades() {
     return () => clearInterval(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filtro]);
-
-  async function marcarResuelto(id: string) {
-    const nota = window.prompt("Nota de resolución (opcional):") || "";
-    if (nota === null) return;
-    setResolviendo(id);
-    try {
-      await fetch("/api/admin/novedades", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ pedidoId: id, nota }),
-      });
-      await cargar();
-    } finally {
-      setResolviendo(null);
-    }
-  }
 
   const filtradas = useMemo(() => {
     let r = rows;
@@ -104,13 +100,7 @@ export function Novedades() {
     const activas = rows.filter((r) => r.estado === "novedad" && !r.novedad_resolucion).length;
     const repetidas = rows.filter((r) => (r.novedades_count || 0) >= 2).length;
     const resueltas = rows.filter((r) => !!r.novedad_resolucion).length;
-    const tipos: Record<string, number> = {};
-    rows.forEach((r) => {
-      const t = r.novedad_tipo || "generica";
-      tipos[t] = (tipos[t] || 0) + 1;
-    });
-    const topTipo = Object.entries(tipos).sort((a, b) => b[1] - a[1])[0];
-    return { activas, repetidas, resueltas, total: rows.length, topTipo };
+    return { activas, repetidas, resueltas, total: rows.length };
   }, [rows]);
 
   return (
@@ -126,7 +116,6 @@ export function Novedades() {
         </div>
       </div>
 
-      {/* Stats */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10, marginBottom: 16 }}>
         <StatBox label="Activas" value={stats.activas} color="#EF5350" />
         <StatBox label="Repetidas" value={stats.repetidas} color="#FFA726" />
@@ -134,7 +123,6 @@ export function Novedades() {
         <StatBox label="Total en vista" value={stats.total} color="#42A5F5" />
       </div>
 
-      {/* Tipo filter */}
       <div style={{ display: "flex", gap: 6, marginBottom: 12, flexWrap: "wrap" }}>
         <button onClick={() => setTipoFiltro("")} style={chipBtn(tipoFiltro === "")}>Todos los tipos</button>
         {Object.entries(TIPOS).map(([k, v]) => (
@@ -160,7 +148,6 @@ export function Novedades() {
                 <Th>Inicio</Th>
                 <Th>Hoko dijo</Th>
                 <Th>Respuesta cliente</Th>
-                <Th>Acción</Th>
               </tr>
             </thead>
             <tbody>
@@ -170,7 +157,17 @@ export function Novedades() {
                 const repetida = (row.novedades_count || 0) >= 2;
                 const resuelta = !!row.novedad_resolucion;
                 return (
-                  <tr key={row.id} style={{ borderTop: "1px solid #E0E0E0", background: resuelta ? "#F1F8E9" : "transparent" }}>
+                  <tr
+                    key={row.id}
+                    onClick={() => setOpenRow(row)}
+                    style={{
+                      borderTop: "1px solid #E0E0E0",
+                      background: resuelta ? "#F1F8E9" : "transparent",
+                      cursor: "pointer",
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = resuelta ? "#DCEDC8" : "#FAFAFA")}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = resuelta ? "#F1F8E9" : "transparent")}
+                  >
                     <Td>
                       <div style={{ fontWeight: 700 }}>{row.id.slice(-6)}</div>
                       <div style={{ fontSize: 11, color: "#888" }}>{fmtCOP(row.total)} · {row.cantidad}f</div>
@@ -205,13 +202,6 @@ export function Novedades() {
                         <div style={{ fontSize: 11, color: "#888" }}>Esperando respuesta</div>
                       )}
                     </Td>
-                    <Td>
-                      {!resuelta && (
-                        <button onClick={() => marcarResuelto(row.id)} disabled={resolviendo === row.id} style={resolverBtn}>
-                          {resolviendo === row.id ? "..." : "Marcar resuelto"}
-                        </button>
-                      )}
-                    </Td>
                   </tr>
                 );
               })}
@@ -222,6 +212,275 @@ export function Novedades() {
 
       <div style={{ marginTop: 16, fontSize: 11, color: "#888", lineHeight: 1.6 }}>
         <strong>Cómo funciona:</strong> Cuando Hoko reporta una novedad, Camila escribe al cliente y programa 4 mensajes de seguimiento (a los +30 min, +2h, +3h y +12h). Si el cliente responde, los mensajes se cancelan y se notifica al operador con la acción concreta a hacer en el panel de Hoko. Las repetidas (mismo pedido con 2+ novedades) se marcan en naranja.
+        <br />
+        <strong>Click en una fila</strong> para ver el chat completo, historial del pedido, datos del cliente y marcar la novedad como resuelta.
+      </div>
+
+      {openRow && (
+        <DrawerNovedad row={openRow} onClose={() => setOpenRow(null)} onChanged={cargar} />
+      )}
+    </div>
+  );
+}
+
+function DrawerNovedad({ row, onClose, onChanged }: { row: NovedadRow; onClose: () => void; onChanged: () => void }) {
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [draft, setDraft] = useState("");
+  const [sending, setSending] = useState(false);
+  const [showHistorial, setShowHistorial] = useState(false);
+  const [historial, setHistorial] = useState<HistorialItem[] | null>(null);
+  const [historialLoading, setHistorialLoading] = useState(false);
+  const [resolviendo, setResolviendo] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const tipoInfo = TIPOS[row.novedad_tipo as keyof typeof TIPOS] || TIPOS.generica;
+  const resuelta = !!row.novedad_resolucion;
+  const horas = horasDesde(row.novedad_inicio);
+
+  async function cargarMensajes() {
+    const r = await fetch(`/api/admin/conversaciones?telefono=${encodeURIComponent(row.telefono)}`, { cache: "no-store" });
+    if (!r.ok) return;
+    const data = (await r.json()) as Message[];
+    setMessages(data);
+    setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight }), 50);
+  }
+
+  useEffect(() => {
+    cargarMensajes();
+    const t = setInterval(cargarMensajes, 5000);
+    return () => clearInterval(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [row.telefono]);
+
+  async function cargarHistorial() {
+    setHistorialLoading(true);
+    try {
+      const r = await fetch(`/api/admin/pedidos/${encodeURIComponent(row.id)}/historial`, { cache: "no-store" });
+      if (r.ok) {
+        const data = await r.json();
+        setHistorial(data.historial || []);
+      }
+    } finally {
+      setHistorialLoading(false);
+    }
+  }
+
+  function toggleHistorial() {
+    if (!showHistorial && !historial) cargarHistorial();
+    setShowHistorial(!showHistorial);
+  }
+
+  async function enviar() {
+    if (!draft.trim()) return;
+    setSending(true);
+    try {
+      const r = await fetch("/api/admin/conversaciones", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ telefono: row.telefono, texto: draft.trim() }),
+      });
+      if (r.ok) {
+        setDraft("");
+        await cargarMensajes();
+      }
+    } finally {
+      setSending(false);
+    }
+  }
+
+  async function marcarResuelto() {
+    const nota = window.prompt("Nota de resolución (qué hiciste en el panel de Hoko):") || "";
+    if (!nota.trim()) return;
+    setResolviendo(true);
+    try {
+      const r = await fetch("/api/admin/novedades", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ pedidoId: row.id, nota: nota.trim() }),
+      });
+      if (r.ok) {
+        await onChanged();
+      }
+    } finally {
+      setResolviendo(false);
+    }
+  }
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: "fixed", inset: 0, background: "rgba(0,0,0,.45)",
+        zIndex: 90, display: "flex", justifyContent: "flex-end",
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          width: "min(560px, 100%)", height: "100vh", background: "#fff",
+          display: "flex", flexDirection: "column", boxShadow: "-4px 0 20px rgba(0,0,0,.25)",
+        }}
+      >
+        <div style={{ padding: 14, borderBottom: "1px solid #E0E0E0", display: "flex", alignItems: "center", gap: 12 }}>
+          <button onClick={onClose} style={iconBtn}>✕</button>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 700, fontSize: 15, display: "flex", alignItems: "center", gap: 8 }}>
+              <span>{row.nombre}</span>
+              <button
+                onClick={toggleHistorial}
+                style={{ ...miniBtn, background: showHistorial ? "#E8F5E9" : "transparent" }}
+                title="Ver historial cronológico del pedido"
+              >
+                🕐 Historial
+              </button>
+            </div>
+            <div style={{ fontSize: 11, color: "#666" }}>
+              <a href={`https://wa.me/${row.telefono.replace(/\D/g, "")}`} target="_blank" style={{ color: "#1565C0", textDecoration: "none" }}>{row.telefono}</a>
+              {" · "}{row.id.slice(-8)}
+            </div>
+          </div>
+          <span style={{ background: tipoInfo.color, color: "#fff", padding: "4px 10px", borderRadius: 12, fontSize: 11, fontWeight: 700 }}>
+            {tipoInfo.emoji} {tipoInfo.label}
+          </span>
+        </div>
+
+        {showHistorial && (
+          <div style={{ padding: 12, borderBottom: "1px solid #E0E0E0", background: "#FAFAFA", maxHeight: 280, overflowY: "auto" }}>
+            <div style={{ fontSize: 11, textTransform: "uppercase", color: "#555", marginBottom: 8, fontWeight: 700 }}>📜 Historial del pedido</div>
+            {historialLoading && <div style={{ fontSize: 11, color: "#888" }}>Cargando...</div>}
+            {!historialLoading && historial && historial.length === 0 && (
+              <div style={{ fontSize: 11, color: "#888" }}>Sin eventos registrados</div>
+            )}
+            {!historialLoading && historial && historial.length > 0 && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {historial.map((h, i) => (
+                  <div key={i} style={{ display: "flex", gap: 8, fontSize: 11, paddingBottom: 6, borderBottom: i < historial.length - 1 ? "1px dashed #E0E0E0" : "none" }}>
+                    <div style={{ minWidth: 90, color: "#888", fontFamily: "monospace" }}>
+                      {new Date(h.fecha).toLocaleDateString("es-CO", { day: "2-digit", month: "2-digit" })}
+                      {" "}
+                      {new Date(h.fecha).toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit" })}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 600 }}>{h.etiqueta}</div>
+                      {h.comentario && <div style={{ fontSize: 10, color: "#888" }}>{h.comentario}</div>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Info del pedido / novedad */}
+        <div style={{ padding: 12, borderBottom: "1px solid #E0E0E0", background: "#FAFAFA", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, fontSize: 12 }}>
+          <div>
+            <div style={lbl}>Pedido</div>
+            <div style={{ fontWeight: 600 }}>{row.cantidad || 1} frasco{(row.cantidad || 1) > 1 ? "s" : ""}</div>
+          </div>
+          <div>
+            <div style={lbl}>Total contra entrega</div>
+            <div style={{ fontWeight: 600 }}>{fmtCOP(row.total)}</div>
+          </div>
+          <div style={{ gridColumn: "1 / -1" }}>
+            <div style={lbl}>Dirección</div>
+            <div>{row.direccion || "—"}{row.referencia ? ` (${row.referencia})` : ""}</div>
+            <div style={{ fontSize: 11, color: "#666" }}>{row.ciudad || "—"}</div>
+          </div>
+          <div style={{ gridColumn: "1 / -1" }}>
+            <div style={lbl}>Guía y transportadora</div>
+            {row.guia ? (
+              <>
+                <div style={{ fontFamily: "monospace", fontWeight: 600 }}>{row.guia}</div>
+                <div style={{ fontSize: 11, color: "#666" }}>{row.transportadora || "—"}</div>
+              </>
+            ) : (
+              <div style={{ color: "#888" }}>Sin guía</div>
+            )}
+          </div>
+          <div style={{ gridColumn: "1 / -1" }}>
+            <div style={lbl}>Motivo Hoko</div>
+            <div style={{ fontSize: 12, color: "#444" }}>{row.motivo_no_entrega || "—"}</div>
+          </div>
+          <div>
+            <div style={lbl}>Inicio novedad</div>
+            <div style={{ fontSize: 12 }}>{fmtFecha(row.novedad_inicio)}</div>
+            {horas !== null && <div style={{ fontSize: 10, color: "#888" }}>hace {horas.toFixed(1)}h</div>}
+          </div>
+          <div>
+            <div style={lbl}>Mensajes Camila</div>
+            <div style={{ fontSize: 12 }}>{row.novedad_mensajes || 0} / 5</div>
+            {(row.novedades_count || 0) >= 2 && (
+              <div style={{ fontSize: 10, color: "#E65100", fontWeight: 700 }}>🔁 {row.novedades_count}× novedades</div>
+            )}
+          </div>
+          {resuelta && (
+            <div style={{ gridColumn: "1 / -1", background: "#E8F5E9", padding: 8, borderRadius: 4 }}>
+              <div style={{ ...lbl, color: "#2E7D32" }}>✅ Resolución</div>
+              <div style={{ fontSize: 12, color: "#1B5E20" }}>{row.novedad_resolucion}</div>
+            </div>
+          )}
+        </div>
+
+        {/* Acción resolver */}
+        {!resuelta && (
+          <div style={{ padding: "10px 12px", borderBottom: "1px solid #E0E0E0", background: "#FFF8E1", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
+            <div style={{ fontSize: 11, color: "#5D4037" }}>
+              ⚠️ Hoko no permite resolver novedades por API. Resolvé en el panel de Hoko y marcá aquí.
+            </div>
+            <button onClick={marcarResuelto} disabled={resolviendo} style={resolverBtn}>
+              {resolviendo ? "..." : "Marcar resuelto"}
+            </button>
+          </div>
+        )}
+
+        {/* Chat */}
+        <div ref={scrollRef} style={{ flex: 1, padding: 12, overflowY: "auto", display: "flex", flexDirection: "column", gap: 6, background: "#FAFAFA" }}>
+          {messages.map((m, i) => {
+            const esBot = m.from === "bot" || m.from === "operador";
+            return (
+              <div key={i} style={{ alignSelf: esBot ? "flex-end" : "flex-start", maxWidth: "85%" }}>
+                <div
+                  style={{
+                    background: esBot ? "#DCF8C6" : "#fff",
+                    color: "#222",
+                    padding: "8px 12px",
+                    borderRadius: 10,
+                    borderTopRightRadius: esBot ? 2 : 10,
+                    borderTopLeftRadius: esBot ? 10 : 2,
+                    fontSize: 13,
+                    whiteSpace: "pre-wrap",
+                    border: "1px solid #E0E0E0",
+                  }}
+                >
+                  {m.text}
+                </div>
+                <div style={{ fontSize: 10, color: "#888", marginTop: 2, textAlign: esBot ? "right" : "left" }}>{formatTime(m.time)}</div>
+              </div>
+            );
+          })}
+          {messages.length === 0 && <div style={{ color: "#888", textAlign: "center", marginTop: 40 }}>Sin mensajes aún</div>}
+        </div>
+
+        <div style={{ padding: 12, borderTop: "1px solid #E0E0E0", display: "flex", gap: 8, background: "#fff" }}>
+          <input
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); enviar(); } }}
+            placeholder="Escribir como operador (pausa a Camila)..."
+            disabled={sending}
+            style={{
+              flex: 1,
+              padding: "8px 12px",
+              border: "1px solid #CFD8DC",
+              borderRadius: 6,
+              background: "#fff",
+              fontSize: 13,
+            }}
+          />
+          <button onClick={enviar} disabled={sending || !draft.trim()} style={enviarBtn}>
+            {sending ? "Enviando…" : "Enviar"}
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -243,6 +502,8 @@ function StatBox({ label, value, color }: { label: string; value: number; color:
   );
 }
 
+const lbl: React.CSSProperties = { fontSize: 10, textTransform: "uppercase", color: "#666", fontWeight: 700, letterSpacing: 0.3, marginBottom: 2 };
+
 const btnTab = (active: boolean): React.CSSProperties => ({
   padding: "6px 14px", borderRadius: 6, border: `1px solid ${active ? "#2E7D32" : "#CFD8DC"}`,
   background: active ? "#2E7D32" : "#fff", color: active ? "#fff" : "#333",
@@ -256,6 +517,21 @@ const chipBtn = (active: boolean, color?: string): React.CSSProperties => ({
 });
 
 const resolverBtn: React.CSSProperties = {
-  padding: "5px 10px", borderRadius: 4, border: "1px solid #2E7D32",
-  background: "#2E7D32", color: "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer",
+  padding: "6px 12px", borderRadius: 4, border: "1px solid #2E7D32",
+  background: "#2E7D32", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer",
+};
+
+const enviarBtn: React.CSSProperties = {
+  padding: "8px 16px", borderRadius: 6, border: "1px solid #2E7D32",
+  background: "#2E7D32", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer",
+};
+
+const iconBtn: React.CSSProperties = {
+  padding: "4px 10px", borderRadius: 4, border: "1px solid #CFD8DC",
+  background: "#fff", color: "#333", fontSize: 13, cursor: "pointer",
+};
+
+const miniBtn: React.CSSProperties = {
+  padding: "3px 8px", borderRadius: 4, border: "1px solid #CFD8DC",
+  background: "transparent", color: "#333", fontSize: 10, fontWeight: 600, cursor: "pointer",
 };
