@@ -257,10 +257,8 @@ export function Pipeline() {
     moverPedido(id, stageId);
   }
 
-  // Stages que mostramos en el flow rail (los más importantes en orden de pipeline)
-  const STAGES_FLOW: PipelineOrder["stage"][] = [
-    "nuevo", "confirmado", "guia_activa", "en_bodega", "en_reparto", "entregado", "pagado"
-  ];
+  // Flow rail = mismos stages del kanban en orden
+  const STAGES_FLOW: PipelineOrder["stage"][] = STAGES.map((s) => s.id);
 
   return (
     <>
@@ -325,8 +323,14 @@ export function Pipeline() {
                   </div>
                   <div style={{ fontSize: 11, lineHeight: 1.6 }}>
                     ↩️ Devueltas: <strong style={{ color: "#94A3B8" }}>{s.devueltas}</strong>
-                    {cerradas > 0 && <span style={{ marginLeft: 6 }}>· Tasa entrega: <strong style={{ color: tasaEntrega >= 80 ? "#16A34A" : tasaEntrega >= 60 ? "#F59E0B" : "#DC2626" }}>{tasaEntrega}%</strong></span>}
                   </div>
+                  {cerradas > 0 && (
+                    <div style={{ fontSize: 11, lineHeight: 1.6, marginTop: 4, paddingTop: 4, borderTop: "1px dashed var(--border)" }}>
+                      Tasa entrega: <strong style={{ color: tasaEntrega >= 80 ? "#16A34A" : tasaEntrega >= 60 ? "#F59E0B" : "#DC2626" }}>{tasaEntrega}%</strong>
+                      {" · "}
+                      Tasa devolución: <strong style={{ color: (100-tasaEntrega) >= 30 ? "#DC2626" : (100-tasaEntrega) >= 15 ? "#F59E0B" : "#16A34A" }}>{100 - tasaEntrega}%</strong>
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -501,11 +505,34 @@ export function Pipeline() {
   );
 }
 
+type HistorialItem = { tipo: string; etiqueta: string; fecha: string; comentario: string | null };
+
 function DrawerConversacion({ order, onClose, onMover }: { order: PipelineOrder; onClose: () => void; onMover: (id: string, s: PipelineOrder["stage"]) => Promise<void> }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
+  const [showHistorial, setShowHistorial] = useState(false);
+  const [historial, setHistorial] = useState<HistorialItem[] | null>(null);
+  const [historialLoading, setHistorialLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  async function cargarHistorial() {
+    setHistorialLoading(true);
+    try {
+      const r = await fetch(`/api/admin/pedidos/${encodeURIComponent(order.id)}/historial`, { cache: "no-store" });
+      if (r.ok) {
+        const data = await r.json();
+        setHistorial(data.historial || []);
+      }
+    } finally {
+      setHistorialLoading(false);
+    }
+  }
+
+  function toggleHistorial() {
+    if (!showHistorial && !historial) cargarHistorial();
+    setShowHistorial(!showHistorial);
+  }
 
   async function cargarMensajes() {
     const r = await fetch(`/api/admin/conversaciones?telefono=${encodeURIComponent(order.phone)}`, { cache: "no-store" });
@@ -560,7 +587,17 @@ function DrawerConversacion({ order, onClose, onMover }: { order: PipelineOrder;
         <div style={{ padding: 14, borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", gap: 12 }}>
           <button onClick={onClose} className="btn" style={{ padding: "4px 10px" }}>✕</button>
           <div style={{ flex: 1 }}>
-            <div style={{ fontWeight: 700, fontSize: 15 }}>{order.customer}</div>
+            <div style={{ fontWeight: 700, fontSize: 15, display: "flex", alignItems: "center", gap: 8 }}>
+              <span>{order.customer}</span>
+              <button
+                onClick={toggleHistorial}
+                className="btn"
+                style={{ fontSize: 10, padding: "3px 8px", background: showHistorial ? "var(--brand-soft)" : "transparent" }}
+                title="Ver historial cronológico del pedido"
+              >
+                🕐 Historial
+              </button>
+            </div>
             <div className="muted" style={{ fontSize: 11 }}>
               <a href={`https://wa.me/${order.phone.replace(/\D/g, "")}`} target="_blank" style={{ color: "var(--brand-ink)", textDecoration: "none" }}>{order.phone}</a> · {order.id}
             </div>
@@ -571,6 +608,34 @@ function DrawerConversacion({ order, onClose, onMover }: { order: PipelineOrder;
             </span>
           )}
         </div>
+
+        {/* Panel de historial desplegable */}
+        {showHistorial && (
+          <div style={{ padding: 12, borderBottom: "1px solid var(--border)", background: "var(--panel-sub)", maxHeight: 280, overflowY: "auto" }}>
+            <div className="label" style={{ marginBottom: 8 }}>📜 Historial del pedido</div>
+            {historialLoading && <div className="muted" style={{ fontSize: 11 }}>Cargando...</div>}
+            {!historialLoading && historial && historial.length === 0 && (
+              <div className="muted" style={{ fontSize: 11 }}>Sin eventos registrados</div>
+            )}
+            {!historialLoading && historial && historial.length > 0 && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {historial.map((h, i) => (
+                  <div key={i} style={{ display: "flex", gap: 8, fontSize: 11, paddingBottom: 6, borderBottom: i < historial.length - 1 ? "1px dashed var(--border)" : "none" }}>
+                    <div style={{ minWidth: 90, color: "var(--text-muted)", fontFamily: "monospace" }}>
+                      {new Date(h.fecha).toLocaleDateString("es-CO", { day: "2-digit", month: "2-digit" })}
+                      {" "}
+                      {new Date(h.fecha).toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit" })}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 600 }}>{h.etiqueta}</div>
+                      {h.comentario && <div className="muted" style={{ fontSize: 10 }}>{h.comentario}</div>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Panel de info del pedido */}
         <div style={{ padding: 12, borderBottom: "1px solid var(--border)", background: "var(--panel-sub)", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, fontSize: 12 }}>
