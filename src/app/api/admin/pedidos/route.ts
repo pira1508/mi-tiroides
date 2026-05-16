@@ -19,12 +19,16 @@ type BotRow = {
   cantidad: number;
   dias_tratamiento?: number;
   total: number;
-  estado: "nuevo" | "confirmado" | "despachado" | "entregado" | "cancelado";
+  estado: string;
   guia?: string;
   transportadora?: string;
   creado_en: string;
   actualizado_en?: string;
   variant?: string | null;
+  novedad_resolucion?: string | null;
+  novedad_tipo?: string | null;
+  novedad_inicio?: string | null;
+  motivo_no_entrega?: string | null;
 };
 
 function fechaBogota(iso: string): string {
@@ -79,6 +83,12 @@ export async function GET() {
     creadoEn: row.creado_en,
     actualizadoEn: row.actualizado_en,
     estado: row.estado,
+    guia: row.guia || null,
+    transportadora: row.transportadora || null,
+    novedadResolucion: row.novedad_resolucion || null,
+    novedadTipo: row.novedad_tipo || null,
+    novedadInicio: row.novedad_inicio || null,
+    motivoNoEntrega: row.motivo_no_entrega || null,
   }));
 
   // A/B Testing: agrupar por variant

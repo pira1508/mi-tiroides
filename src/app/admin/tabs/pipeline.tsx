@@ -11,8 +11,10 @@ type PipelineOrder = {
   direccion?: string;
   referencia?: string;
   guia?: string;
+  transportadora?: string;
+  novedadResolucion?: string;
   carrier: "hoko" | "envia" | "interrap" | "—";
-  stage: "nuevo" | "confirmado" | "subido_hoko" | "guia_generada" | "guia_activa" | "en_bodega" | "espera_ruta" | "mercancia_recogida" | "en_reparto" | "entregado" | "pagado" | "novedad" | "devolucion" | "cancelado";
+  stage: "nuevo" | "confirmado" | "subido_hoko" | "guia_generada" | "guia_activa" | "en_bodega" | "espera_ruta" | "mercancia_recogida" | "en_reparto" | "entregado" | "pagado" | "novedad" | "novedad_resuelta" | "devolucion" | "cancelado";
   total: number;
   cantidad: number;
   diasTratamiento?: number;
@@ -38,18 +40,22 @@ const STAGES: { id: PipelineOrder["stage"]; label: string; color: string; estado
   { id: "espera_ruta",       label: "En espera de ruta",  color: "#A855F7", estadoBot: "espera_ruta" },
   { id: "mercancia_recogida",label: "Mercancía recogida", color: "#0F3D2E", estadoBot: "despachado" },
   { id: "en_reparto",        label: "En reparto",         color: "#DB2777", estadoBot: "en_reparto" },
+  { id: "novedad",           label: "Novedad",            color: "#DC2626", estadoBot: "novedad" },
+  { id: "novedad_resuelta",  label: "Novedad resuelta",   color: "#F59E0B", estadoBot: "novedad_resuelta" },
   { id: "entregado",         label: "Entregado",          color: "#16A34A", estadoBot: "entregado" },
   { id: "pagado",            label: "Pagado",             color: "#15803D", estadoBot: "pagado" },
-  { id: "novedad",           label: "Novedad",            color: "#DC2626", estadoBot: "novedad" },
   { id: "devolucion",        label: "Devolución",         color: "#94A3B8", estadoBot: "devolucion" },
   { id: "cancelado",         label: "Cancelado",          color: "#64748B", estadoBot: "cancelado" },
 ];
 
-function mapStage(estado: string): PipelineOrder["stage"] {
+function mapStage(estado: string, novedadResolucion?: string | null): PipelineOrder["stage"] {
   if (estado === "despachado") return "mercancia_recogida";
   if (estado === "en_ruta") return "en_reparto";
   if (estado === "devuelto") return "devolucion";
   if (estado === "pagado_tienda") return "pagado";
+  // Pedido que tuvo novedad y se resolvió (cliente respondió o se cerró el caso)
+  // queda en una columna aparte para ver claramente las novedades activas vs resueltas.
+  if (estado === "novedad" && novedadResolucion) return "novedad_resuelta";
   // estados directos del bot que coinciden 1:1 con STAGES
   return (estado as PipelineOrder["stage"]) || "nuevo";
 }
@@ -68,6 +74,61 @@ function formatTime(iso: string) {
   return d.toLocaleString("es-CO", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit" });
 }
 
+type DateRange =
+  | "hoy"
+  | "ayer"
+  | "7d"
+  | "14d"
+  | "30d"
+  | "este_mes"
+  | "mes_pasado"
+  | "todo"
+  | "custom";
+
+function rangoToFechas(r: DateRange, customSince?: string, customUntil?: string): { since: Date | null; until: Date | null } {
+  const ahora = new Date();
+  const inicioHoy = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate());
+  const finHoy = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate(), 23, 59, 59, 999);
+  switch (r) {
+    case "hoy": return { since: inicioHoy, until: finHoy };
+    case "ayer": {
+      const y = new Date(inicioHoy); y.setDate(y.getDate() - 1);
+      const yEnd = new Date(y); yEnd.setHours(23, 59, 59, 999);
+      return { since: y, until: yEnd };
+    }
+    case "7d": { const s = new Date(inicioHoy); s.setDate(s.getDate() - 7); return { since: s, until: finHoy }; }
+    case "14d": { const s = new Date(inicioHoy); s.setDate(s.getDate() - 14); return { since: s, until: finHoy }; }
+    case "30d": { const s = new Date(inicioHoy); s.setDate(s.getDate() - 30); return { since: s, until: finHoy }; }
+    case "este_mes": {
+      const s = new Date(ahora.getFullYear(), ahora.getMonth(), 1);
+      return { since: s, until: finHoy };
+    }
+    case "mes_pasado": {
+      const s = new Date(ahora.getFullYear(), ahora.getMonth() - 1, 1);
+      const e = new Date(ahora.getFullYear(), ahora.getMonth(), 0, 23, 59, 59, 999);
+      return { since: s, until: e };
+    }
+    case "custom": {
+      if (!customSince || !customUntil) return { since: null, until: null };
+      const s = new Date(customSince + "T00:00:00");
+      const e = new Date(customUntil + "T23:59:59");
+      return { since: s, until: e };
+    }
+    default: return { since: null, until: null };
+  }
+}
+
+const RANGE_PRESETS: { id: DateRange; label: string }[] = [
+  { id: "todo", label: "Todo" },
+  { id: "hoy", label: "Hoy" },
+  { id: "ayer", label: "Ayer" },
+  { id: "7d", label: "7 días" },
+  { id: "14d", label: "14 días" },
+  { id: "30d", label: "30 días" },
+  { id: "este_mes", label: "Este mes" },
+  { id: "mes_pasado", label: "Mes pasado" },
+];
+
 export function Pipeline() {
   const [orders, setOrders] = useState<PipelineOrder[]>([]);
   const [filterCarrier, setFilterCarrier] = useState<"todas" | keyof typeof CARRIERS>("todas");
@@ -75,13 +136,16 @@ export function Pipeline() {
   const [loading, setLoading] = useState(true);
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [openOrder, setOpenOrder] = useState<PipelineOrder | null>(null);
+  const [dateRange, setDateRange] = useState<DateRange>("todo");
+  const [customSince, setCustomSince] = useState<string>("");
+  const [customUntil, setCustomUntil] = useState<string>("");
 
   async function cargar() {
     try {
       const r = await fetch("/api/admin/pedidos", { cache: "no-store" });
       if (!r.ok) return;
       const data = await r.json();
-      const mapped: PipelineOrder[] = (data.pedidos || []).map((p: {id:string;nombre:string;telefonoCliente:string;ciudad:string;departamento?:string;direccion?:string;referencia?:string;cantidad:number;diasTratamiento?:number;total:number;estado:string;guia?:string;transportadora?:string;creadoEn?:string}) => ({
+      const mapped: PipelineOrder[] = (data.pedidos || []).map((p: {id:string;nombre:string;telefonoCliente:string;ciudad:string;departamento?:string;direccion?:string;referencia?:string;cantidad:number;diasTratamiento?:number;total:number;estado:string;guia?:string;transportadora?:string;creadoEn?:string;novedadResolucion?:string|null}) => ({
         id: p.id,
         customer: p.nombre || "—",
         phone: p.telefonoCliente || "",
@@ -90,8 +154,10 @@ export function Pipeline() {
         direccion: p.direccion,
         referencia: p.referencia,
         guia: p.guia,
+        transportadora: p.transportadora,
+        novedadResolucion: p.novedadResolucion || undefined,
         carrier: mapCarrier(p.transportadora),
-        stage: mapStage(p.estado),
+        stage: mapStage(p.estado, p.novedadResolucion),
         total: p.total,
         cantidad: p.cantidad,
         diasTratamiento: p.diasTratamiento,
@@ -126,7 +192,17 @@ export function Pipeline() {
     }
   }
 
-  const byCarrier = filterCarrier === "todas" ? orders : orders.filter((o) => o.carrier === filterCarrier);
+  // Filtro por rango de fechas (sobre creadoEn)
+  const { since: dSince, until: dUntil } = rangoToFechas(dateRange, customSince, customUntil);
+  const byDate = (dSince && dUntil)
+    ? orders.filter((o) => {
+        if (!o.creadoEn) return false;
+        const t = new Date(o.creadoEn).getTime();
+        return t >= dSince.getTime() && t <= dUntil.getTime();
+      })
+    : orders;
+
+  const byCarrier = filterCarrier === "todas" ? byDate : byDate.filter((o) => o.carrier === filterCarrier);
   const q = search.trim().toLowerCase();
   const qDigits = q.replace(/\D/g, "");
   const filtered = q
@@ -143,6 +219,22 @@ export function Pipeline() {
         );
       })
     : byCarrier;
+
+  // Eficiencia por transportadora (sobre el rango filtrado, ignora búsqueda textual)
+  type CarrierStats = { total: number; entregadas: number; devueltas: number; novedades: number; enCamino: number };
+  const carrierStats: Record<string, CarrierStats> = {};
+  for (const carr of [...Object.keys(CARRIERS), "—"] as Array<keyof typeof CARRIERS | "—">) {
+    carrierStats[carr] = { total: 0, entregadas: 0, devueltas: 0, novedades: 0, enCamino: 0 };
+  }
+  for (const o of byDate) {
+    const s = carrierStats[o.carrier];
+    if (!s) continue;
+    s.total++;
+    if (o.stage === "entregado" || o.stage === "pagado") s.entregadas++;
+    else if (o.stage === "devolucion") s.devueltas++;
+    else if (o.stage === "novedad") s.novedades++;
+    else if (["mercancia_recogida","en_reparto","en_bodega","espera_ruta","guia_activa","guia_generada"].includes(o.stage)) s.enCamino++;
+  }
 
   function onDragStart(e: React.DragEvent, id: string) {
     setDraggingId(id);
@@ -165,8 +257,83 @@ export function Pipeline() {
     moverPedido(id, stageId);
   }
 
+  // Stages que mostramos en el flow rail (los más importantes en orden de pipeline)
+  const STAGES_FLOW: PipelineOrder["stage"][] = [
+    "nuevo", "confirmado", "guia_activa", "en_bodega", "en_reparto", "entregado", "pagado"
+  ];
+
   return (
     <>
+      {/* Filtro de fechas */}
+      <div className="card" style={{ marginBottom: 12 }}>
+        <div className="card-body" style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+          <span className="label" style={{ marginRight: 4 }}>📅 Rango:</span>
+          {RANGE_PRESETS.map((p) => (
+            <button
+              key={p.id}
+              onClick={() => setDateRange(p.id)}
+              className={`btn ${dateRange === p.id ? "primary" : ""}`}
+              style={{ fontSize: 11, padding: "4px 10px" }}
+            >
+              {p.label}
+            </button>
+          ))}
+          <button
+            onClick={() => setDateRange("custom")}
+            className={`btn ${dateRange === "custom" ? "primary" : ""}`}
+            style={{ fontSize: 11, padding: "4px 10px" }}
+          >
+            Personalizado
+          </button>
+          {dateRange === "custom" && (
+            <>
+              <input type="date" value={customSince} onChange={(e) => setCustomSince(e.target.value)} style={{ padding: "4px 8px", fontSize: 11, border: "1px solid var(--border)", borderRadius: 4 }} />
+              <span style={{ fontSize: 11 }}>→</span>
+              <input type="date" value={customUntil} onChange={(e) => setCustomUntil(e.target.value)} style={{ padding: "4px 8px", fontSize: 11, border: "1px solid var(--border)", borderRadius: 4 }} />
+            </>
+          )}
+          <span className="muted" style={{ marginLeft: "auto", fontSize: 11 }}>
+            {byDate.length} pedidos en rango
+          </span>
+        </div>
+      </div>
+
+      {/* Eficiencia por transportadora */}
+      <div className="card" style={{ marginBottom: 12 }}>
+        <div className="card-header">
+          <div className="h2">📦 Eficiencia por transportadora</div>
+        </div>
+        <div className="card-body">
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 10 }}>
+            {(["hoko", "envia", "interrap", "—"] as const).map((k) => {
+              const s = carrierStats[k];
+              if (!s || s.total === 0) return null;
+              const label = k === "—" ? "Sin transportadora" : CARRIERS[k as keyof typeof CARRIERS].name;
+              const color = k === "—" ? "#64748B" : CARRIERS[k as keyof typeof CARRIERS].color;
+              const cerradas = s.entregadas + s.devueltas;
+              const tasaEntrega = cerradas ? Math.round((s.entregadas / cerradas) * 100) : 0;
+              return (
+                <div key={k} style={{ background: "var(--panel-sub)", padding: 10, borderRadius: 6, borderTop: `3px solid ${color}` }}>
+                  <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 6 }}>{label}</div>
+                  <div style={{ fontSize: 11, lineHeight: 1.6 }}>
+                    Total: <strong>{s.total}</strong> · En camino: <strong>{s.enCamino}</strong>
+                  </div>
+                  <div style={{ fontSize: 11, lineHeight: 1.6 }}>
+                    ✅ Entregadas: <strong style={{ color: "#16A34A" }}>{s.entregadas}</strong>
+                    {" · "}
+                    🚨 Novedades: <strong style={{ color: "#DC2626" }}>{s.novedades}</strong>
+                  </div>
+                  <div style={{ fontSize: 11, lineHeight: 1.6 }}>
+                    ↩️ Devueltas: <strong style={{ color: "#94A3B8" }}>{s.devueltas}</strong>
+                    {cerradas > 0 && <span style={{ marginLeft: 6 }}>· Tasa entrega: <strong style={{ color: tasaEntrega >= 80 ? "#16A34A" : tasaEntrega >= 60 ? "#F59E0B" : "#DC2626" }}>{tasaEntrega}%</strong></span>}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
       {/* Flow rail */}
       <div className="card" style={{ marginBottom: 16 }}>
         <div className="card-header">
@@ -182,7 +349,9 @@ export function Pipeline() {
         </div>
         <div className="card-body" style={{ overflowX: "auto" }}>
           <div style={{ display: "flex", gap: 12, alignItems: "center", minWidth: 800 }}>
-            {STAGES.slice(0, 7).map((s, i) => {
+            {STAGES_FLOW.map((stageId, i) => {
+              const s = STAGES.find((x) => x.id === stageId);
+              if (!s) return null;
               const count = filtered.filter((o) => o.stage === s.id).length;
               return (
                 <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -192,7 +361,7 @@ export function Pipeline() {
                     </div>
                     <div className="label">{s.label}</div>
                   </div>
-                  {i < 6 && <div style={{ flex: 1, height: 2, background: "var(--border)", minWidth: 20 }} />}
+                  {i < STAGES_FLOW.length - 1 && <div style={{ flex: 1, height: 2, background: "var(--border)", minWidth: 20 }} />}
                 </div>
               );
             })}
@@ -418,10 +587,23 @@ function DrawerConversacion({ order, onClose, onMover }: { order: PipelineOrder;
             <div>{order.direccion || "—"}{order.referencia ? ` (${order.referencia})` : ""}</div>
             <div className="muted" style={{ fontSize: 11 }}>{order.city}{order.departamento ? `, ${order.departamento}` : ""}</div>
           </div>
-          {order.guia && (
+          <div style={{ gridColumn: "1 / -1" }}>
+            <div className="label" style={{ fontSize: 10 }}>Guía y transportadora</div>
+            {order.guia ? (
+              <>
+                <div className="mono" style={{ fontWeight: 600 }}>{order.guia}</div>
+                <div className="muted" style={{ fontSize: 11 }}>
+                  {order.transportadora || (order.carrier !== "—" ? CARRIERS[order.carrier].name : "—")}
+                </div>
+              </>
+            ) : (
+              <div className="muted">Sin guía aún</div>
+            )}
+          </div>
+          {order.novedadResolucion && (
             <div style={{ gridColumn: "1 / -1" }}>
-              <div className="label" style={{ fontSize: 10 }}>Guía {order.carrier !== "—" ? "· " + CARRIERS[order.carrier].name : ""}</div>
-              <div className="mono">{order.guia}</div>
+              <div className="label" style={{ fontSize: 10 }}>✅ Resolución de novedad</div>
+              <div style={{ fontSize: 11 }}>{order.novedadResolucion}</div>
             </div>
           )}
           {order.creadoEn && (
