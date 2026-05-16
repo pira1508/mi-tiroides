@@ -593,7 +593,7 @@ export function Pipeline() {
       </div>
 
       {openOrder && (
-        <DrawerConversacion order={openOrder} onClose={() => setOpenOrder(null)} onMover={moverPedido} />
+        <DrawerConversacion order={openOrder} onClose={() => setOpenOrder(null)} onMover={moverPedido} onDeleted={cargar} />
       )}
     </>
   );
@@ -601,14 +601,37 @@ export function Pipeline() {
 
 type HistorialItem = { tipo: string; etiqueta: string; fecha: string; comentario: string | null };
 
-function DrawerConversacion({ order, onClose, onMover }: { order: PipelineOrder; onClose: () => void; onMover: (id: string, s: PipelineOrder["stage"]) => Promise<void> }) {
+function DrawerConversacion({ order, onClose, onMover, onDeleted }: { order: PipelineOrder; onClose: () => void; onMover: (id: string, s: PipelineOrder["stage"]) => Promise<void>; onDeleted?: () => void }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
   const [showHistorial, setShowHistorial] = useState(false);
   const [historial, setHistorial] = useState<HistorialItem[] | null>(null);
   const [historialLoading, setHistorialLoading] = useState(false);
+  const [borrando, setBorrando] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  async function borrarCliente() {
+    const msg = `⚠️ ¿Borrar DEFINITIVAMENTE al cliente "${order.customer}" (${order.phone})?\n\nEsto eliminará:\n• El pedido y todo su historial\n• Todos los mensajes con Camila\n• El perfil del cliente (notas, pausas, etc.)\n\nEsta acción NO se puede deshacer. Escribí "BORRAR" para confirmar:`;
+    const confirm = window.prompt(msg);
+    if (confirm !== "BORRAR") return;
+    setBorrando(true);
+    try {
+      const r = await fetch(`/api/admin/pedidos/${encodeURIComponent(order.id)}?todo=1`, {
+        method: "DELETE",
+      });
+      if (r.ok) {
+        onClose();
+        if (onDeleted) onDeleted();
+      } else {
+        alert("Error al borrar: " + r.status);
+      }
+    } catch (e) {
+      alert("Error al borrar: " + (e as Error).message);
+    } finally {
+      setBorrando(false);
+    }
+  }
 
   async function cargarHistorial() {
     setHistorialLoading(true);
@@ -790,6 +813,26 @@ function DrawerConversacion({ order, onClose, onMover }: { order: PipelineOrder;
               {s.label}
             </button>
           ))}
+        </div>
+
+        {/* Zona peligrosa: borrar cliente */}
+        <div style={{ padding: "10px 12px", borderBottom: "1px solid var(--border)", display: "flex", justifyContent: "flex-end" }}>
+          <button
+            onClick={borrarCliente}
+            disabled={borrando}
+            className="btn"
+            style={{
+              fontSize: 11,
+              padding: "5px 12px",
+              background: "#DC2626",
+              color: "#fff",
+              borderColor: "#DC2626",
+              opacity: borrando ? 0.6 : 1,
+            }}
+            title="Elimina definitivamente el pedido y todos los datos del cliente"
+          >
+            {borrando ? "Borrando..." : "🗑️ Borrar cliente"}
+          </button>
         </div>
 
         <div ref={scrollRef} style={{ flex: 1, padding: 12, overflowY: "auto", display: "flex", flexDirection: "column", gap: 6 }}>
