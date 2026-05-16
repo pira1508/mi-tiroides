@@ -12,7 +12,7 @@ type PipelineOrder = {
   referencia?: string;
   guia?: string;
   carrier: "hoko" | "envia" | "interrap" | "—";
-  stage: "nuevo" | "confirmado" | "subido_hoko" | "guia_generada" | "guia_activa" | "en_bodega" | "mercancia_recogida" | "en_reparto" | "entregado" | "novedad" | "devolucion" | "cancelado";
+  stage: "nuevo" | "confirmado" | "subido_hoko" | "guia_generada" | "guia_activa" | "en_bodega" | "espera_ruta" | "mercancia_recogida" | "en_reparto" | "entregado" | "pagado" | "novedad" | "devolucion" | "cancelado";
   total: number;
   cantidad: number;
   diasTratamiento?: number;
@@ -35,9 +35,11 @@ const STAGES: { id: PipelineOrder["stage"]; label: string; color: string; estado
   { id: "guia_generada",     label: "Guía generada",      color: "#06B6D4", estadoBot: "guia_generada" },
   { id: "guia_activa",       label: "Guía activa",        color: "#635BFF", estadoBot: "guia_activa" },
   { id: "en_bodega",         label: "En bodega",          color: "#7C3AED", estadoBot: "en_bodega" },
+  { id: "espera_ruta",       label: "En espera de ruta",  color: "#A855F7", estadoBot: "espera_ruta" },
   { id: "mercancia_recogida",label: "Mercancía recogida", color: "#0F3D2E", estadoBot: "despachado" },
   { id: "en_reparto",        label: "En reparto",         color: "#DB2777", estadoBot: "en_reparto" },
   { id: "entregado",         label: "Entregado",          color: "#16A34A", estadoBot: "entregado" },
+  { id: "pagado",            label: "Pagado",             color: "#15803D", estadoBot: "pagado" },
   { id: "novedad",           label: "Novedad",            color: "#DC2626", estadoBot: "novedad" },
   { id: "devolucion",        label: "Devolución",         color: "#94A3B8", estadoBot: "devolucion" },
   { id: "cancelado",         label: "Cancelado",          color: "#64748B", estadoBot: "cancelado" },
@@ -47,6 +49,7 @@ function mapStage(estado: string): PipelineOrder["stage"] {
   if (estado === "despachado") return "mercancia_recogida";
   if (estado === "en_ruta") return "en_reparto";
   if (estado === "devuelto") return "devolucion";
+  if (estado === "pagado_tienda") return "pagado";
   // estados directos del bot que coinciden 1:1 con STAGES
   return (estado as PipelineOrder["stage"]) || "nuevo";
 }
@@ -68,6 +71,7 @@ function formatTime(iso: string) {
 export function Pipeline() {
   const [orders, setOrders] = useState<PipelineOrder[]>([]);
   const [filterCarrier, setFilterCarrier] = useState<"todas" | keyof typeof CARRIERS>("todas");
+  const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [openOrder, setOpenOrder] = useState<PipelineOrder | null>(null);
@@ -122,7 +126,23 @@ export function Pipeline() {
     }
   }
 
-  const filtered = filterCarrier === "todas" ? orders : orders.filter((o) => o.carrier === filterCarrier);
+  const byCarrier = filterCarrier === "todas" ? orders : orders.filter((o) => o.carrier === filterCarrier);
+  const q = search.trim().toLowerCase();
+  const qDigits = q.replace(/\D/g, "");
+  const filtered = q
+    ? byCarrier.filter((o) => {
+        const nombre = (o.customer || "").toLowerCase();
+        const tel = (o.phone || "").toLowerCase();
+        const telDigits = tel.replace(/\D/g, "");
+        const guia = (o.guia || "").toLowerCase();
+        return (
+          nombre.includes(q) ||
+          tel.includes(q) ||
+          (qDigits.length > 0 && telDigits.includes(qDigits)) ||
+          guia.includes(q)
+        );
+      })
+    : byCarrier;
 
   function onDragStart(e: React.DragEvent, id: string) {
     setDraggingId(id);
@@ -184,17 +204,55 @@ export function Pipeline() {
       <div className="card">
         <div className="card-header">
           <div className="h2">Kanban — arrastrá tarjetas entre columnas o click para ver chat</div>
-          <a
-            href="/api/admin/export?estado=confirmado"
-            target="_blank"
-            className="btn primary"
-            style={{ marginLeft: "auto", fontSize: 12, padding: "6px 12px", textDecoration: "none" }}
-          >
-            📊 Exportar para HOKO
-          </a>
-          <span className="muted" style={{ fontSize: 11, marginLeft: 12 }}>
-            {loading ? "Cargando..." : `${filtered.length} pedidos`}
-          </span>
+          <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ position: "relative" }}>
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="🔍 Buscar nombre, teléfono o guía..."
+                style={{
+                  padding: "6px 28px 6px 12px",
+                  border: "1px solid var(--border)",
+                  borderRadius: 6,
+                  background: "var(--panel-sub)",
+                  fontSize: 12,
+                  width: 260,
+                }}
+              />
+              {search && (
+                <button
+                  onClick={() => setSearch("")}
+                  aria-label="Limpiar búsqueda"
+                  style={{
+                    position: "absolute",
+                    right: 6,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    background: "transparent",
+                    border: 0,
+                    cursor: "pointer",
+                    color: "var(--text-sub)",
+                    fontSize: 14,
+                    padding: 2,
+                    lineHeight: 1,
+                  }}
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+            <a
+              href="/api/admin/export?estado=confirmado"
+              target="_blank"
+              className="btn primary"
+              style={{ fontSize: 12, padding: "6px 12px", textDecoration: "none" }}
+            >
+              📊 Exportar para HOKO
+            </a>
+            <span className="muted" style={{ fontSize: 11 }}>
+              {loading ? "Cargando..." : `${filtered.length} pedidos`}
+            </span>
+          </div>
         </div>
         <div className="card-body" style={{ overflowX: "auto" }}>
           <div style={{ display: "grid", gridTemplateColumns: `repeat(${STAGES.length}, minmax(180px, 1fr))`, gap: 10 }}>
