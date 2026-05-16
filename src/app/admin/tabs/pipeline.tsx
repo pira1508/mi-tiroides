@@ -260,6 +260,48 @@ export function Pipeline() {
   // Flow rail = mismos stages del kanban en orden
   const STAGES_FLOW: PipelineOrder["stage"][] = STAGES.map((s) => s.id);
 
+  // === Datos para el pie chart ===
+  // Solo incluimos stages con count > 0 para que el gráfico se vea limpio
+  const totalFiltrado = filtered.length;
+  const pieData = STAGES
+    .map((s) => ({
+      ...s,
+      count: filtered.filter((o) => o.stage === s.id).length,
+    }))
+    .filter((s) => s.count > 0)
+    .sort((a, b) => b.count - a.count); // Más grandes primero
+
+  // Construir los segmentos del SVG con coordenadas
+  const pieSize = 320;
+  const radius = pieSize / 2 - 6;
+  const cx = pieSize / 2;
+  const cy = pieSize / 2;
+  let anguloAcum = -90; // empezamos arriba
+  const segments = pieData.map((s) => {
+    const pct = totalFiltrado ? (s.count / totalFiltrado) : 0;
+    const grados = pct * 360;
+    const inicio = anguloAcum;
+    const fin = anguloAcum + grados;
+    anguloAcum = fin;
+    const rad = (deg: number) => (deg * Math.PI) / 180;
+    const x1 = cx + radius * Math.cos(rad(inicio));
+    const y1 = cy + radius * Math.sin(rad(inicio));
+    const x2 = cx + radius * Math.cos(rad(fin));
+    const y2 = cy + radius * Math.sin(rad(fin));
+    const largeArc = grados > 180 ? 1 : 0;
+    // Caso especial: si solo hay 1 stage con 100%, dibujamos un círculo completo
+    const isFullCircle = pieData.length === 1 && pct >= 0.999;
+    const d = isFullCircle
+      ? `M ${cx} ${cy - radius} A ${radius} ${radius} 0 1 1 ${cx - 0.01} ${cy - radius} Z`
+      : `M ${cx} ${cy} L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2} Z`;
+    // Posición de la etiqueta (% adentro del segmento, a 65% del radio)
+    const midDeg = (inicio + fin) / 2;
+    const labelR = radius * 0.65;
+    const lx = cx + labelR * Math.cos(rad(midDeg));
+    const ly = cy + labelR * Math.sin(rad(midDeg));
+    return { ...s, pct, d, lx, ly, mostrarPctEnPie: pct >= 0.05 };
+  });
+
   return (
     <>
       {/* Filtro de fechas */}
@@ -338,10 +380,10 @@ export function Pipeline() {
         </div>
       </div>
 
-      {/* Flow rail */}
+      {/* Flujo de pedidos - Pie chart */}
       <div className="card" style={{ marginBottom: 16 }}>
         <div className="card-header">
-          <div className="h2">Flujo de pedidos</div>
+          <div className="h2">📊 Flujo de pedidos</div>
           <div className="segmented" style={{ marginLeft: "auto" }}>
             <button className={filterCarrier === "todas" ? "active" : ""} onClick={() => setFilterCarrier("todas")}>Todas</button>
             {(Object.entries(CARRIERS) as [keyof typeof CARRIERS, typeof CARRIERS.hoko][]).map(([k, v]) => (
@@ -351,25 +393,77 @@ export function Pipeline() {
             ))}
           </div>
         </div>
-        <div className="card-body" style={{ overflowX: "auto" }}>
-          <div style={{ display: "flex", gap: 12, alignItems: "center", minWidth: 800 }}>
-            {STAGES_FLOW.map((stageId, i) => {
-              const s = STAGES.find((x) => x.id === stageId);
-              if (!s) return null;
-              const count = filtered.filter((o) => o.stage === s.id).length;
-              return (
-                <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <div style={{ textAlign: "center" }}>
-                    <div style={{ width: 44, height: 44, borderRadius: "50%", background: s.color, color: "#fff", display: "grid", placeItems: "center", fontSize: 16, fontWeight: 700, marginBottom: 4 }}>
-                      {count}
+        <div className="card-body">
+          {totalFiltrado === 0 ? (
+            <div className="muted" style={{ textAlign: "center", padding: 40 }}>
+              Sin pedidos en este filtro
+            </div>
+          ) : (
+            <div style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: 32, alignItems: "center" }}>
+              {/* SVG Pie */}
+              <div style={{ position: "relative" }}>
+                <svg width={pieSize} height={pieSize} viewBox={`0 0 ${pieSize} ${pieSize}`} style={{ display: "block" }}>
+                  {segments.map((s) => (
+                    <g key={s.id}>
+                      <path d={s.d} fill={s.color} stroke="#fff" strokeWidth={2}>
+                        <title>{s.label}: {s.count} ({(s.pct * 100).toFixed(1)}%)</title>
+                      </path>
+                      {s.mostrarPctEnPie && (
+                        <text
+                          x={s.lx}
+                          y={s.ly}
+                          textAnchor="middle"
+                          dominantBaseline="middle"
+                          fill="#fff"
+                          fontSize={14}
+                          fontWeight={700}
+                          style={{ pointerEvents: "none", textShadow: "0 1px 2px rgba(0,0,0,.5)" }}
+                        >
+                          {(s.pct * 100).toFixed(0)}%
+                        </text>
+                      )}
+                    </g>
+                  ))}
+                  {/* círculo central blanco para look donut + total */}
+                  <circle cx={cx} cy={cy} r={radius * 0.42} fill="var(--panel)" />
+                  <text x={cx} y={cy - 8} textAnchor="middle" fontSize={14} fill="var(--text-muted)" fontWeight={600}>
+                    TOTAL
+                  </text>
+                  <text x={cx} y={cy + 18} textAnchor="middle" fontSize={32} fill="var(--text)" fontWeight={800}>
+                    {totalFiltrado}
+                  </text>
+                </svg>
+              </div>
+
+              {/* Leyenda con tabla */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, alignContent: "center" }}>
+                {segments.map((s) => (
+                  <div
+                    key={s.id}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 10,
+                      padding: "8px 12px",
+                      background: "var(--panel-sub)",
+                      borderRadius: 6,
+                      borderLeft: `4px solid ${s.color}`,
+                    }}
+                  >
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 600, fontSize: 12 }}>{s.label}</div>
+                      <div className="muted" style={{ fontSize: 10.5 }}>
+                        {s.count} pedido{s.count !== 1 ? "s" : ""}
+                      </div>
                     </div>
-                    <div className="label">{s.label}</div>
+                    <div style={{ fontWeight: 700, fontSize: 16, color: s.color }}>
+                      {(s.pct * 100).toFixed(1)}%
+                    </div>
                   </div>
-                  {i < STAGES_FLOW.length - 1 && <div style={{ flex: 1, height: 2, background: "var(--border)", minWidth: 20 }} />}
-                </div>
-              );
-            })}
-          </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
