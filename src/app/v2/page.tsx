@@ -173,6 +173,7 @@ declare global {
   interface Window {
     fbq?: (...args: unknown[]) => void;
     gtag?: (...args: unknown[]) => void;
+    ttq?: { track: (name: string, params?: Record<string, unknown>, options?: Record<string, unknown>) => void; page: () => void };
   }
 }
 
@@ -430,6 +431,15 @@ export default function Page() {
       num_items: PLANES[cantidad].frascos,
     });
     window.gtag?.("event", "begin_checkout", { value, currency: "COP", variant: VARIANT });
+    // TikTok Pixel: inicio de checkout
+    window.ttq?.track("InitiateCheckout", {
+      value,
+      currency: "COP",
+      content_id: `mi-tiroides-${cantidad}-frascos`,
+      content_type: "product",
+      content_name: PLANES[cantidad].label,
+      quantity: PLANES[cantidad].frascos,
+    });
     // Track apertura de form
     fetch("/api/track", {
       method: "POST",
@@ -450,6 +460,13 @@ export default function Page() {
       content_name: PLANES[cantidad].label,
     });
     window.gtag?.("event", "generate_lead", { value, currency: "COP", variant: VARIANT });
+    // TikTok Pixel: submit form
+    window.ttq?.track("SubmitForm", {
+      value,
+      currency: "COP",
+      content_id: `mi-tiroides-${cantidad}-frascos`,
+      content_name: PLANES[cantidad].label,
+    });
   }
   function trackPurchase(value: number, eventId: string) {
     window.fbq?.("track", "Purchase", {
@@ -461,6 +478,15 @@ export default function Page() {
       num_items: PLANES[cantidad].frascos,
     }, { eventID: eventId });
     window.gtag?.("event", "purchase", { value, currency: "COP", transaction_id: eventId, variant: VARIANT });
+    // TikTok Pixel: pago completado (event_id para dedup con Events API server-side)
+    window.ttq?.track("CompletePayment", {
+      value,
+      currency: "COP",
+      content_id: `mi-tiroides-${cantidad}-frascos`,
+      content_type: "product",
+      content_name: PLANES[cantidad].label,
+      quantity: PLANES[cantidad].frascos,
+    }, { event_id: eventId });
   }
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
