@@ -69,7 +69,7 @@ export function CRM() {
       if (r.ok) {
         setBotPaused(false);
         // Refrescar mensajes para mostrar la respuesta automática que Camila acaba de mandar
-        setTimeout(() => cargarMensajes(activeId), 800);
+        setTimeout(() => cargarMensajes(activeId, true), 800);
       }
     } finally {
       setTogglingBot(false);
@@ -95,17 +95,24 @@ export function CRM() {
   }, []);
 
   // Cargar mensajes del thread activo
-  async function cargarMensajes(phone: string) {
+  // initial=true → al abrir/cambiar thread, baja al fondo siempre.
+  // initial=false → polling: solo baja si el usuario ya estaba al fondo (no
+  // interrumpir si está leyendo arriba).
+  async function cargarMensajes(phone: string, initial = false) {
     const r = await fetch(`/api/admin/conversaciones?telefono=${encodeURIComponent(phone)}`, { cache: "no-store" });
     if (!r.ok) return;
     const data = (await r.json()) as Message[];
+    const el = scrollRef.current;
+    const estabaAlFondo = el ? (el.scrollHeight - el.scrollTop - el.clientHeight) < 80 : true;
     setMessages(data);
-    setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight }), 50);
+    if (initial || estabaAlFondo) {
+      setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight }), 50);
+    }
   }
 
   useEffect(() => {
     if (!activeId) return;
-    cargarMensajes(activeId);
+    cargarMensajes(activeId, true);
     cargarEstadoBot(activeId);
     const t = setInterval(() => cargarMensajes(activeId), 5000);
     return () => clearInterval(t);
@@ -122,7 +129,7 @@ export function CRM() {
       });
       if (r.ok) {
         setDraft("");
-        await cargarMensajes(activeId);
+        await cargarMensajes(activeId, true);
       }
     } finally {
       setSending(false);
