@@ -237,17 +237,21 @@ function DrawerNovedad({ row, onClose, onChanged }: { row: NovedadRow; onClose: 
   const resuelta = !!row.novedad_resolucion;
   const horas = horasDesde(row.novedad_inicio);
 
-  async function cargarMensajes() {
+  async function cargarMensajes(initial = false) {
     const r = await fetch(`/api/admin/conversaciones?telefono=${encodeURIComponent(row.telefono)}`, { cache: "no-store" });
     if (!r.ok) return;
     const data = (await r.json()) as Message[];
+    const el = scrollRef.current;
+    const estabaAlFondo = el ? (el.scrollHeight - el.scrollTop - el.clientHeight) < 80 : true;
     setMessages(data);
-    setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight }), 50);
+    if (initial || estabaAlFondo) {
+      setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight }), 50);
+    }
   }
 
   useEffect(() => {
-    cargarMensajes();
-    const t = setInterval(cargarMensajes, 5000);
+    cargarMensajes(true);
+    const t = setInterval(() => cargarMensajes(), 5000);
     return () => clearInterval(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [row.telefono]);
@@ -281,7 +285,7 @@ function DrawerNovedad({ row, onClose, onChanged }: { row: NovedadRow; onClose: 
       });
       if (r.ok) {
         setDraft("");
-        await cargarMensajes();
+        await cargarMensajes(true);
       }
     } finally {
       setSending(false);
