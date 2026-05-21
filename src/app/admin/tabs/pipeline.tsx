@@ -663,8 +663,17 @@ function DrawerConversacion({ order, onClose, onMover, onDeleted }: { order: Pip
     const data = (await r.json()) as Message[];
     const el = scrollRef.current;
     const estabaAlFondo = el ? (el.scrollHeight - el.scrollTop - el.clientHeight) < 80 : true;
-    setMessages(data);
-    if (initial || estabaAlFondo) {
+    setMessages((prev) => {
+      // Si la lista no cambió, no re-renderizar (evita scroll spam del polling).
+      if (prev.length === data.length && prev.length > 0) {
+        const last = prev[prev.length - 1];
+        const lastNew = data[data.length - 1];
+        if (last?.time === lastNew?.time && last?.text === lastNew?.text) return prev;
+      }
+      return data;
+    });
+    const hayCambio = data.length !== messages.length || (data.length > 0 && data[data.length - 1]?.time !== messages[messages.length - 1]?.time);
+    if (initial || (hayCambio && estabaAlFondo)) {
       setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight }), 50);
     }
   }
