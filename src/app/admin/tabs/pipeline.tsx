@@ -14,11 +14,12 @@ type PipelineOrder = {
   transportadora?: string;
   novedadResolucion?: string;
   carrier: "hoko" | "envia" | "interrap" | "—";
-  stage: "nuevo" | "confirmado" | "subido_hoko" | "guia_generada" | "guia_activa" | "en_bodega" | "espera_ruta" | "mercancia_recogida" | "en_reparto" | "entregado" | "pagado" | "novedad" | "novedad_resuelta" | "devolucion" | "cancelado";
+  stage: "nuevo" | "confirmado" | "subido_hoko" | "guia_generada" | "guia_activa" | "en_bodega" | "bodega_2da_vez" | "espera_ruta" | "mercancia_recogida" | "en_reparto" | "entregado" | "pagado" | "novedad" | "novedad_resuelta" | "devolucion" | "cancelado";
   total: number;
   cantidad: number;
   diasTratamiento?: number;
   creadoEn?: string;
+  bodega2daVez?: boolean;
 };
 
 type Message = { from: "bot" | "cliente"; text: string; time: string };
@@ -37,6 +38,7 @@ const STAGES: { id: PipelineOrder["stage"]; label: string; color: string; estado
   { id: "guia_generada",     label: "Guía generada",      color: "#06B6D4", estadoBot: "guia_generada" },
   { id: "guia_activa",       label: "Guía activa",        color: "#635BFF", estadoBot: "guia_activa" },
   { id: "en_bodega",         label: "En bodega",          color: "#7C3AED", estadoBot: "en_bodega" },
+  { id: "bodega_2da_vez",    label: "Bodega 2da vez",     color: "#EA580C", estadoBot: "en_bodega" },
   { id: "espera_ruta",       label: "En espera de ruta",  color: "#A855F7", estadoBot: "espera_ruta" },
   { id: "mercancia_recogida",label: "Mercancía recogida", color: "#0F3D2E", estadoBot: "despachado" },
   { id: "en_reparto",        label: "En reparto",         color: "#DB2777", estadoBot: "en_reparto" },
@@ -48,7 +50,7 @@ const STAGES: { id: PipelineOrder["stage"]; label: string; color: string; estado
   { id: "cancelado",         label: "Cancelado",          color: "#64748B", estadoBot: "cancelado" },
 ];
 
-function mapStage(estado: string, novedadResolucion?: string | null): PipelineOrder["stage"] {
+function mapStage(estado: string, novedadResolucion?: string | null, bodega2daVez?: boolean): PipelineOrder["stage"] {
   if (estado === "despachado") return "mercancia_recogida";
   if (estado === "en_ruta") return "en_reparto";
   if (estado === "devuelto") return "devolucion";
@@ -56,6 +58,9 @@ function mapStage(estado: string, novedadResolucion?: string | null): PipelineOr
   // Pedido que tuvo novedad y se resolvió (cliente respondió o se cerró el caso)
   // queda en una columna aparte para ver claramente las novedades activas vs resueltas.
   if (estado === "novedad" && novedadResolucion) return "novedad_resuelta";
+  // Bodega 2da vez: pedido en en_bodega pero ya pasó por una novedad antes.
+  // La transportadora reabrió el caso → operador debe coordinar.
+  if (estado === "en_bodega" && bodega2daVez) return "bodega_2da_vez";
   // estados directos del bot que coinciden 1:1 con STAGES
   return (estado as PipelineOrder["stage"]) || "nuevo";
 }
@@ -145,7 +150,7 @@ export function Pipeline() {
       const r = await fetch("/api/admin/pedidos", { cache: "no-store" });
       if (!r.ok) return;
       const data = await r.json();
-      const mapped: PipelineOrder[] = (data.pedidos || []).map((p: {id:string;nombre:string;telefonoCliente:string;ciudad:string;departamento?:string;direccion?:string;referencia?:string;cantidad:number;diasTratamiento?:number;total:number;estado:string;guia?:string;transportadora?:string;creadoEn?:string;novedadResolucion?:string|null}) => ({
+      const mapped: PipelineOrder[] = (data.pedidos || []).map((p: {id:string;nombre:string;telefonoCliente:string;ciudad:string;departamento?:string;direccion?:string;referencia?:string;cantidad:number;diasTratamiento?:number;total:number;estado:string;guia?:string;transportadora?:string;creadoEn?:string;novedadResolucion?:string|null;bodega2daVez?:boolean}) => ({
         id: p.id,
         customer: p.nombre || "—",
         phone: p.telefonoCliente || "",
@@ -157,11 +162,12 @@ export function Pipeline() {
         transportadora: p.transportadora,
         novedadResolucion: p.novedadResolucion || undefined,
         carrier: mapCarrier(p.transportadora),
-        stage: mapStage(p.estado, p.novedadResolucion),
+        stage: mapStage(p.estado, p.novedadResolucion, p.bodega2daVez),
         total: p.total,
         cantidad: p.cantidad,
         diasTratamiento: p.diasTratamiento,
         creadoEn: p.creadoEn,
+        bodega2daVez: p.bodega2daVez,
       }));
       setOrders(mapped);
     } finally {
@@ -233,7 +239,7 @@ export function Pipeline() {
     if (o.stage === "entregado" || o.stage === "pagado") s.entregadas++;
     else if (o.stage === "devolucion") s.devueltas++;
     else if (o.stage === "novedad") s.novedades++;
-    else if (["mercancia_recogida","en_reparto","en_bodega","espera_ruta","guia_activa","guia_generada"].includes(o.stage)) s.enCamino++;
+    else if (["mercancia_recogida","en_reparto","en_bodega","bodega_2da_vez","espera_ruta","guia_activa","guia_generada"].includes(o.stage)) s.enCamino++;
   }
 
   function onDragStart(e: React.DragEvent, id: string) {

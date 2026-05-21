@@ -134,8 +134,12 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "meta campaigns fetch failed", status: cr.status }, { status: 502 });
   }
   const campaignsData = await cr.json();
+  // Cualquier campaña que mencione "tiroides" en el nombre (case-insensitive, con o sin tildes)
   const tiroidesCamps: MetaCampaign[] = ((campaignsData.data ?? []) as MetaCampaign[])
-    .filter((c) => /tiroides|image\s*12/i.test(c.name || ""));
+    .filter((c) => {
+      const name = (c.name || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+      return /tiroides/.test(name);
+    });
 
   if (tiroidesCamps.length === 0) {
     return NextResponse.json({

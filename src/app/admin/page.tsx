@@ -1169,7 +1169,218 @@ const RANGE_PRESETS: { id: string; label: string }[] = [
   { id: "maximum", label: "Todo el histórico" },
 ];
 
+// ============ ADS MANAGER (Meta + TikTok) ============
 function AdsManager() {
+  const [subTab, setSubTab] = useState<"meta" | "tiktok">("meta");
+  return (
+    <>
+      <div className="card" style={{ marginBottom: 14 }}>
+        <div className="card-body" style={{ display: "flex", gap: 8, padding: "10px 14px" }}>
+          <button
+            onClick={() => setSubTab("meta")}
+            className={`btn ${subTab === "meta" ? "primary" : ""}`}
+            style={{ fontSize: 13, padding: "8px 16px", display: "flex", alignItems: "center", gap: 6 }}
+          >
+            <Icon name="fb" size={14} /> Meta Ads
+          </button>
+          <button
+            onClick={() => setSubTab("tiktok")}
+            className={`btn ${subTab === "tiktok" ? "primary" : ""}`}
+            style={{ fontSize: 13, padding: "8px 16px", display: "flex", alignItems: "center", gap: 6 }}
+          >
+            <span style={{ fontWeight: 900, fontSize: 13 }}>TT</span> TikTok Ads
+          </button>
+        </div>
+      </div>
+      {subTab === "meta" && <MetaAdsTab />}
+      {subTab === "tiktok" && <TikTokAdsTab />}
+    </>
+  );
+}
+
+type TikTokCampaignRow = {
+  id: string; name: string; status: string;
+  spend: number; impressions: number; clicks: number;
+  ctr: number; cpc: number; cpm: number; reach: number;
+  conversions: number; cpa: number; videoViews: number;
+};
+type TikTokAdsResp = {
+  configured: boolean;
+  spend: number; impressions: number; clicks: number; conversions: number;
+  ctr: number; cpc: number; cpa: number; videoViews?: number;
+  campaigns: TikTokCampaignRow[]; rango?: string; note?: string; message?: string;
+};
+
+function TikTokAdsTab() {
+  const [data, setData] = useState<TikTokAdsResp | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState("");
+  const [preset, setPreset] = useState<string>("last_30d");
+  const [customMode, setCustomMode] = useState(false);
+  const [since, setSince] = useState<string>("");
+  const [until, setUntil] = useState<string>("");
+
+  function cargar() {
+    setLoading(true);
+    setErr("");
+    const params = new URLSearchParams();
+    if (customMode && since && until) {
+      params.set("since", since);
+      params.set("until", until);
+    } else {
+      params.set("preset", preset);
+    }
+    fetch(`/api/admin/tiktok-ads?${params.toString()}`, { cache: "no-store" })
+      .then((r) => r.ok ? r.json() : Promise.reject(r))
+      .then((d) => { setData(d); setLoading(false); })
+      .catch(() => { setErr("No se pudo cargar TikTok Ads"); setLoading(false); });
+  }
+
+  useEffect(() => {
+    cargar();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [preset, customMode, since, until]);
+
+  const filtroBar = (
+    <div className="card" style={{ marginBottom: 14 }}>
+      <div className="card-body" style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+        <div className="label" style={{ marginRight: 4 }}>Rango:</div>
+        {!customMode && RANGE_PRESETS.map((p) => (
+          <button
+            key={p.id}
+            onClick={() => { setPreset(p.id); setCustomMode(false); }}
+            className={`btn ${preset === p.id ? "primary" : ""}`}
+            style={{ fontSize: 11, padding: "5px 10px" }}
+          >
+            {p.label}
+          </button>
+        ))}
+        {customMode ? (
+          <>
+            <input type="date" value={since} onChange={(e) => setSince(e.target.value)} style={{ padding: "5px 8px", fontSize: 12, border: "1px solid var(--border)", borderRadius: 4 }} />
+            <span style={{ fontSize: 12 }}>→</span>
+            <input type="date" value={until} onChange={(e) => setUntil(e.target.value)} style={{ padding: "5px 8px", fontSize: 12, border: "1px solid var(--border)", borderRadius: 4 }} />
+            <button onClick={() => { setCustomMode(false); setSince(""); setUntil(""); }} className="btn" style={{ fontSize: 11, padding: "5px 10px" }}>Cancelar</button>
+          </>
+        ) : (
+          <button onClick={() => setCustomMode(true)} className="btn" style={{ fontSize: 11, padding: "5px 10px" }}>📅 Rango personalizado</button>
+        )}
+      </div>
+    </div>
+  );
+
+  if (loading) return <>{filtroBar}<div className="card"><div className="card-body" style={{ padding: 40, textAlign: "center" }}>Cargando TikTok Ads…</div></div></>;
+
+  if (err) {
+    return (
+      <>
+        {filtroBar}
+        <div className="card">
+          <div className="card-body">
+            <div style={{ color: "var(--text-sub)" }}>{err}</div>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  if (data && !data.configured) {
+    return (
+      <>
+        {filtroBar}
+        <div className="card">
+          <div className="card-header"><div className="h2">⚠️ TikTok Business API no configurada</div></div>
+          <div className="card-body">
+            <p style={{ marginBottom: 12 }}>{data.message}</p>
+            <div style={{ background: "var(--panel-sub)", padding: 14, borderRadius: 8, fontSize: 13 }}>
+              <strong>Cómo configurar:</strong>
+              <ol style={{ marginTop: 8, paddingLeft: 20, lineHeight: 1.6 }}>
+                <li>Ve a <a href="https://ads.tiktok.com/marketing_api/homepage" target="_blank" rel="noreferrer" style={{ color: "var(--brand-ink)" }}>TikTok Marketing API</a> y crea una app de Business API.</li>
+                <li>Autoriza tu Ad Account para obtener un <code>access_token</code> de larga duración.</li>
+                <li>Encuentra tu <strong>Advertiser ID</strong> en TikTok Ads Manager → Account info.</li>
+                <li>Agrega a <code>.env</code> del landing:
+                  <pre style={{ background: "#0a0a0a", color: "#e0e0e0", padding: 10, borderRadius: 6, marginTop: 6, fontSize: 11 }}>
+TIKTOK_BUSINESS_TOKEN=tu_access_token{"\n"}TIKTOK_ADVERTISER_ID=tu_advertiser_id
+                  </pre>
+                </li>
+                <li>Reinicia el servidor.</li>
+              </ol>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  if (!data) return null;
+  const campaigns = data.campaigns ?? [];
+
+  return (
+    <>
+      {filtroBar}
+      <div className="kpi-grid" style={{ marginBottom: 16 }}>
+        <Kpi label="Gasto" value={fmtCOP(data.spend || 0)} />
+        <Kpi label="Impresiones" value={(data.impressions || 0).toLocaleString("es-CO")} />
+        <Kpi label="Clicks" value={(data.clicks || 0).toLocaleString("es-CO")} />
+        <Kpi label="CTR" value={(data.ctr || 0).toFixed(2) + "%"} />
+        <Kpi label="CPC" value={fmtCOP(data.cpc || 0)} />
+        <Kpi label="Conversiones" value={String(data.conversions || 0)} accent="success" />
+      </div>
+
+      <div className="card">
+        <div className="card-header">
+          <div className="h2">Campañas TikTok</div>
+          <span className="muted" style={{ fontSize: 11 }}>{campaigns.length} campañas {data.rango ? `· ${data.rango}` : ""}</span>
+        </div>
+        <div className="card-body tight" style={{ overflowX: "auto" }}>
+          {campaigns.length === 0 ? (
+            <div style={{ padding: 20, textAlign: "center", color: "var(--text-sub)" }}>
+              {data.note || "Sin datos en el rango seleccionado"}
+            </div>
+          ) : (
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Campaña</th>
+                  <th>Estado</th>
+                  <th className="t-right">Gasto</th>
+                  <th className="t-right">Impr</th>
+                  <th className="t-right">Video Views</th>
+                  <th className="t-right">Clicks</th>
+                  <th className="t-right">CTR</th>
+                  <th className="t-right">CPC</th>
+                  <th className="t-right">Conv</th>
+                  <th className="t-right">CPA</th>
+                </tr>
+              </thead>
+              <tbody>
+                {campaigns.map((c) => (
+                  <tr key={c.id}>
+                    <td style={{ maxWidth: 280, overflow: "hidden", textOverflow: "ellipsis" }}>
+                      <div style={{ fontWeight: 500 }}>{c.name}</div>
+                      <div className="mono muted" style={{ fontSize: 10 }}>{c.id}</div>
+                    </td>
+                    <td><span className="pill">{c.status}</span></td>
+                    <td className="t-right num">{fmtCOP(c.spend)}</td>
+                    <td className="t-right num">{c.impressions.toLocaleString("es-CO")}</td>
+                    <td className="t-right num">{c.videoViews.toLocaleString("es-CO")}</td>
+                    <td className="t-right num">{c.clicks.toLocaleString("es-CO")}</td>
+                    <td className="t-right num">{c.ctr.toFixed(2)}%</td>
+                    <td className="t-right num">{fmtCOP(c.cpc)}</td>
+                    <td className="t-right num"><strong>{c.conversions}</strong></td>
+                    <td className="t-right num">{c.cpa > 0 ? fmtCOP(c.cpa) : "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </div>
+    </>
+  );
+}
+
+function MetaAdsTab() {
   const [data, setData] = useState<AdsResp | null>(null);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
