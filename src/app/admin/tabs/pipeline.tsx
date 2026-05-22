@@ -90,10 +90,16 @@ const EXPORT_COLS: ExportCol[] = [
   { id: "estado",          label: "Estado pipeline",    get: (o) => o._stageLabel },
   { id: "guia",            label: "Guía",               get: (o) => o.guia || "" },
   { id: "transportadora",  label: "Transportadora",     get: (o) => o.transportadora || (o.carrier !== "—" ? CARRIERS[o.carrier as keyof typeof CARRIERS]?.name : "") },
+  { id: "actualizadoEn",   label: "Última actualización", get: (o) => o.actualizadoEn ? new Date(o.actualizadoEn).toLocaleString("es-CO") : "" },
+  { id: "horasEnEstado",   label: "Horas en estado actual", get: (o) => {
+      const h = horasEnEstado(o);
+      return h === null ? "" : Number(h.toFixed(1));
+    } },
+  { id: "estancado",       label: "Estancado +24h",     get: (o) => estaEstancado(o) ? "SÍ" : "" },
   { id: "novedadResolucion", label: "Resolución novedad", get: (o) => o.novedadResolucion || "" },
 ];
 
-const DEFAULT_EXPORT_COLS = ["id", "creadoEn", "customer", "phone", "city", "direccion", "cantidad", "total", "estado", "guia", "transportadora"];
+const DEFAULT_EXPORT_COLS = ["id", "creadoEn", "customer", "phone", "city", "direccion", "cantidad", "total", "estado", "guia", "transportadora", "horasEnEstado", "estancado"];
 
 function csvEscape(v: string | number): string {
   const s = String(v ?? "");
