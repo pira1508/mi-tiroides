@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { DEPARTAMENTOS, NOMBRES_DEPARTAMENTOS } from "./colombia";
+import { leerTracking, useCapturarTrackingOnMount } from "./_use-tracking";
 
 // Fisher-Yates shuffle determinístico por seed
 function shuffleWithSeed<T>(array: readonly T[], seed: number): T[] {
@@ -352,6 +353,7 @@ const TESTI_LARGOS = [
 ];
 
 export default function Page() {
+  useCapturarTrackingOnMount();
   const [cantidad, setCantidad] = useState<Cantidad>("3");
   const [enviando, setEnviando] = useState(false);
   const [ok, setOk] = useState(false);
@@ -489,6 +491,7 @@ export default function Page() {
     setError(null);
 
     const fd = new FormData(e.currentTarget);
+    const tracking = leerTracking();
     const data = {
       nombre: fd.get("nombre"),
       telefono: fd.get("telefono"),
@@ -499,6 +502,7 @@ export default function Page() {
       cantidad,
       variant: "v1",
       total: PLANES[cantidad as Cantidad].precio,
+      ...tracking,
     };
     if (!depto || !ciudad) {
       setError("Selecciona tu departamento y ciudad.");

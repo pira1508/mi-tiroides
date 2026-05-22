@@ -30,6 +30,8 @@ type BotRow = {
   novedad_inicio?: string | null;
   motivo_no_entrega?: string | null;
   bodega_2da_vez?: number | null;
+  fuente?: string | null;
+  fuente_raw?: string | null;
 };
 
 function fechaBogota(iso: string): string {
@@ -91,6 +93,8 @@ export async function GET() {
     novedadInicio: row.novedad_inicio || null,
     motivoNoEntrega: row.motivo_no_entrega || null,
     bodega2daVez: row.bodega_2da_vez === 1,
+    fuente: row.fuente || null,
+    fuenteRaw: row.fuente_raw || null,
   }));
 
   // A/B Testing: agrupar por variant

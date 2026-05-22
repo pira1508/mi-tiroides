@@ -26,7 +26,21 @@ type Pedido = {
   creadoEn: string;
   actualizadoEn?: string;
   estado: "nuevo" | "confirmado" | "despachado" | "entregado" | "cancelado";
+  fuente?: string | null;
+  fuenteRaw?: string | null;
 };
+
+// Mapeo fuente → { label, icono, color }
+const FUENTES: Record<string, { label: string; icon: string; color: string }> = {
+  meta:     { label: "Meta",      icon: "📘", color: "#1877F2" },
+  tiktok:   { label: "TikTok",    icon: "🎵", color: "#000000" },
+  google:   { label: "Google",    icon: "🔍", color: "#4285F4" },
+  organico: { label: "Orgánico",  icon: "🌱", color: "#16A34A" },
+};
+function fuenteInfo(f?: string | null) {
+  if (!f) return FUENTES.organico;
+  return FUENTES[f] || { label: f, icon: "🔗", color: "#64748B" };
+}
 
 type AbStats = {
   visitasHoy: number;
@@ -274,6 +288,7 @@ export default function AdminPage() {
   const [to, setTo] = useState<string>(hoyBogota());
   const [seleccionado, setSeleccionado] = useState<Pedido | null>(null);
   const [filtroEstado, setFiltroEstado] = useState<"todos" | Pedido["estado"]>("todos");
+  const [filtroFuente, setFiltroFuente] = useState<"todas" | "meta" | "tiktok" | "organico" | "otros">("todas");
   const [busqueda, setBusqueda] = useState("");
   const [paused, setPaused] = useState(false);
 
@@ -378,6 +393,15 @@ export default function AdminPage() {
   const filtrados = useMemo(() => {
     return pedidos.filter((p) => {
       if (filtroEstado !== "todos" && p.estado !== filtroEstado) return false;
+      if (filtroFuente !== "todas") {
+        const f = p.fuente || "organico";
+        if (filtroFuente === "otros") {
+          // "otros" = todo lo que no sea meta/tiktok/organico (ej: google, utm crudo)
+          if (f === "meta" || f === "tiktok" || f === "organico") return false;
+        } else if (f !== filtroFuente) {
+          return false;
+        }
+      }
       if (busqueda) {
         const q = busqueda.toLowerCase();
         return (
@@ -389,7 +413,20 @@ export default function AdminPage() {
       }
       return true;
     });
-  }, [pedidos, filtroEstado, busqueda]);
+  }, [pedidos, filtroEstado, filtroFuente, busqueda]);
+
+  // Contar pedidos por fuente (para mostrar conteos en el segmented)
+  const fuentesCounts = useMemo(() => {
+    const c = { todas: pedidos.length, meta: 0, tiktok: 0, organico: 0, otros: 0 };
+    for (const p of pedidos) {
+      const f = p.fuente || "organico";
+      if (f === "meta") c.meta++;
+      else if (f === "tiktok") c.tiktok++;
+      else if (f === "organico") c.organico++;
+      else c.otros++;
+    }
+    return c;
+  }, [pedidos]);
 
   // Top ciudades
   const topCiudades = useMemo(() => {
@@ -547,6 +584,9 @@ export default function AdminPage() {
               loading={loading}
               filtroEstado={filtroEstado}
               setFiltroEstado={setFiltroEstado}
+              filtroFuente={filtroFuente}
+              setFiltroFuente={setFiltroFuente}
+              fuentesCounts={fuentesCounts}
               estadosCounts={{
                 todos: pedidos.length,
                 nuevo: stats?.nuevos ?? 0,
@@ -611,6 +651,22 @@ export default function AdminPage() {
               {seleccionado.referencia && <Field label="Referencia" value={seleccionado.referencia} />}
               <Field label="Frascos" value={`${seleccionado.cantidad} (${seleccionado.diasTratamiento} días)`} />
               <Field label="Total" value={<strong className="num">{fmtCOP(seleccionado.total)}</strong>} />
+              <Field
+                label="Fuente"
+                value={(() => {
+                  const fu = fuenteInfo(seleccionado.fuente);
+                  return (
+                    <span title={seleccionado.fuenteRaw || ""} style={{ color: fu.color, fontWeight: 600 }}>
+                      {fu.icon} {fu.label}
+                      {seleccionado.fuenteRaw && (
+                        <span className="muted" style={{ marginLeft: 6, fontSize: 11, fontWeight: 400 }}>
+                          ({seleccionado.fuenteRaw.length > 50 ? seleccionado.fuenteRaw.slice(0, 50) + "…" : seleccionado.fuenteRaw})
+                        </span>
+                      )}
+                    </span>
+                  );
+                })()}
+              />
               <Field label="Creado" value={<span className="mono">{fmtFecha(seleccionado.creadoEn)}</span>} />
 
               <div style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid var(--border)" }}>
@@ -940,6 +996,9 @@ function LiveOrders({
   loading,
   filtroEstado,
   setFiltroEstado,
+  filtroFuente,
+  setFiltroFuente,
+  fuentesCounts,
   estadosCounts,
   paused,
   setPaused,
@@ -949,6 +1008,9 @@ function LiveOrders({
   loading: boolean;
   filtroEstado: "todos" | Pedido["estado"];
   setFiltroEstado: (e: "todos" | Pedido["estado"]) => void;
+  filtroFuente: "todas" | "meta" | "tiktok" | "organico" | "otros";
+  setFiltroFuente: (f: "todas" | "meta" | "tiktok" | "organico" | "otros") => void;
+  fuentesCounts: { todas: number; meta: number; tiktok: number; organico: number; otros: number };
   estadosCounts: Record<string, number>;
   paused: boolean;
   setPaused: (b: boolean) => void;
@@ -978,6 +1040,28 @@ function LiveOrders({
             </button>
           </div>
         </div>
+        <div className="card-body" style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", paddingTop: 0 }}>
+          <span className="label" style={{ marginRight: 4 }}>📊 Fuente:</span>
+          <div className="segmented">
+            <button className={filtroFuente === "todas" ? "active" : ""} onClick={() => setFiltroFuente("todas")}>
+              Todas ({fuentesCounts.todas})
+            </button>
+            <button className={filtroFuente === "meta" ? "active" : ""} onClick={() => setFiltroFuente("meta")}>
+              📘 Meta ({fuentesCounts.meta})
+            </button>
+            <button className={filtroFuente === "tiktok" ? "active" : ""} onClick={() => setFiltroFuente("tiktok")}>
+              🎵 TikTok ({fuentesCounts.tiktok})
+            </button>
+            <button className={filtroFuente === "organico" ? "active" : ""} onClick={() => setFiltroFuente("organico")}>
+              🌱 Orgánico ({fuentesCounts.organico})
+            </button>
+            {fuentesCounts.otros > 0 && (
+              <button className={filtroFuente === "otros" ? "active" : ""} onClick={() => setFiltroFuente("otros")}>
+                🔗 Otros ({fuentesCounts.otros})
+              </button>
+            )}
+          </div>
+        </div>
       </div>
 
       <div className="card">
@@ -997,13 +1081,16 @@ function LiveOrders({
                   <th>Fecha</th>
                   <th>Cliente</th>
                   <th>Ciudad</th>
+                  <th>Fuente</th>
                   <th className="t-right">Frascos</th>
                   <th className="t-right">Total</th>
                   <th>Estado</th>
                 </tr>
               </thead>
               <tbody>
-                {pedidos.map((p) => (
+                {pedidos.map((p) => {
+                  const fu = fuenteInfo(p.fuente);
+                  return (
                   <tr key={p.id} className="row-clickable" onClick={() => onVerPedido(p)}>
                     <td className="mono" style={{ fontSize: 11, color: "var(--text-sub)" }}>{p.id}</td>
                     <td className="mono" style={{ fontSize: 11 }}>{fmtFecha(p.creadoEn)}</td>
@@ -1012,11 +1099,21 @@ function LiveOrders({
                       <div className="muted" style={{ fontSize: 11 }}>{p.telefonoCliente}</div>
                     </td>
                     <td>{p.ciudad}{p.departamento ? `, ${p.departamento}` : ""}</td>
+                    <td>
+                      <span
+                        className="pill"
+                        title={p.fuenteRaw || fu.label}
+                        style={{ background: fu.color + "22", color: fu.color, borderColor: fu.color + "55", fontSize: 11, fontWeight: 600 }}
+                      >
+                        {fu.icon} {fu.label}
+                      </span>
+                    </td>
                     <td className="t-right num">{p.cantidad}</td>
                     <td className="t-right num"><strong>{fmtCOP(p.total)}</strong></td>
                     <td><span className={`pill ${PILL_ESTADO[p.estado]}`}>{p.estado}</span></td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           )}

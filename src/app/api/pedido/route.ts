@@ -67,6 +67,13 @@ export async function POST(req: Request) {
         referencia: pedido.cliente.referencia,
         cantidad: String(pedido.plan.cantidad),
         variant,
+        // Tracking de origen capturado en el landing (Meta / TikTok / UTM)
+        fbclid: data.fbclid || undefined,
+        ttclid: data.ttclid || undefined,
+        utm_source: data.utm_source || undefined,
+        utm_campaign: data.utm_campaign || undefined,
+        utm_medium: data.utm_medium || undefined,
+        referrer: data.referrer || undefined,
         // server-side dedup hint: el bot puede ignorar si <10 min con mismo tel+cantidad
         dedupeKey: `${pedido.cliente.telefono}-${pedido.plan.cantidad}`,
       };
