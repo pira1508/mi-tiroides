@@ -1,9 +1,39 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { DEPARTAMENTOS, NOMBRES_DEPARTAMENTOS } from "./colombia";
 import { leerTracking, useCapturarTrackingOnMount } from "./_use-tracking";
+
+// === Helpers de formulario ===
+function sanitizarTelefonoCO(raw: string): string {
+  let d = (raw || "").replace(/\D/g, "");
+  if (d.length === 12 && d.startsWith("57")) d = d.slice(2);
+  if (d.length === 11 && d.startsWith("57")) d = d.slice(2);
+  return d;
+}
+function esCelularCOValido(raw: string): boolean {
+  const d = sanitizarTelefonoCO(raw);
+  return /^3\d{9}$/.test(d);
+}
+function formatearTelefono(raw: string): string {
+  const d = sanitizarTelefonoCO(raw).slice(0, 10);
+  if (d.length <= 3) return d;
+  if (d.length <= 6) return `${d.slice(0,3)} ${d.slice(3)}`;
+  return `${d.slice(0,3)} ${d.slice(3,6)} ${d.slice(6)}`;
+}
+
+const AUTOSAVE_KEY = "mit_form_autosave_v1";
+type FormDraft = {
+  nombre?: string;
+  telefono?: string;
+  direccion?: string;
+  referencia?: string;
+  departamento?: string;
+  ciudad?: string;
+  cantidad?: string;
+  ts?: number;
+};
 
 // Fisher-Yates shuffle determinístico por seed
 function shuffleWithSeed<T>(array: readonly T[], seed: number): T[] {
@@ -357,12 +387,20 @@ export default function Page() {
   const [cantidad, setCantidad] = useState<Cantidad>("3");
   const [enviando, setEnviando] = useState(false);
   const [ok, setOk] = useState(false);
+  const [pedidoConfirmado, setPedidoConfirmado] = useState<{ id: string; total: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [heroIdx, setHeroIdx] = useState(0);
   const [modalOpen, setModalOpen] = useState(false);
   const [ingActivo, setIngActivo] = useState<Ingrediente | null>(null);
   const [depto, setDepto] = useState("");
   const [ciudad, setCiudad] = useState("");
+  const [nombre, setNombre] = useState("");
+  const [telefono, setTelefono] = useState("");
+  const [direccion, setDireccion] = useState("");
+  const [referencia, setReferencia] = useState("");
+  const [ciudadInput, setCiudadInput] = useState("");
+  const [ciudadFocus, setCiudadFocus] = useState(false);
+  const abandonTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Seed aleatoria — se inicia en el primer render del cliente (lazy init)
   // Lazy init garantiza que se ejecute UNA vez al montar y que el shuffle se aplique antes del paint
@@ -414,6 +452,60 @@ export default function Page() {
       body: JSON.stringify({ tipo: "view" }),
     }).catch(() => {});
   }, []);
+
+  // === Fix #4: Restore desde localStorage al abrir el modal ===
+  useEffect(() => {
+    if (!modalOpen) return;
+    try {
+      const raw = localStorage.getItem(AUTOSAVE_KEY);
+      if (!raw) return;
+      const d: FormDraft = JSON.parse(raw);
+      if (d.ts && Date.now() - d.ts < 24 * 60 * 60 * 1000) {
+        if (d.nombre) setNombre(d.nombre);
+        if (d.telefono) setTelefono(d.telefono);
+        if (d.direccion) setDireccion(d.direccion);
+        if (d.referencia) setReferencia(d.referencia);
+        if (d.departamento) setDepto(d.departamento);
+        if (d.ciudad) { setCiudad(d.ciudad); setCiudadInput(d.ciudad); }
+      }
+    } catch {}
+  }, [modalOpen]);
+
+  // === Fix #4: Autosave + ping al bot para recuperación ===
+  useEffect(() => {
+    if (!modalOpen) return;
+    if (!nombre && !telefono && !direccion) return;
+    const draft: FormDraft = {
+      nombre, telefono, direccion, referencia,
+      departamento: depto, ciudad, cantidad, ts: Date.now(),
+    };
+    try { localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(draft)); } catch {}
+
+    if (abandonTimer.current) clearTimeout(abandonTimer.current);
+    if (esCelularCOValido(telefono) && nombre.trim().length >= 2) {
+      abandonTimer.current = setTimeout(() => {
+        const tel = sanitizarTelefonoCO(telefono);
+        try {
+          const blob = new Blob([JSON.stringify({
+            tipo: "abandono_form",
+            nombre: nombre.trim(),
+            telefono: tel,
+            departamento: depto || null,
+            ciudad: ciudad || null,
+            direccion: direccion || null,
+            cantidad,
+            variant: "v1",
+            total: PLANES[cantidad].precio,
+            ts: new Date().toISOString(),
+          })], { type: "application/json" });
+          navigator.sendBeacon?.("/api/pedido", blob);
+        } catch {}
+      }, 8000);
+    }
+    return () => {
+      if (abandonTimer.current) clearTimeout(abandonTimer.current);
+    };
+  }, [modalOpen, nombre, telefono, direccion, referencia, depto, ciudad, cantidad]);
 
   function openModal() {
     setOk(false);
@@ -487,32 +579,44 @@ export default function Page() {
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setEnviando(true);
     setError(null);
 
-    const fd = new FormData(e.currentTarget);
+    if (!esCelularCOValido(telefono)) {
+      setError("Necesitamos tu celular Colombia (10 dígitos empezando en 3).");
+      return;
+    }
+    if (!nombre.trim() || nombre.trim().length < 3) {
+      setError("Escribe tu nombre completo.");
+      return;
+    }
+    if (!direccion.trim() || direccion.trim().length < 8) {
+      setError("Escribe tu dirección completa.");
+      return;
+    }
+    if (!depto || !ciudad) {
+      setError("Selecciona tu departamento y ciudad.");
+      return;
+    }
+
+    setEnviando(true);
+
+    const telSanitizado = sanitizarTelefonoCO(telefono);
     const tracking = leerTracking();
     const data = {
-      nombre: fd.get("nombre"),
-      telefono: fd.get("telefono"),
+      nombre: nombre.trim(),
+      telefono: telSanitizado,
       departamento: depto,
       ciudad,
-      referencia: fd.get("referencia"),
-      direccion: fd.get("direccion"),
+      referencia: referencia.trim(),
+      direccion: direccion.trim(),
       cantidad,
       variant: "v1",
       total: PLANES[cantidad as Cantidad].precio,
       ...tracking,
     };
-    if (!depto || !ciudad) {
-      setError("Selecciona tu departamento y ciudad.");
-      setEnviando(false);
-      return;
-    }
     const plan = PLANES[cantidad];
     const total = plan.precio;
 
-    // Anti-duplicado: si ya hicieron Purchase en los últimos 10 min con mismo telefono+plan, no fires Pixel de nuevo
     const fingerprint = `${data.telefono}-${cantidad}`;
     const lastKey = "mit_last_purchase";
     let alreadyFired = false;
@@ -528,34 +632,8 @@ export default function Page() {
 
     trackLead(total);
 
-    // Construir mensaje pre-rellenado para WhatsApp (tono cliente real)
-    const mensaje = [
-      `¡Hola! 🌿 Acabo de realizar mi pedido de *MI TIROIDES* y estos son mis datos de entrega:`,
-      ``,
-      `🙋‍♀️ *Nombre:* ${data.nombre}`,
-      `📞 *Teléfono:* ${data.telefono}`,
-      `🏙️ *Ciudad:* ${data.ciudad}, ${data.departamento}`,
-      `🏠 *Dirección:* ${data.direccion}`,
-      data.referencia && data.referencia !== "Opcional"
-        ? `📍 *Referencia:* ${data.referencia}`
-        : null,
-      ``,
-      `🛒 *Mi pedido:* ${plan.label} (${plan.frascos === 1 ? "45" : plan.frascos === 2 ? "90" : "135"} días)`,
-      `💰 *Total a pagar:* $${total.toLocaleString("es-CO")} COP`,
-      `💵 *Forma de pago:* Contra entrega`,
-      ``,
-      `¡Quedo atenta a la confirmación! 🙏✨`,
-    ]
-      .filter(Boolean)
-      .join("\n");
-
-    const waUrl = `https://wa.me/573227617545?text=${encodeURIComponent(mensaje)}`;
-
-    // Beacon de respaldo: lo enviamos sin esperar para que sobreviva la redirección a WhatsApp
-    try {
-      const blob = new Blob([JSON.stringify(data)], { type: "application/json" });
-      navigator.sendBeacon?.("/api/pedido", blob);
-    } catch {}
+    let pedidoId = `MIT-${Date.now().toString(36).toUpperCase()}`;
+    let registroOk = false;
 
     try {
       const res = await fetch("/api/pedido", {
@@ -564,23 +642,36 @@ export default function Page() {
         body: JSON.stringify(data),
         keepalive: true,
       });
-      // Aunque la API falle, no bloqueamos al cliente — abre WhatsApp igual
-      if (res.ok && !alreadyFired) {
-        let pedidoId = `mit-${Date.now()}`;
+      if (res.ok) {
         try { const j = await res.clone().json(); if (j?.id) pedidoId = j.id; } catch {}
-        trackPurchase(total, pedidoId);
-        try { localStorage.setItem(lastKey, JSON.stringify({ fp: fingerprint, ts: Date.now() })); } catch {}
+        registroOk = true;
+        if (!alreadyFired) {
+          trackPurchase(total, pedidoId);
+          try { localStorage.setItem(lastKey, JSON.stringify({ fp: fingerprint, ts: Date.now() })); } catch {}
+        }
+      } else {
+        try {
+          const blob = new Blob([JSON.stringify(data)], { type: "application/json" });
+          navigator.sendBeacon?.("/api/pedido", blob);
+          registroOk = true;
+        } catch {}
       }
-      setOk(true);
-      // Abrir WhatsApp en nueva pestaña con pedido prellenado
-      window.open(waUrl, "_blank");
     } catch {
-      // Si falla la red, igual mostramos éxito y abrimos WhatsApp — el cliente no debe perderse
-      setOk(true);
-      window.open(waUrl, "_blank");
-    } finally {
-      setEnviando(false);
+      try {
+        const blob = new Blob([JSON.stringify(data)], { type: "application/json" });
+        navigator.sendBeacon?.("/api/pedido", blob);
+        registroOk = true;
+      } catch {}
     }
+
+    if (registroOk) {
+      try { localStorage.removeItem(AUTOSAVE_KEY); } catch {}
+      setPedidoConfirmado({ id: pedidoId, total });
+      setOk(true);
+    } else {
+      setError("No pudimos registrar tu pedido. Intenta de nuevo o escríbenos por WhatsApp.");
+    }
+    setEnviando(false);
   }
 
   const plan = PLANES[cantidad];
@@ -1358,24 +1449,52 @@ export default function Page() {
               </div>
             </div>
 
-            {ok ? (
-              <div className="modal-success">
-                <h3>¡Recibimos tu pedido! 🎉</h3>
-                <p>
-                  Abrimos <strong>WhatsApp</strong> para que confirmes tu pedido directamente con
-                  nosotros. Si no se abrió, haz click en el botón de abajo.
+            {ok && pedidoConfirmado ? (
+              <div className="modal-success" style={{ textAlign: "center", padding: "8px 0" }}>
+                <div style={{ fontSize: 56, marginBottom: 6 }}>✅</div>
+                <h3 style={{ margin: "0 0 8px", color: "#1f3d2b" }}>
+                  ¡Pedido recibido!
+                </h3>
+                <p style={{ color: "var(--gris)", margin: "0 0 14px", lineHeight: 1.5 }}>
+                  Te contactamos por WhatsApp en las próximas horas para confirmar la dirección y la fecha de entrega.
+                </p>
+                <div
+                  style={{
+                    background: "rgba(31, 61, 43, 0.06)",
+                    borderRadius: 10,
+                    padding: "12px 14px",
+                    margin: "0 0 16px",
+                    fontSize: 14,
+                    lineHeight: 1.6,
+                    color: "#1f3d2b",
+                    textAlign: "left",
+                  }}
+                >
+                  <div>
+                    <strong>Número de pedido:</strong>{" "}
+                    <code style={{ fontFamily: "monospace" }}>{pedidoConfirmado.id}</code>
+                  </div>
+                  <div>
+                    <strong>Total a pagar al recibir:</strong>{" "}
+                    ${pedidoConfirmado.total.toLocaleString("es-CO")} COP
+                  </div>
+                </div>
+                <p style={{ fontSize: 13, color: "var(--gris)", margin: "0 0 14px" }}>
+                  ¿Quieres adelantar la confirmación? Escríbenos por WhatsApp con tu número de pedido.
                 </p>
                 <a
                   className="btn btn-block"
-                  href={`https://wa.me/573227617545?text=${encodeURIComponent("Hola, acabo de hacer un pedido en la página de MI TIROIDES y quiero confirmarlo.")}`}
+                  href={`https://wa.me/573227617545?text=${encodeURIComponent(
+                    `Hola 🌿 Acabo de hacer mi pedido en MI TIROIDES. Mi número de pedido es: ${pedidoConfirmado.id}`,
+                  )}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{ textDecoration: "none", marginBottom: 10 }}
                 >
-                  Abrir WhatsApp
+                  Confirmar por WhatsApp (opcional)
                 </a>
                 <button className="btn btn-ghost btn-block" onClick={closeModal}>
-                  Cerrar
+                  Listo, cerrar
                 </button>
               </div>
             ) : (
@@ -1428,9 +1547,9 @@ export default function Page() {
 
                 {/* DATOS */}
                 <div className="modal-section-title green">Ingresa tu dirección de envío</div>
-                <form className="modal-form" onSubmit={onSubmit}>
+                <form className="modal-form" onSubmit={onSubmit} noValidate>
                   <label>
-                    <span className="modal-label">WhatsApp (sin el indicativo) <em>*</em></span>
+                    <span className="modal-label">WhatsApp <em>*</em></span>
                     <div className="modal-input-icon">
                       <span>📞</span>
                       <input
@@ -1438,17 +1557,26 @@ export default function Page() {
                         required
                         placeholder="311 389 2990"
                         inputMode="tel"
-                        pattern="[0-9 ]{10,}"
+                        autoComplete="tel-national"
+                        value={telefono}
+                        onChange={(e) => setTelefono(formatearTelefono(e.target.value))}
                       />
                     </div>
-                    <small>A este whatsapp enviaremos tu guía de rastreo</small>
+                    <small>A este WhatsApp enviaremos tu guía de rastreo</small>
                   </label>
 
                   <label>
                     <span className="modal-label">Nombre completo <em>*</em></span>
                     <div className="modal-input-icon">
                       <span>👤</span>
-                      <input name="nombre" required placeholder="Laura Camila Pérez García" />
+                      <input
+                        name="nombre"
+                        required
+                        placeholder="Laura Pérez"
+                        autoComplete="name"
+                        value={nombre}
+                        onChange={(e) => setNombre(e.target.value)}
+                      />
                     </div>
                   </label>
 
@@ -1456,15 +1584,14 @@ export default function Page() {
                     <span className="modal-label">Dirección completa <em>*</em></span>
                     <div className="modal-input-icon">
                       <span>📍</span>
-                      <input name="direccion" required placeholder="Calle 122 #87-29 Edificio Aries apto 1302" />
-                    </div>
-                  </label>
-
-                  <label>
-                    <span className="modal-label">Punto de referencia</span>
-                    <div className="modal-input-icon">
-                      <span>🧭</span>
-                      <input name="referencia" placeholder="Torre al frente del ARA" />
+                      <input
+                        name="direccion"
+                        required
+                        placeholder="Calle 122 #87-29 Apto 1302"
+                        autoComplete="street-address"
+                        value={direccion}
+                        onChange={(e) => setDireccion(e.target.value)}
+                      />
                     </div>
                   </label>
 
@@ -1475,7 +1602,11 @@ export default function Page() {
                       <select
                         required
                         value={depto}
-                        onChange={(e) => { setDepto(e.target.value); setCiudad(""); }}
+                        onChange={(e) => {
+                          setDepto(e.target.value);
+                          setCiudad("");
+                          setCiudadInput("");
+                        }}
                       >
                         <option value="">Selecciona tu departamento</option>
                         {NOMBRES_DEPARTAMENTOS.map((d) => (
@@ -1485,30 +1616,91 @@ export default function Page() {
                     </div>
                   </label>
 
-                  <label>
+                  <label style={{ position: "relative" }}>
                     <span className="modal-label">Ciudad <em>*</em></span>
                     <div className="modal-input-icon">
                       <span>🏙️</span>
-                      <select
+                      <input
+                        type="text"
                         required
-                        value={ciudad}
-                        onChange={(e) => setCiudad(e.target.value)}
+                        placeholder={depto ? "Escribe tu ciudad…" : "Primero elige un departamento"}
                         disabled={!depto}
-                      >
-                        <option value="">{depto ? "Selecciona tu ciudad" : "Primero elige un departamento"}</option>
-                        {depto && DEPARTAMENTOS[depto].map((c) => (
-                          <option key={c} value={c}>{c}</option>
-                        ))}
-                      </select>
+                        autoComplete="address-level2"
+                        value={ciudadInput}
+                        onChange={(e) => {
+                          setCiudadInput(e.target.value);
+                          setCiudad(e.target.value);
+                          setCiudadFocus(true);
+                        }}
+                        onFocus={() => setCiudadFocus(true)}
+                        onBlur={() => setTimeout(() => setCiudadFocus(false), 150)}
+                      />
                     </div>
+                    {depto && ciudadFocus && (() => {
+                      const opciones = DEPARTAMENTOS[depto] || [];
+                      const q = ciudadInput.trim().toLowerCase();
+                      const filtradas = q
+                        ? opciones.filter((c) => c.toLowerCase().includes(q))
+                        : opciones;
+                      if (filtradas.length === 0) return null;
+                      return (
+                        <div
+                          style={{
+                            position: "absolute",
+                            top: "100%",
+                            left: 0,
+                            right: 0,
+                            background: "#fff",
+                            border: "1px solid #ddd",
+                            borderRadius: 8,
+                            maxHeight: 200,
+                            overflowY: "auto",
+                            zIndex: 10,
+                            boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                          }}
+                        >
+                          {filtradas.slice(0, 12).map((c) => (
+                            <button
+                              key={c}
+                              type="button"
+                              onMouseDown={(e) => {
+                                e.preventDefault();
+                                setCiudad(c);
+                                setCiudadInput(c);
+                                setCiudadFocus(false);
+                              }}
+                              style={{
+                                display: "block",
+                                width: "100%",
+                                textAlign: "left",
+                                padding: "10px 14px",
+                                background: "transparent",
+                                border: "none",
+                                cursor: "pointer",
+                                fontSize: 15,
+                                borderBottom: "1px solid #f1f1f1",
+                              }}
+                            >
+                              {c}
+                            </button>
+                          ))}
+                        </div>
+                      );
+                    })()}
                   </label>
 
-                  {/* TRUST ICONS */}
-                  <div className="modal-trust-icons">
-                    <div><span>💵</span> Paga al recibir</div>
-                    <div><span>🚚</span> Envío express gratis</div>
-                    <div><span>🛡️</span> Garantía 100%</div>
-                  </div>
+                  <label>
+                    <span className="modal-label">Punto de referencia <small style={{ color: "var(--gris)" }}>(opcional)</small></span>
+                    <div className="modal-input-icon">
+                      <span>🧭</span>
+                      <input
+                        name="referencia"
+                        placeholder="Edificio Aries, torre al frente del ARA"
+                        value={referencia}
+                        onChange={(e) => setReferencia(e.target.value)}
+                      />
+                    </div>
+                  </label>
 
                   {/* RESUMEN */}
                   <div className="modal-summary">
@@ -1527,17 +1719,75 @@ export default function Page() {
                     </div>
                   </div>
 
-                  {error && <div style={{ color: "var(--rojo)", fontSize: 14, textAlign: "center" }}>{error}</div>}
+                  {/* Fix #7 — frase tranquila encima del botón */}
+                  <div
+                    style={{
+                      background: "rgba(31, 61, 43, 0.06)",
+                      borderRadius: 8,
+                      padding: "10px 12px",
+                      fontSize: 13,
+                      textAlign: "center",
+                      color: "#1f3d2b",
+                      lineHeight: 1.5,
+                      margin: "4px 0 8px",
+                    }}
+                  >
+                    📦 No pagas nada ahora. Te llega a tu casa y pagas cuando lo recibes.
+                  </div>
+
+                  {error && (
+                    <div
+                      style={{
+                        background: "#fdecea",
+                        border: "1px solid #f5b7b1",
+                        color: "#a93226",
+                        padding: "10px 12px",
+                        borderRadius: 8,
+                        fontSize: 14,
+                        textAlign: "center",
+                      }}
+                    >
+                      {error}
+                    </div>
+                  )}
 
                   <button className="btn btn-block modal-confirm" type="submit" disabled={enviando}>
                     {enviando ? "Enviando…" : (
                       <>
-                        CONFIRMAR CONTRA ENTREGA
+                        PEDIR AHORA — PAGO AL RECIBIR
                         <br />
-                        <span style={{ fontSize: 14, opacity: .9 }}>${plan.precio.toLocaleString("es-CO")}</span>
+                        <span style={{ fontSize: 13, opacity: .9, fontWeight: 500 }}>
+                          ${plan.precio.toLocaleString("es-CO")} · Envío gratis · Garantía 30 días
+                        </span>
                       </>
                     )}
                   </button>
+
+                  {/* Fix #8 — trust badges debajo del botón */}
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr 1fr 1fr",
+                      gap: 8,
+                      marginTop: 12,
+                      fontSize: 11,
+                      color: "var(--gris)",
+                      textAlign: "center",
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontSize: 20 }}>💵</div>
+                      Pago contra entrega
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 20 }}>🚚</div>
+                      Llega en 1-3 días
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 20 }}>🇨🇴</div>
+                      Hecho en Colombia
+                    </div>
+                  </div>
                 </form>
               </>
             )}
