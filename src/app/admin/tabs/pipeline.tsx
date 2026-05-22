@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import { MessageBubble } from "./_message-bubble";
 
 type PipelineOrder = {
   id: string;
@@ -43,7 +44,7 @@ function estaEstancado(o: PipelineOrder): boolean {
   return h !== null && h >= STUCK_HOURS;
 }
 
-type Message = { from: "bot" | "cliente"; text: string; time: string };
+type Message = { from: "bot" | "cliente"; text: string; time: string; mediaArchivo?: string | null; mediaMime?: string | null; transcripcion?: string | null };
 
 const CARRIERS = {
   hoko: { name: "Hoko Envíos", color: "#635BFF" },
@@ -1080,23 +1081,7 @@ function DrawerConversacion({ order, onClose, onMover, onDeleted }: { order: Pip
 
         <div ref={scrollRef} style={{ flex: 1, padding: 12, overflowY: "auto", display: "flex", flexDirection: "column", gap: 6 }}>
           {messages.map((m, i) => (
-            <div key={i} style={{ alignSelf: m.from === "bot" ? "flex-end" : "flex-start", maxWidth: "85%" }}>
-              <div
-                style={{
-                  background: m.from === "bot" ? "var(--brand-soft)" : "var(--panel-sub)",
-                  color: m.from === "bot" ? "var(--brand-ink)" : "var(--text)",
-                  padding: "8px 12px",
-                  borderRadius: 10,
-                  borderTopRightRadius: m.from === "bot" ? 2 : 10,
-                  borderTopLeftRadius: m.from === "bot" ? 10 : 2,
-                  fontSize: 13,
-                  whiteSpace: "pre-wrap",
-                }}
-              >
-                {m.text}
-              </div>
-              <div className="muted" style={{ fontSize: 10, marginTop: 2, textAlign: m.from === "bot" ? "right" : "left" }}>{formatTime(m.time)}</div>
-            </div>
+            <MessageBubble key={i} m={m} esEnviadoPorBot={m.from === "bot"} />
           ))}
           {messages.length === 0 && <div className="muted" style={{ textAlign: "center", marginTop: 40 }}>Sin mensajes aún</div>}
         </div>

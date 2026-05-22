@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { MessageBubble } from "./_message-bubble";
 
 type NovedadRow = {
   id: string;
@@ -26,7 +27,7 @@ type NovedadRow = {
 
 type Filtro = "activas" | "todas" | "resueltas" | "repetidas";
 
-type Message = { from: "bot" | "user" | "operador"; text: string; time: string };
+type Message = { from: "bot" | "user" | "operador" | "cliente"; text: string; time: string; mediaArchivo?: string | null; mediaMime?: string | null; transcripcion?: string | null };
 type HistorialItem = { tipo: string; etiqueta: string; fecha: string; comentario: string | null };
 
 const TIPOS = {
@@ -449,26 +450,7 @@ function DrawerNovedad({ row, onClose, onChanged }: { row: NovedadRow; onClose: 
         <div ref={scrollRef} style={{ flex: 1, padding: 12, overflowY: "auto", display: "flex", flexDirection: "column", gap: 6, background: "#FAFAFA" }}>
           {messages.map((m, i) => {
             const esBot = m.from === "bot" || m.from === "operador";
-            return (
-              <div key={i} style={{ alignSelf: esBot ? "flex-end" : "flex-start", maxWidth: "85%" }}>
-                <div
-                  style={{
-                    background: esBot ? "#DCF8C6" : "#fff",
-                    color: "#222",
-                    padding: "8px 12px",
-                    borderRadius: 10,
-                    borderTopRightRadius: esBot ? 2 : 10,
-                    borderTopLeftRadius: esBot ? 10 : 2,
-                    fontSize: 13,
-                    whiteSpace: "pre-wrap",
-                    border: "1px solid #E0E0E0",
-                  }}
-                >
-                  {m.text}
-                </div>
-                <div style={{ fontSize: 10, color: "#888", marginTop: 2, textAlign: esBot ? "right" : "left" }}>{formatTime(m.time)}</div>
-              </div>
-            );
+            return <MessageBubble key={i} m={m} esEnviadoPorBot={esBot} />;
           })}
           {messages.length === 0 && <div style={{ color: "#888", textAlign: "center", marginTop: 40 }}>Sin mensajes aún</div>}
         </div>
