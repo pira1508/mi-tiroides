@@ -744,6 +744,9 @@ export default function Page() {
               <span className="badge">Sin gluten</span>
               <span className="badge">Registro INVIMA</span>
               <span className="badge">6 nutrientes</span>
+              <span className="badge" style={{ background: "#1f3d2b", color: "#fff", borderColor: "#1f3d2b" }}>
+                🌿 Asistente incluido
+              </span>
             </div>
             <div className="precio-row">$89.900 COP</div>
 
@@ -1242,6 +1245,73 @@ export default function Page() {
       {/* ancla invisible para <a href="#comprar"> en la nav */}
       <span id="comprar" />
 
+      {/* ASISTENTE INCLUIDO */}
+      <section className="section section-beige" id="asistente">
+        <div className="container-sm">
+          <div className="eyebrow" style={{ color: "#c9a14a" }}>Incluido sin costo</div>
+          <h2 className="h2" style={{ marginBottom: 6 }}>
+            No estás sola en tu tratamiento.
+          </h2>
+          <p style={{ color: "var(--gris)", fontSize: 16, lineHeight: 1.6, marginBottom: 28 }}>
+            Con cada pedido recibes acceso GRATIS a tu <strong>asistente personal de bienestar</strong> por WhatsApp, que te acompaña durante todo el tratamiento.
+          </p>
+
+          <div
+            style={{
+              display: "grid",
+              gap: 14,
+              maxWidth: 520,
+              margin: "0 auto 28px",
+            }}
+          >
+            {[
+              { i: "🥗", t: "Alimentos ideales para tu tiroides", d: "Cada semana te enviamos qué incluir y qué evitar según tu etapa del tratamiento." },
+              { i: "🌱", t: "Hábitos clave cada semana", d: "Pequeños cambios graduales (sueño, estrés, movimiento) que potencian el efecto del suplemento." },
+              { i: "📊", t: "Seguimiento de tu progreso", d: "Te escribimos cada 7-14 días para saber cómo te sientes y ajustar la guía." },
+              { i: "💬", t: "Resuelve dudas cuando quieras", d: "¿Puedo tomarlo con café? ¿Y si tomo levotiroxina? Te respondemos al momento." },
+            ].map((it) => (
+              <div
+                key={it.t}
+                style={{
+                  display: "flex",
+                  gap: 14,
+                  alignItems: "flex-start",
+                  background: "#fff",
+                  border: "1px solid #ebe2cc",
+                  borderRadius: 12,
+                  padding: "14px 16px",
+                }}
+              >
+                <div style={{ fontSize: 26, lineHeight: 1, marginTop: 2 }}>{it.i}</div>
+                <div>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: "#1f3d2b", marginBottom: 2 }}>
+                    {it.t}
+                  </div>
+                  <div style={{ fontSize: 13, color: "#5a5a5a", lineHeight: 1.5 }}>{it.d}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div
+            style={{
+              background: "#fff",
+              border: "1px dashed #c9a14a",
+              borderRadius: 12,
+              padding: "16px 18px",
+              maxWidth: 520,
+              margin: "0 auto",
+              fontSize: 13,
+              color: "#5a5a5a",
+              textAlign: "center",
+              lineHeight: 1.6,
+            }}
+          >
+            <strong style={{ color: "#1f3d2b" }}>Importante:</strong> el asistente no reemplaza al médico — es un acompañamiento de hábitos y nutrición. Para temas clínicos siempre te recomendamos consultar a tu especialista.
+          </div>
+        </div>
+      </section>
+
       {/* FAQ */}
       <section className="section section-beige" id="faq">
         <div className="container-sm">
@@ -1701,6 +1771,60 @@ export default function Page() {
                       />
                     </div>
                   </label>
+
+                  {/* BLOQUE ASISTENTE INCLUIDO */}
+                  <div
+                    style={{
+                      background: "linear-gradient(135deg, #f5efe2 0%, #ebe2cc 100%)",
+                      border: "1px solid #c9a14a",
+                      borderRadius: 12,
+                      padding: "14px 14px 12px",
+                      margin: "8px 0 4px",
+                      position: "relative",
+                    }}
+                  >
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: -10,
+                        right: 12,
+                        background: "#1f3d2b",
+                        color: "#fff",
+                        fontSize: 10,
+                        fontWeight: 700,
+                        letterSpacing: ".5px",
+                        padding: "3px 8px",
+                        borderRadius: 4,
+                      }}
+                    >
+                      INCLUIDO GRATIS
+                    </div>
+                    <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                      <div style={{ fontSize: 28, lineHeight: 1, marginTop: 2 }}>🌿</div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: "#1f3d2b", marginBottom: 2 }}>
+                          Asistente personal de bienestar
+                        </div>
+                        <div style={{ fontSize: 12, color: "#5a5a5a", lineHeight: 1.45 }}>
+                          Te acompaña durante todo tu tratamiento por WhatsApp:
+                        </div>
+                        <ul
+                          style={{
+                            margin: "6px 0 0",
+                            paddingLeft: 18,
+                            fontSize: 12,
+                            color: "#1f3d2b",
+                            lineHeight: 1.6,
+                          }}
+                        >
+                          <li>Alimentos ideales para tu tiroides</li>
+                          <li>Hábitos clave cada semana</li>
+                          <li>Seguimiento de tu progreso</li>
+                          <li>Resuelve dudas cuando quieras</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
 
                   {/* RESUMEN */}
                   <div className="modal-summary">
