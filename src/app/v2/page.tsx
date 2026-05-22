@@ -1884,6 +1884,9 @@ function Page() {
                           <li>Hábitos clave cada semana</li>
                           <li>Seguimiento de tu progreso</li>
                           <li>Resuelve dudas cuando quieras</li>
+                          <li>
+                            <strong>Precios especiales</strong> al renovar tu tratamiento
+                          </li>
                         </ul>
                       </div>
                     </div>
