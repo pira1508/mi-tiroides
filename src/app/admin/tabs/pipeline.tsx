@@ -19,8 +19,29 @@ type PipelineOrder = {
   cantidad: number;
   diasTratamiento?: number;
   creadoEn?: string;
+  actualizadoEn?: string;
   bodega2daVez?: boolean;
 };
+
+// Estados donde "+24h sin moverse" es señal de problema accionable.
+// Excluimos finales (entregado/pagado/cancelado/devolucion) y de tránsito normal (en_reparto/mercancia_recogida).
+const STUCK_STAGES: Set<PipelineOrder["stage"]> = new Set([
+  "nuevo", "confirmado", "subido_hoko", "guia_generada", "guia_activa",
+  "en_bodega", "bodega_2da_vez", "espera_ruta", "novedad",
+]);
+const STUCK_HOURS = 24;
+
+function horasEnEstado(o: { actualizadoEn?: string; creadoEn?: string }): number | null {
+  const ref = o.actualizadoEn || o.creadoEn;
+  if (!ref) return null;
+  return (Date.now() - new Date(ref).getTime()) / 3600_000;
+}
+
+function estaEstancado(o: PipelineOrder): boolean {
+  if (!STUCK_STAGES.has(o.stage)) return false;
+  const h = horasEnEstado(o);
+  return h !== null && h >= STUCK_HOURS;
+}
 
 type Message = { from: "bot" | "cliente"; text: string; time: string };
 
@@ -49,6 +70,62 @@ const STAGES: { id: PipelineOrder["stage"]; label: string; color: string; estado
   { id: "devolucion",        label: "Devolución",         color: "#94A3B8", estadoBot: "devolucion" },
   { id: "cancelado",         label: "Cancelado",          color: "#64748B", estadoBot: "cancelado" },
 ];
+
+// ====== Export Excel ======
+type ExportableOrder = PipelineOrder & { _stageLabel: string };
+type ExportCol = { id: string; label: string; get: (o: ExportableOrder) => string | number };
+const EXPORT_COLS: ExportCol[] = [
+  { id: "id",              label: "ID Pedido",          get: (o) => o.id },
+  { id: "creadoEn",        label: "Fecha creación",     get: (o) => o.creadoEn ? new Date(o.creadoEn).toLocaleString("es-CO") : "" },
+  { id: "customer",        label: "Cliente",            get: (o) => o.customer },
+  { id: "phone",           label: "Teléfono",           get: (o) => o.phone },
+  { id: "city",            label: "Ciudad",             get: (o) => o.city },
+  { id: "departamento",    label: "Departamento",       get: (o) => o.departamento || "" },
+  { id: "direccion",       label: "Dirección",          get: (o) => o.direccion || "" },
+  { id: "referencia",      label: "Referencia",         get: (o) => o.referencia || "" },
+  { id: "cantidad",        label: "Cantidad",           get: (o) => o.cantidad },
+  { id: "diasTratamiento", label: "Días tratamiento",   get: (o) => o.diasTratamiento ?? "" },
+  { id: "total",           label: "Total ($)",          get: (o) => o.total },
+  { id: "estado",          label: "Estado pipeline",    get: (o) => o._stageLabel },
+  { id: "guia",            label: "Guía",               get: (o) => o.guia || "" },
+  { id: "transportadora",  label: "Transportadora",     get: (o) => o.transportadora || (o.carrier !== "—" ? CARRIERS[o.carrier as keyof typeof CARRIERS]?.name : "") },
+  { id: "novedadResolucion", label: "Resolución novedad", get: (o) => o.novedadResolucion || "" },
+];
+
+const DEFAULT_EXPORT_COLS = ["id", "creadoEn", "customer", "phone", "city", "direccion", "cantidad", "total", "estado", "guia", "transportadora"];
+
+function xmlEscape(s: string): string {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+// Genera un XML SpreadsheetML 2003 (.xls) — abre nativo en Excel/Sheets, tipa números y respeta acentos. Sin libs externas.
+function generarExcel(rows: ExportableOrder[], colsSeleccionadas: ExportCol[], filename: string) {
+  const headerCells = colsSeleccionadas.map(c => `<Cell ss:StyleID="header"><Data ss:Type="String">${xmlEscape(c.label)}</Data></Cell>`).join("");
+  const bodyRows = rows.map(r => {
+    const cells = colsSeleccionadas.map(c => {
+      const v = c.get(r);
+      const isNumber = typeof v === "number" && Number.isFinite(v);
+      const type = isNumber ? "Number" : "String";
+      return `<Cell><Data ss:Type="${type}">${xmlEscape(String(v))}</Data></Cell>`;
+    }).join("");
+    return `<Row>${cells}</Row>`;
+  }).join("");
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
+<Styles><Style ss:ID="header"><Font ss:Bold="1"/><Interior ss:Color="#D9E1F2" ss:Pattern="Solid"/></Style></Styles>
+<Worksheet ss:Name="Pipeline"><Table><Row>${headerCells}</Row>${bodyRows}</Table></Worksheet>
+</Workbook>`;
+  const blob = new Blob([xml], { type: "application/vnd.ms-excel;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
 
 function mapStage(estado: string, novedadResolucion?: string | null, bodega2daVez?: boolean): PipelineOrder["stage"] {
   if (estado === "despachado") return "mercancia_recogida";
@@ -144,13 +221,49 @@ export function Pipeline() {
   const [dateRange, setDateRange] = useState<DateRange>("todo");
   const [customSince, setCustomSince] = useState<string>("");
   const [customUntil, setCustomUntil] = useState<string>("");
+  const [soloEstancados, setSoloEstancados] = useState(false);
+  const [exportOpen, setExportOpen] = useState(false);
+  const [exportCols, setExportCols] = useState<string[]>(() => {
+    if (typeof window === "undefined") return DEFAULT_EXPORT_COLS;
+    try {
+      const saved = localStorage.getItem("pipeline_export_cols");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.every(x => typeof x === "string")) return parsed;
+      }
+    } catch {}
+    return DEFAULT_EXPORT_COLS;
+  });
+
+  function toggleCol(id: string) {
+    setExportCols(curr => {
+      const next = curr.includes(id) ? curr.filter(x => x !== id) : [...curr, id];
+      try { localStorage.setItem("pipeline_export_cols", JSON.stringify(next)); } catch {}
+      return next;
+    });
+  }
+
+  function descargarExcel() {
+    const cols = EXPORT_COLS.filter(c => exportCols.includes(c.id));
+    if (cols.length === 0) { alert("Seleccioná al menos una columna"); return; }
+    const stageLabelById = new Map(STAGES.map(s => [s.id, s.label] as const));
+    const rows: ExportableOrder[] = filtered.map(o => ({ ...o, _stageLabel: stageLabelById.get(o.stage) || o.stage }));
+    const partes: string[] = [];
+    if (dateRange !== "todo") partes.push(dateRange === "custom" ? `${customSince}_a_${customUntil}` : dateRange);
+    if (filterCarrier !== "todas") partes.push(filterCarrier);
+    if (search.trim()) partes.push("filtrado");
+    const sufijo = partes.length ? `-${partes.join("-")}` : "";
+    const fecha = new Date().toISOString().slice(0, 10);
+    generarExcel(rows, cols, `pipeline-${fecha}${sufijo}.xls`);
+    setExportOpen(false);
+  }
 
   async function cargar() {
     try {
       const r = await fetch("/api/admin/pedidos", { cache: "no-store" });
       if (!r.ok) return;
       const data = await r.json();
-      const mapped: PipelineOrder[] = (data.pedidos || []).map((p: {id:string;nombre:string;telefonoCliente:string;ciudad:string;departamento?:string;direccion?:string;referencia?:string;cantidad:number;diasTratamiento?:number;total:number;estado:string;guia?:string;transportadora?:string;creadoEn?:string;novedadResolucion?:string|null;bodega2daVez?:boolean}) => ({
+      const mapped: PipelineOrder[] = (data.pedidos || []).map((p: {id:string;nombre:string;telefonoCliente:string;ciudad:string;departamento?:string;direccion?:string;referencia?:string;cantidad:number;diasTratamiento?:number;total:number;estado:string;guia?:string;transportadora?:string;creadoEn?:string;actualizadoEn?:string;novedadResolucion?:string|null;bodega2daVez?:boolean}) => ({
         id: p.id,
         customer: p.nombre || "—",
         phone: p.telefonoCliente || "",
@@ -167,6 +280,7 @@ export function Pipeline() {
         cantidad: p.cantidad,
         diasTratamiento: p.diasTratamiento,
         creadoEn: p.creadoEn,
+        actualizadoEn: p.actualizadoEn,
         bodega2daVez: p.bodega2daVez,
       }));
       setOrders(mapped);
@@ -211,7 +325,7 @@ export function Pipeline() {
   const byCarrier = filterCarrier === "todas" ? byDate : byDate.filter((o) => o.carrier === filterCarrier);
   const q = search.trim().toLowerCase();
   const qDigits = q.replace(/\D/g, "");
-  const filtered = q
+  const bySearch = q
     ? byCarrier.filter((o) => {
         const nombre = (o.customer || "").toLowerCase();
         const tel = (o.phone || "").toLowerCase();
@@ -225,6 +339,8 @@ export function Pipeline() {
         );
       })
     : byCarrier;
+  const filtered = soloEstancados ? bySearch.filter(estaEstancado) : bySearch;
+  const stuckCount = bySearch.filter(estaEstancado).length;
 
   // Eficiencia por transportadora (sobre el rango filtrado, ignora búsqueda textual)
   type CarrierStats = { total: number; entregadas: number; devueltas: number; novedades: number; enCamino: number };
@@ -514,6 +630,21 @@ export function Pipeline() {
                 </button>
               )}
             </div>
+            <button
+              onClick={() => setSoloEstancados(v => !v)}
+              className="btn"
+              style={{
+                fontSize: 12,
+                padding: "6px 12px",
+                background: soloEstancados ? "#DC2626" : (stuckCount > 0 ? "#FEE2E2" : "transparent"),
+                color: soloEstancados ? "#fff" : (stuckCount > 0 ? "#991B1B" : "var(--text)"),
+                borderColor: soloEstancados ? "#DC2626" : (stuckCount > 0 ? "#FCA5A5" : "var(--border)"),
+                fontWeight: stuckCount > 0 ? 700 : 400,
+              }}
+              title={`Pedidos con más de ${STUCK_HOURS}h sin avanzar en estados accionables`}
+            >
+              🚨 Estancados +{STUCK_HOURS}h ({stuckCount})
+            </button>
             <a
               href="/api/admin/export?estado=confirmado"
               target="_blank"
@@ -522,6 +653,81 @@ export function Pipeline() {
             >
               📊 Exportar para HOKO
             </a>
+            <div style={{ position: "relative" }}>
+              <button
+                onClick={() => setExportOpen(v => !v)}
+                className="btn"
+                style={{ fontSize: 12, padding: "6px 12px" }}
+                title="Exportar a Excel con columnas y filtros actuales"
+              >
+                📥 Exportar Excel ({filtered.length})
+              </button>
+              {exportOpen && (
+                <>
+                  <div onClick={() => setExportOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 50 }} />
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "calc(100% + 6px)",
+                      right: 0,
+                      zIndex: 51,
+                      background: "var(--panel)",
+                      border: "1px solid var(--border)",
+                      borderRadius: 8,
+                      boxShadow: "0 4px 16px rgba(0,0,0,0.15)",
+                      padding: 12,
+                      width: 280,
+                    }}
+                  >
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                      <div style={{ fontWeight: 700, fontSize: 12 }}>Columnas a exportar</div>
+                      <div style={{ display: "flex", gap: 4 }}>
+                        <button
+                          onClick={() => {
+                            const all = EXPORT_COLS.map(c => c.id);
+                            setExportCols(all);
+                            try { localStorage.setItem("pipeline_export_cols", JSON.stringify(all)); } catch {}
+                          }}
+                          className="btn"
+                          style={{ fontSize: 10, padding: "2px 6px" }}
+                        >Todas</button>
+                        <button
+                          onClick={() => {
+                            setExportCols([]);
+                            try { localStorage.setItem("pipeline_export_cols", JSON.stringify([])); } catch {}
+                          }}
+                          className="btn"
+                          style={{ fontSize: 10, padding: "2px 6px" }}
+                        >Ninguna</button>
+                      </div>
+                    </div>
+                    <div style={{ maxHeight: 260, overflowY: "auto", display: "flex", flexDirection: "column", gap: 4, marginBottom: 10, paddingRight: 4 }}>
+                      {EXPORT_COLS.map(c => (
+                        <label key={c.id} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, cursor: "pointer", padding: "2px 0" }}>
+                          <input
+                            type="checkbox"
+                            checked={exportCols.includes(c.id)}
+                            onChange={() => toggleCol(c.id)}
+                          />
+                          {c.label}
+                        </label>
+                      ))}
+                    </div>
+                    <div className="muted" style={{ fontSize: 10, marginBottom: 8, lineHeight: 1.4 }}>
+                      Se descargan los <strong>{filtered.length}</strong> pedidos visibles con los filtros actuales (rango, transportadora, búsqueda).
+                    </div>
+                    <button
+                      onClick={descargarExcel}
+                      className="btn primary"
+                      style={{ width: "100%", fontSize: 12, padding: "6px 12px" }}
+                      disabled={exportCols.length === 0}
+                    >
+                      📥 Descargar {filtered.length} pedido{filtered.length !== 1 ? "s" : ""}
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
             <span className="muted" style={{ fontSize: 11 }}>
               {loading ? "Cargando..." : `${filtered.length} pedidos`}
             </span>
@@ -556,7 +762,10 @@ export function Pipeline() {
                     ${total.toLocaleString("es-CO")}
                   </div>
                   <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                    {items.map((o) => (
+                    {items.map((o) => {
+                      const stuck = estaEstancado(o);
+                      const horas = horasEnEstado(o);
+                      return (
                       <div
                         key={o.id}
                         draggable
@@ -564,15 +773,37 @@ export function Pipeline() {
                         onClick={() => setOpenOrder(o)}
                         style={{
                           background: "var(--panel)",
-                          border: "1px solid var(--border)",
+                          border: stuck ? "1px solid #DC2626" : "1px solid var(--border)",
                           borderRadius: 6,
                           padding: 8,
                           fontSize: 11.5,
                           cursor: "grab",
                           opacity: draggingId === o.id ? 0.5 : 1,
                           userSelect: "none",
+                          position: "relative",
+                          boxShadow: stuck ? "0 0 0 1px rgba(220,38,38,0.15)" : "none",
                         }}
                       >
+                        {stuck && (
+                          <div
+                            title={`Estancado hace ${horas?.toFixed(1)}h en "${s.label}"`}
+                            style={{
+                              position: "absolute",
+                              top: -6,
+                              right: -6,
+                              background: "#DC2626",
+                              color: "#fff",
+                              fontSize: 10,
+                              fontWeight: 700,
+                              padding: "2px 6px",
+                              borderRadius: 10,
+                              boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
+                              lineHeight: 1.2,
+                            }}
+                          >
+                            🚨 {horas !== null ? `${Math.floor(horas)}h` : "+24h"}
+                          </div>
+                        )}
                         <div className="mono" style={{ fontSize: 10, color: "var(--text-muted)", marginBottom: 2 }}>{o.id}</div>
                         <div style={{ fontWeight: 600 }}>{o.customer}</div>
                         <div className="muted" style={{ fontSize: 10.5 }}>{o.city}</div>
@@ -586,7 +817,8 @@ export function Pipeline() {
                           </div>
                         )}
                       </div>
-                    ))}
+                      );
+                    })}
                     {items.length === 0 && (
                       <div className="muted" style={{ textAlign: "center", fontSize: 10.5, padding: 12 }}>—</div>
                     )}

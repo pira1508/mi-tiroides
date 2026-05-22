@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
 import { DEPARTAMENTOS, NOMBRES_DEPARTAMENTOS } from "../colombia";
 
 // Fisher-Yates shuffle determinístico por seed
@@ -351,8 +352,24 @@ const TESTI_LARGOS = [
   },
 ];
 
-export default function Page() {
-  const [cantidad, setCantidad] = useState<Cantidad>("3");
+export default function PageWrapper() {
+  return (
+    <Suspense fallback={null}>
+      <Page />
+    </Suspense>
+  );
+}
+
+function Page() {
+  const searchParams = useSearchParams();
+  const planFromQuiz = searchParams.get("plan");
+  const fromQuiz = searchParams.get("from") === "quiz";
+  const scoreFromQuiz = searchParams.get("score");
+  const initialCantidad: Cantidad =
+    planFromQuiz === "1" || planFromQuiz === "2" || planFromQuiz === "3"
+      ? planFromQuiz
+      : "3";
+  const [cantidad, setCantidad] = useState<Cantidad>(initialCantidad);
   const [enviando, setEnviando] = useState(false);
   const [ok, setOk] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -414,7 +431,24 @@ export default function Page() {
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ tipo: "view", variant: VARIANT }),
     }).catch(() => {});
-  }, []);
+
+    // Si viene del quiz, registrar landed
+    if (fromQuiz && scoreFromQuiz) {
+      window.fbq?.("trackCustom", "QuizLanding", {
+        score: Number(scoreFromQuiz),
+        plan: planFromQuiz,
+      });
+      fetch("/api/track-quiz", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          event: "landed_landing",
+          score: Number(scoreFromQuiz),
+          plan: planFromQuiz,
+        }),
+      }).catch(() => {});
+    }
+  }, [fromQuiz, scoreFromQuiz, planFromQuiz]);
 
   function openModal() {
     setOk(false);

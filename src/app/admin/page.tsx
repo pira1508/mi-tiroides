@@ -10,6 +10,7 @@ import { Products } from "./tabs/products";
 import { Atencion } from "./tabs/atencion";
 import { Calculadora } from "./tabs/calculadora";
 import { Novedades } from "./tabs/novedades";
+import { QuizFunnel } from "./tabs/quiz-funnel";
 
 type Pedido = {
   id: string;
@@ -54,7 +55,7 @@ type Stats = {
   ab?: { v1?: AbStats; v2?: AbStats };
 };
 
-type TabId = "dashboard" | "live" | "ab" | "ads" | "crm" | "pipeline" | "shipping" | "products" | "atencion" | "calculadora" | "novedades";
+type TabId = "dashboard" | "live" | "ab" | "ads" | "crm" | "pipeline" | "shipping" | "products" | "atencion" | "calculadora" | "novedades" | "quiz";
 
 const ESTADOS: Pedido["estado"][] = ["nuevo", "confirmado", "despachado", "entregado", "cancelado"];
 
@@ -435,6 +436,7 @@ export default function AdminPage() {
     { id: "novedades", label: "🚚 Novedades", icon: "box", group: "Operación" },
     { id: "ab", label: "A/B Testing", icon: "flask", group: "Crecimiento" },
     { id: "ads", label: "Ads Manager", icon: "target", group: "Crecimiento" },
+    { id: "quiz", label: "🧠 Quiz Funnel", icon: "flask", group: "Crecimiento" },
     { id: "calculadora", label: "Calculadora", icon: "flask", group: "Crecimiento" },
     { id: "crm", label: "CRM · WhatsApp", icon: "cart", group: "Clientes" },
     { id: "shipping", label: "Transportadora", icon: "box", group: "Clientes" },
@@ -576,6 +578,7 @@ export default function AdminPage() {
           {activeTab === "calculadora" && <Calculadora />}
 
           {activeTab === "novedades" && <Novedades />}
+          {activeTab === "quiz" && <QuizFunnel />}
         </main>
       </div>
 
