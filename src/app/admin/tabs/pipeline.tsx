@@ -94,29 +94,21 @@ const EXPORT_COLS: ExportCol[] = [
 
 const DEFAULT_EXPORT_COLS = ["id", "creadoEn", "customer", "phone", "city", "direccion", "cantidad", "total", "estado", "guia", "transportadora"];
 
-function xmlEscape(s: string): string {
-  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+function csvEscape(v: string | number): string {
+  const s = String(v ?? "");
+  if (/[",\n;\r]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+  return s;
 }
 
-// Genera un XML SpreadsheetML 2003 (.xls) — abre nativo en Excel/Sheets, tipa números y respeta acentos. Sin libs externas.
+// CSV UTF-8 con BOM — Excel, Numbers y Google Sheets lo abren nativo con doble click.
 function generarExcel(rows: ExportableOrder[], colsSeleccionadas: ExportCol[], filename: string) {
-  const headerCells = colsSeleccionadas.map(c => `<Cell ss:StyleID="header"><Data ss:Type="String">${xmlEscape(c.label)}</Data></Cell>`).join("");
-  const bodyRows = rows.map(r => {
-    const cells = colsSeleccionadas.map(c => {
-      const v = c.get(r);
-      const isNumber = typeof v === "number" && Number.isFinite(v);
-      const type = isNumber ? "Number" : "String";
-      return `<Cell><Data ss:Type="${type}">${xmlEscape(String(v))}</Data></Cell>`;
-    }).join("");
-    return `<Row>${cells}</Row>`;
-  }).join("");
-  const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<?mso-application progid="Excel.Sheet"?>
-<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
-<Styles><Style ss:ID="header"><Font ss:Bold="1"/><Interior ss:Color="#D9E1F2" ss:Pattern="Solid"/></Style></Styles>
-<Worksheet ss:Name="Pipeline"><Table><Row>${headerCells}</Row>${bodyRows}</Table></Worksheet>
-</Workbook>`;
-  const blob = new Blob([xml], { type: "application/vnd.ms-excel;charset=utf-8" });
+  const lines = [colsSeleccionadas.map(c => csvEscape(c.label)).join(",")];
+  for (const r of rows) {
+    lines.push(colsSeleccionadas.map(c => csvEscape(c.get(r))).join(","));
+  }
+  // BOM ﻿ para que Excel detecte UTF-8 (acentos, ñ)
+  const csv = "﻿" + lines.join("\r\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
@@ -254,7 +246,7 @@ export function Pipeline() {
     if (search.trim()) partes.push("filtrado");
     const sufijo = partes.length ? `-${partes.join("-")}` : "";
     const fecha = new Date().toISOString().slice(0, 10);
-    generarExcel(rows, cols, `pipeline-${fecha}${sufijo}.xls`);
+    generarExcel(rows, cols, `pipeline-${fecha}${sufijo}.csv`);
     setExportOpen(false);
   }
 
