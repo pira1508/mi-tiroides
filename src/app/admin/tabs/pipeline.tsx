@@ -233,6 +233,18 @@ export function Pipeline() {
     } catch {}
     return DEFAULT_EXPORT_COLS;
   });
+  // Estados (columnas del kanban) a incluir en el export. Vacío = todos.
+  const [exportStages, setExportStages] = useState<PipelineOrder["stage"][]>(() => {
+    if (typeof window === "undefined") return [];
+    try {
+      const saved = localStorage.getItem("pipeline_export_stages");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) return parsed as PipelineOrder["stage"][];
+      }
+    } catch {}
+    return [];
+  });
 
   function toggleCol(id: string) {
     setExportCols(curr => {
@@ -242,15 +254,33 @@ export function Pipeline() {
     });
   }
 
+  function toggleStage(id: PipelineOrder["stage"]) {
+    setExportStages(curr => {
+      const next = curr.includes(id) ? curr.filter(x => x !== id) : [...curr, id];
+      try { localStorage.setItem("pipeline_export_stages", JSON.stringify(next)); } catch {}
+      return next;
+    });
+  }
+
   function descargarExcel() {
     const cols = EXPORT_COLS.filter(c => exportCols.includes(c.id));
     if (cols.length === 0) { alert("Seleccioná al menos una columna"); return; }
     const stageLabelById = new Map(STAGES.map(s => [s.id, s.label] as const));
-    const rows: ExportableOrder[] = filtered.map(o => ({ ...o, _stageLabel: stageLabelById.get(o.stage) || o.stage }));
+    // Si hay estados seleccionados, filtrar a esos. Si la lista está vacía → todos los estados.
+    const porEstado = exportStages.length
+      ? filtered.filter(o => exportStages.includes(o.stage))
+      : filtered;
+    if (porEstado.length === 0) {
+      alert("No hay pedidos con los estados seleccionados en el rango actual");
+      return;
+    }
+    const rows: ExportableOrder[] = porEstado.map(o => ({ ...o, _stageLabel: stageLabelById.get(o.stage) || o.stage }));
     const partes: string[] = [];
     if (dateRange !== "todo") partes.push(dateRange === "custom" ? `${customSince}_a_${customUntil}` : dateRange);
     if (filterCarrier !== "todas") partes.push(filterCarrier);
     if (search.trim()) partes.push("filtrado");
+    if (exportStages.length === 1) partes.push(exportStages[0]);
+    else if (exportStages.length > 1) partes.push(`${exportStages.length}estados`);
     const sufijo = partes.length ? `-${partes.join("-")}` : "";
     const fecha = new Date().toISOString().slice(0, 10);
     generarExcel(rows, cols, `pipeline-${fecha}${sufijo}.csv`);
@@ -675,7 +705,7 @@ export function Pipeline() {
                       borderRadius: 8,
                       boxShadow: "0 4px 16px rgba(0,0,0,0.15)",
                       padding: 12,
-                      width: 280,
+                      width: 320,
                     }}
                   >
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
@@ -700,7 +730,7 @@ export function Pipeline() {
                         >Ninguna</button>
                       </div>
                     </div>
-                    <div style={{ maxHeight: 260, overflowY: "auto", display: "flex", flexDirection: "column", gap: 4, marginBottom: 10, paddingRight: 4 }}>
+                    <div style={{ maxHeight: 200, overflowY: "auto", display: "flex", flexDirection: "column", gap: 4, marginBottom: 12, paddingRight: 4, borderBottom: "1px solid var(--border)", paddingBottom: 10 }}>
                       {EXPORT_COLS.map(c => (
                         <label key={c.id} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, cursor: "pointer", padding: "2px 0" }}>
                           <input
@@ -712,17 +742,71 @@ export function Pipeline() {
                         </label>
                       ))}
                     </div>
-                    <div className="muted" style={{ fontSize: 10, marginBottom: 8, lineHeight: 1.4 }}>
-                      Se descargan los <strong>{filtered.length}</strong> pedidos visibles con los filtros actuales (rango, transportadora, búsqueda).
+
+                    {/* ESTADOS A INCLUIR */}
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                      <div style={{ fontWeight: 700, fontSize: 12 }}>
+                        Estados a incluir
+                        {exportStages.length === 0 && <span className="muted" style={{ fontWeight: 400, fontSize: 10, marginLeft: 4 }}>(todos)</span>}
+                      </div>
+                      <div style={{ display: "flex", gap: 4 }}>
+                        <button
+                          onClick={() => {
+                            setExportStages([]);
+                            try { localStorage.setItem("pipeline_export_stages", JSON.stringify([])); } catch {}
+                          }}
+                          className="btn"
+                          style={{ fontSize: 10, padding: "2px 6px" }}
+                          title="Exportar todos los estados"
+                        >Todos</button>
+                      </div>
                     </div>
-                    <button
-                      onClick={descargarExcel}
-                      className="btn primary"
-                      style={{ width: "100%", fontSize: 12, padding: "6px 12px" }}
-                      disabled={exportCols.length === 0}
-                    >
-                      📥 Descargar {filtered.length} pedido{filtered.length !== 1 ? "s" : ""}
-                    </button>
+                    <div style={{ maxHeight: 220, overflowY: "auto", display: "flex", flexDirection: "column", gap: 3, marginBottom: 10, paddingRight: 4 }}>
+                      {STAGES.map((s) => {
+                        const count = filtered.filter(o => o.stage === s.id).length;
+                        const checked = exportStages.includes(s.id);
+                        return (
+                          <label key={s.id} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, cursor: "pointer", padding: "2px 0", opacity: count === 0 ? 0.4 : 1 }}>
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              onChange={() => toggleStage(s.id)}
+                            />
+                            <span style={{ width: 8, height: 8, borderRadius: "50%", background: s.color, display: "inline-block" }} />
+                            <span style={{ flex: 1 }}>{s.label}</span>
+                            <span className="muted" style={{ fontSize: 10 }}>{count}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                    <div className="muted" style={{ fontSize: 10, marginBottom: 8, lineHeight: 1.4 }}>
+                      Se descargan{" "}
+                      <strong>
+                        {exportStages.length === 0
+                          ? filtered.length
+                          : filtered.filter(o => exportStages.includes(o.stage)).length}
+                      </strong>{" "}
+                      pedidos
+                      {exportStages.length > 0 && (
+                        <> de {exportStages.length} estado{exportStages.length !== 1 ? "s" : ""}</>
+                      )}{" "}
+                      con los filtros actuales (rango, transportadora, búsqueda).
+                    </div>
+                    {(() => {
+                      const totalAExportar = exportStages.length === 0
+                        ? filtered.length
+                        : filtered.filter(o => exportStages.includes(o.stage)).length;
+                      return (
+                        <button
+                          onClick={descargarExcel}
+                          className="btn primary"
+                          style={{ width: "100%", fontSize: 12, padding: "6px 12px" }}
+                          disabled={exportCols.length === 0 || totalAExportar === 0}
+                        >
+                          📥 Descargar {totalAExportar} pedido{totalAExportar !== 1 ? "s" : ""}
+                        </button>
+                      );
+                    })()}
                   </div>
                 </>
               )}
