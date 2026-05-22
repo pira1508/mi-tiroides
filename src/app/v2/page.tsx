@@ -22,11 +22,11 @@ function shuffleWithSeed<T>(array: readonly T[], seed: number): T[] {
 }
 
 const HERO_IMAGES = [
-  { src: "/img/hero-1.png", alt: "MI TIROIDES Avanzado caja y frasco · 90 cápsulas" },
-  { src: "/img/hero-2.png", alt: "MI TIROIDES Avanzado frasco frontal · 90 cápsulas" },
-  { src: "/img/hero-3.png", alt: "MI TIROIDES Avanzado con guía y nueces" },
-  { src: "/img/hero-4.png", alt: "MI TIROIDES Avanzado en el baño" },
-  { src: "/img/hero-5.png", alt: "MI TIROIDES Avanzado en la cocina" },
+  { src: "/img/hero-1.png", alt: "¿Llevas años cansada pensando que es la edad? Síntomas de tiroides" },
+  { src: "/img/hero-2.png", alt: "Hormonas vs MI TIROIDES — repara la causa, no tapa el síntoma" },
+  { src: "/img/hero-3.png", alt: "MI TIROIDES fórmula con 6 ingredientes naturales y dosis" },
+  { src: "/img/hero-4.png", alt: "Tu energía vuelve paso a paso — timeline de 7 a 30 días" },
+  { src: "/img/hero-5-v2.png", alt: "Resultados reales y precio MI TIROIDES — pack 2 frascos" },
 ];
 
 const SIN_CARA = [
@@ -657,8 +657,8 @@ function Page() {
               <Image
                 src={HERO_IMAGES[heroIdx].src}
                 alt={HERO_IMAGES[heroIdx].alt}
-                width={900}
-                height={900}
+                width={896}
+                height={1152}
                 priority
                 key={HERO_IMAGES[heroIdx].src}
               />
