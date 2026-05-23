@@ -51,46 +51,46 @@ function shuffleWithSeed<T>(array: readonly T[], seed: number): T[] {
 }
 
 const HERO_IMAGES = [
-  { src: "/img/hero-1.png", alt: "¿Llevas años cansada pensando que es la edad? Síntomas de tiroides" },
-  { src: "/img/hero-2.png", alt: "Hormonas vs MI TIROIDES — repara la causa, no tapa el síntoma" },
-  { src: "/img/hero-3.png", alt: "MI TIROIDES fórmula con 6 ingredientes naturales y dosis" },
-  { src: "/img/hero-4.png", alt: "Tu energía vuelve paso a paso — timeline de 7 a 30 días" },
-  { src: "/img/hero-5.png", alt: "Resultados reales y precio MI TIROIDES — pack 2 frascos" },
+  { src: "/img/hero-1.webp", alt: "¿Llevas años cansada pensando que es la edad? Síntomas de tiroides" },
+  { src: "/img/hero-2.webp", alt: "Hormonas vs MI TIROIDES — repara la causa, no tapa el síntoma" },
+  { src: "/img/hero-3.webp", alt: "MI TIROIDES fórmula con 6 ingredientes naturales y dosis" },
+  { src: "/img/hero-4.webp", alt: "Tu energía vuelve paso a paso — timeline de 7 a 30 días" },
+  { src: "/img/hero-5.webp", alt: "Resultados reales y precio MI TIROIDES — pack 2 frascos" },
 ];
 
 const SIN_CARA = [
   {
-    src: "/img/sincara-1.png",
+    src: "/img/sincara-1.webp",
     titulo: "7:00 a.m. · Con el desayuno",
     momento: "Día 1",
     caption: "2 cápsulas con el primer alimento del día. El selenio y el zinc se absorben mejor con grasas saludables.",
   },
   {
-    src: "/img/sincara-2.png",
+    src: "/img/sincara-2.webp",
     titulo: "La toma diaria",
     momento: "Cada mañana",
     caption: "1 sola toma al día. Sin recordatorios extra, sin pastilleros complicados — un solo frasco para todo.",
   },
   {
-    src: "/img/sincara-3.png",
+    src: "/img/sincara-3.webp",
     titulo: "Lleva el frasco contigo",
     momento: "Si sales temprano",
     caption: "Cabe en la cartera. Si te vas a la oficina antes de desayunar, te las tomas allá con un café.",
   },
   {
-    src: "/img/sincara-4.png",
+    src: "/img/sincara-4.webp",
     titulo: "Domingo en familia",
     momento: "Día 14",
     caption: "Empieza el cambio: te despiertas con menos pesadez, las mañanas dejan de ser una lucha.",
   },
   {
-    src: "/img/sincara-5.png",
+    src: "/img/sincara-5.webp",
     titulo: "Marca tu progreso",
     momento: "Día 30",
     caption: "Energía estable durante el día. Menos siesta de las 3pm. Empiezas a notar el cabello con más fuerza.",
   },
   {
-    src: "/img/sincara-6.png",
+    src: "/img/sincara-6.webp",
     titulo: "Cierra tu día",
     momento: "Día 60-90",
     caption: "Duermes mejor. La hinchazón al despertar se va. Tu metabolismo y tu humor empiezan a sostenerse solos.",
@@ -118,7 +118,7 @@ const INGREDIENTES: Ingrediente[] = [
     n: "Selenio",
     d: "200 mcg",
     resumen: "El nutriente con más evidencia para Hashimoto.",
-    foto: "/img/ing-selenio.jpg",
+    foto: "/img/ing-selenio.webp",
     porQue:
       "El selenio forma parte de las enzimas glutation-peroxidasa que protegen a la tiroides del daño oxidativo. En Hashimoto la inflamación crónica daña la glándula y el selenio es el escudo natural que la defiende.",
     evidencia: [
@@ -132,7 +132,7 @@ const INGREDIENTES: Ingrediente[] = [
     n: "Yodo",
     d: "150 mcg",
     resumen: "La materia prima de las hormonas T3 y T4.",
-    foto: "/img/ing-yodo.jpg",
+    foto: "/img/ing-yodo.webp",
     porQue:
       "Sin yodo, la tiroides no puede fabricar las hormonas T3 y T4. La OMS recomienda 150 mcg/día. Pero ojo: en Hashimoto, dosis muy altas empeoran el cuadro — por eso usamos solo la dosis fisiológica segura.",
     evidencia: [
@@ -146,7 +146,7 @@ const INGREDIENTES: Ingrediente[] = [
     n: "Zinc",
     d: "15 mg",
     resumen: "Activa la conversión de T4 en T3.",
-    foto: "/img/ing-zinc.jpg",
+    foto: "/img/ing-zinc.webp",
     porQue:
       "T4 es la hormona inactiva; T3 es la activa que da energía. La conversión depende de la enzima deiodinasa que necesita zinc. Sin zinc suficiente, tu cuerpo tiene T4 pero no la puede usar.",
     evidencia: [
@@ -160,7 +160,7 @@ const INGREDIENTES: Ingrediente[] = [
     n: "L-Tirosina",
     d: "500 mg",
     resumen: "El aminoácido precursor de las hormonas tiroideas.",
-    foto: "/img/ing-tirosina.jpg",
+    foto: "/img/ing-tirosina.webp",
     porQue:
       "T3 y T4 se construyen literalmente uniendo yodo a una molécula de tirosina. Si no tienes suficiente tirosina, tu tiroides no tiene los ladrillos para fabricar hormonas.",
     evidencia: [
@@ -174,7 +174,7 @@ const INGREDIENTES: Ingrediente[] = [
     n: "Vitamina B12",
     d: "500 mcg",
     resumen: "Combate la fatiga característica del hipotiroidismo.",
-    foto: "/img/ing-b12.jpg",
+    foto: "/img/ing-b12.webp",
     porQue:
       "Hasta el 40% de pacientes con hipotiroidismo tiene deficiencia de B12. Esta vitamina es clave para producir energía celular y para el sistema nervioso. Su deficiencia explica gran parte del cansancio crónico.",
     evidencia: [
@@ -188,7 +188,7 @@ const INGREDIENTES: Ingrediente[] = [
     n: "Vitamina D3",
     d: "2000 UI",
     resumen: "El 70% de mujeres colombianas tiene niveles bajos.",
-    foto: "/img/ing-d3.jpg",
+    foto: "/img/ing-d3.webp",
     porQue:
       "La D3 modula el sistema inmune. En enfermedades autoinmunes como Hashimoto, niveles óptimos de D3 reducen la actividad de los anticuerpos contra la tiroides. Además mejora ánimo y energía.",
     evidencia: [
@@ -242,7 +242,7 @@ type Cantidad = keyof typeof PLANES;
 
 const TESTI_CORTOS = [
   {
-    foto: "/img/cliente-camila.png",
+    foto: "/img/cliente-camila.webp",
     nombre: "Camila",
     edad: 33,
     ciudad: "Medellín",
@@ -250,7 +250,7 @@ const TESTI_CORTOS = [
       "Llevaba 3 años con levotiroxina y seguía cansada. Al segundo mes con MI TIROIDES empecé a despertarme con energía.",
   },
   {
-    foto: "/img/cliente-marcela.png",
+    foto: "/img/cliente-marcela.webp",
     nombre: "Luisa",
     edad: 36,
     ciudad: "Pereira",
@@ -258,7 +258,7 @@ const TESTI_CORTOS = [
       "Antes pedía a iHerb 4 frascos distintos. Ahora un solo frasco colombiano con todo. Llegó en 3 días con pago contra entrega.",
   },
   {
-    foto: "/img/cliente-diana.png",
+    foto: "/img/cliente-diana.webp",
     nombre: "Yenifer",
     edad: 44,
     ciudad: "Barranquilla",
@@ -266,7 +266,7 @@ const TESTI_CORTOS = [
       "Mi endocrinóloga aprobó complementar con selenio y yodo. Encontrar todo en una cápsula me cambió la vida.",
   },
   {
-    foto: "/img/cliente-patricia.png",
+    foto: "/img/cliente-patricia.webp",
     nombre: "Martha",
     edad: 52,
     ciudad: "Bucaramanga",
@@ -274,7 +274,7 @@ const TESTI_CORTOS = [
       "Con la premenopausia mi tiroides se descontroló. En 8 semanas con MI TIROIDES dejé de sentirme tan cansada.",
   },
   {
-    foto: "/img/cliente-andrea.png",
+    foto: "/img/cliente-andrea.webp",
     nombre: "Aura",
     edad: 39,
     ciudad: "Quibdó",
@@ -285,7 +285,7 @@ const TESTI_CORTOS = [
 
 const TESTI_LARGOS = [
   {
-    foto: "/img/cliente-camila.png",
+    foto: "/img/cliente-camila.webp",
     nombre: "Camila Quintero",
     rol: "Contadora · Medellín",
     texto:
@@ -293,7 +293,7 @@ const TESTI_LARGOS = [
     tag: "Energía recuperada",
   },
   {
-    foto: "/img/cliente-marcela.png",
+    foto: "/img/cliente-marcela.webp",
     nombre: "Luisa Restrepo",
     rol: "Diseñadora · Pereira",
     texto:
@@ -301,7 +301,7 @@ const TESTI_LARGOS = [
     tag: "Escéptica convertida",
   },
   {
-    foto: "/img/cliente-diana.png",
+    foto: "/img/cliente-diana.webp",
     nombre: "Yenifer Torres",
     rol: "Profesora · Barranquilla",
     texto:
@@ -309,7 +309,7 @@ const TESTI_LARGOS = [
     tag: "Hashimoto",
   },
   {
-    foto: "/img/cliente-patricia.png",
+    foto: "/img/cliente-patricia.webp",
     nombre: "Martha Vargas",
     rol: "Empresaria · Bucaramanga",
     texto:
@@ -317,7 +317,7 @@ const TESTI_LARGOS = [
     tag: "Premenopausia",
   },
   {
-    foto: "/img/cliente-andrea.png",
+    foto: "/img/cliente-andrea.webp",
     nombre: "Aura Patiño",
     rol: "Mamá y emprendedora · Quibdó",
     texto:
@@ -325,7 +325,7 @@ const TESTI_LARGOS = [
     tag: "Postparto",
   },
   {
-    foto: "/img/cliente-lina.png",
+    foto: "/img/cliente-lina.webp",
     nombre: "Doris Herrera",
     rol: "Campesina · Boyacá",
     texto:
@@ -333,7 +333,7 @@ const TESTI_LARGOS = [
     tag: "Energía al final del día",
   },
   {
-    foto: "/img/cliente-bea.png",
+    foto: "/img/cliente-bea.webp",
     nombre: "Beatriz Ochoa",
     rol: "Arquitecta · Medellín",
     texto:
@@ -341,7 +341,7 @@ const TESTI_LARGOS = [
     tag: "Caída de cabello",
   },
   {
-    foto: "/img/cliente-rosa.png",
+    foto: "/img/cliente-rosa.webp",
     nombre: "Rosa Pinto",
     rol: "Comerciante · Villavicencio",
     texto:
@@ -349,7 +349,7 @@ const TESTI_LARGOS = [
     tag: "Frío constante",
   },
   {
-    foto: "/img/cliente-sofia.png",
+    foto: "/img/cliente-sofia.webp",
     nombre: "Sofía Ramírez",
     rol: "Estudiante de medicina · Manizales",
     texto:
@@ -357,7 +357,7 @@ const TESTI_LARGOS = [
     tag: "Niebla mental",
   },
   {
-    foto: "/img/cliente-elena.png",
+    foto: "/img/cliente-elena.webp",
     nombre: "Elena Cifuentes",
     rol: "Pensionada · Bogotá",
     texto:
@@ -365,7 +365,7 @@ const TESTI_LARGOS = [
     tag: "+55 años",
   },
   {
-    foto: "/img/cliente-juliana.png",
+    foto: "/img/cliente-juliana.webp",
     nombre: "Juliana Quenán",
     rol: "Profesora · Pasto",
     texto:
@@ -373,7 +373,7 @@ const TESTI_LARGOS = [
     tag: "Sur de Colombia",
   },
   {
-    foto: "/img/cliente-paula.png",
+    foto: "/img/cliente-paula.webp",
     nombre: "Paula Mosquera",
     rol: "Líder comunitaria · Quibdó",
     texto:
@@ -959,7 +959,7 @@ export default function Page() {
                 <tr>
                   <th></th>
                   <th className="ctable-feat">
-                    <Image src="/img/bundle-1.png" alt="MI TIROIDES" width={80} height={80} />
+                    <Image src="/img/bundle-1.webp" alt="MI TIROIDES" width={80} height={80} />
                     <span>MI TIROIDES</span>
                     <small>$89.900 / mes</small>
                     <em className="ctable-tag">RECOMENDADO</em>
@@ -1110,7 +1110,7 @@ export default function Page() {
         <div className="container" style={{ display: "grid", gap: 30, alignItems: "center", gridTemplateColumns: "1fr" }}>
           <div style={{ display: "grid", gap: 30, gridTemplateColumns: "1fr", alignItems: "center" }}>
             <Image
-              src="/img/doctora.png"
+              src="/img/doctora.webp"
               alt="Dra. Ana López, Endocrinóloga"
               width={500}
               height={600}
@@ -1588,7 +1588,7 @@ export default function Page() {
                         )}
                         <div className="modal-plan-img">
                           <Image
-                            src={`/img/bundle-${p.frascos}.png`}
+                            src={`/img/bundle-${p.frascos}.webp`}
                             alt={p.label}
                             width={300}
                             height={300}
