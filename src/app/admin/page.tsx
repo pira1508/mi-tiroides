@@ -11,6 +11,7 @@ import { Atencion } from "./tabs/atencion";
 import { Calculadora } from "./tabs/calculadora";
 import { Novedades } from "./tabs/novedades";
 import { QuizFunnel } from "./tabs/quiz-funnel";
+import { Preliminares } from "./tabs/preliminares";
 
 type Pedido = {
   id: string;
@@ -69,7 +70,7 @@ type Stats = {
   ab?: { v1?: AbStats; v2?: AbStats };
 };
 
-type TabId = "dashboard" | "live" | "ab" | "ads" | "crm" | "pipeline" | "shipping" | "products" | "atencion" | "calculadora" | "novedades" | "quiz";
+type TabId = "dashboard" | "live" | "ab" | "ads" | "crm" | "pipeline" | "preliminares" | "shipping" | "products" | "atencion" | "calculadora" | "novedades" | "quiz";
 
 const ESTADOS: Pedido["estado"][] = ["nuevo", "confirmado", "despachado", "entregado", "cancelado"];
 
@@ -469,6 +470,7 @@ export default function AdminPage() {
     { id: "dashboard", label: "Dashboard", icon: "home", group: "Operación" },
     { id: "live", label: "Pedidos en vivo", icon: "activity", group: "Operación", badge: unreadTotal },
     { id: "pipeline", label: "Pipeline pedidos", icon: "activity", group: "Operación" },
+    { id: "preliminares", label: "📋 Preliminares", icon: "activity", group: "Operación" },
     { id: "atencion", label: "⚠️ Atención", icon: "activity", group: "Operación", badge: atencionTotal },
     { id: "novedades", label: "🚚 Novedades", icon: "box", group: "Operación" },
     { id: "ab", label: "A/B Testing", icon: "flask", group: "Crecimiento" },
@@ -608,6 +610,8 @@ export default function AdminPage() {
           {activeTab === "crm" && <CRM />}
 
           {activeTab === "pipeline" && <Pipeline />}
+
+          {activeTab === "preliminares" && <Preliminares />}
 
           {activeTab === "atencion" && <Atencion />}
 
