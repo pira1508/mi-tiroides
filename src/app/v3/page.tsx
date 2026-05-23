@@ -65,37 +65,37 @@ const HERO_IMAGES = [
 
 const SIN_CARA = [
   {
-    src: "/img/sincara-1.png",
+    src: "/img/sincara-1.webp",
     titulo: "7:00 a.m. · Con el desayuno",
     momento: "Día 1",
     caption: "2 cápsulas con el primer alimento del día. El selenio y el zinc se absorben mejor con grasas saludables.",
   },
   {
-    src: "/img/sincara-2.png",
+    src: "/img/sincara-2.webp",
     titulo: "La toma diaria",
     momento: "Cada mañana",
     caption: "1 sola toma al día. Sin recordatorios extra, sin pastilleros complicados — un solo frasco para todo.",
   },
   {
-    src: "/img/sincara-3.png",
+    src: "/img/sincara-3.webp",
     titulo: "Lleva el frasco contigo",
     momento: "Si sales temprano",
     caption: "Cabe en la cartera. Si te vas a la oficina antes de desayunar, te las tomas allá con un café.",
   },
   {
-    src: "/img/sincara-4.png",
+    src: "/img/sincara-4.webp",
     titulo: "Domingo en familia",
     momento: "Día 14",
     caption: "Empieza el cambio: te despiertas con menos pesadez, las mañanas dejan de ser una lucha.",
   },
   {
-    src: "/img/sincara-5.png",
+    src: "/img/sincara-5.webp",
     titulo: "Marca tu progreso",
     momento: "Día 30",
     caption: "Energía estable durante el día. Menos siesta de las 3pm. Empiezas a notar el cabello con más fuerza.",
   },
   {
-    src: "/img/sincara-6.png",
+    src: "/img/sincara-6.webp",
     titulo: "Cierra tu día",
     momento: "Día 60-90",
     caption: "Duermes mejor. La hinchazón al despertar se va. Tu metabolismo y tu humor empiezan a sostenerse solos.",
@@ -247,7 +247,7 @@ type Cantidad = keyof typeof PLANES;
 
 const TESTI_CORTOS = [
   {
-    foto: "/img/ugc-bogota.png",
+    foto: "/img/ugc-bogota.webp",
     nombre: "Marta C.",
     edad: 47,
     ciudad: "Bogotá",
@@ -257,7 +257,7 @@ const TESTI_CORTOS = [
       "Llevaba años con levotiroxina pero el cansancio no se iba y el cabello se me caía. Al segundo frasco noté que el cabello aguantó mejor y la fatiga bajó.",
   },
   {
-    foto: "/img/ugc-cali.png",
+    foto: "/img/ugc-cali.webp",
     nombre: "Yolanda M.",
     edad: 44,
     ciudad: "Cali",
@@ -267,7 +267,7 @@ const TESTI_CORTOS = [
       "Vivía hinchada y con dolores de cabeza casi todos los días. Después del mes y medio empecé a dormir mejor y a sentirme menos hinchada en la cara.",
   },
   {
-    foto: "/img/ugc-medellin.png",
+    foto: "/img/ugc-medellin.webp",
     nombre: "Gloria R.",
     edad: 49,
     ciudad: "Medellín",
@@ -277,7 +277,7 @@ const TESTI_CORTOS = [
       "Con la premenopausia el peso se me fue subiendo y andaba olvidadiza. Llevo varios meses y aunque no es milagroso, dejé de subir y la cabeza me responde mejor.",
   },
   {
-    foto: "/img/ugc-cartagena.png",
+    foto: "/img/ugc-cartagena.webp",
     nombre: "Marisol P.",
     edad: 45,
     ciudad: "Cartagena",
@@ -287,7 +287,7 @@ const TESTI_CORTOS = [
       "Estaba siempre cansada y con las manos frías aunque hiciera calor. Después de unos meses la energía está mucho mejor y termino el día sin caerme rendida.",
   },
   {
-    foto: "/img/ugc-pereira.png",
+    foto: "/img/ugc-pereira.webp",
     nombre: "Luz Marina O.",
     edad: 51,
     ciudad: "Pereira",
@@ -297,7 +297,7 @@ const TESTI_CORTOS = [
       "El cabello se me caía y andaba con dolores en las piernas todo el tiempo. Después de un par de meses la caída bajó harto y me siento con más fuerza.",
   },
   {
-    foto: "/img/ugc-cucuta.png",
+    foto: "/img/ugc-cucuta.webp",
     nombre: "Carmen R.",
     edad: 52,
     ciudad: "Cúcuta",
@@ -311,7 +311,7 @@ const TESTI_CORTOS = [
 const TESTI_LARGOS = [
   // 4 UGC orgánicas (reparten con el bloque 1)
   {
-    foto: "/img/ugc-bogota.png",
+    foto: "/img/ugc-bogota.webp",
     nombre: "Marta C.",
     rol: "Cabeza de hogar · Bogotá",
     texto:
@@ -319,7 +319,7 @@ const TESTI_LARGOS = [
     tag: "Cabello y energía",
   },
   {
-    foto: "/img/ugc-cali.png",
+    foto: "/img/ugc-cali.webp",
     nombre: "Yolanda M.",
     rol: "Cabeza de hogar · Cali",
     texto:
@@ -327,7 +327,7 @@ const TESTI_LARGOS = [
     tag: "Menos hinchazón",
   },
   {
-    foto: "/img/ugc-medellin.png",
+    foto: "/img/ugc-medellin.webp",
     nombre: "Gloria R.",
     rol: "Cabeza de hogar · Medellín",
     texto:
@@ -335,7 +335,7 @@ const TESTI_LARGOS = [
     tag: "Premenopausia",
   },
   {
-    foto: "/img/ugc-cartagena.png",
+    foto: "/img/ugc-cartagena.webp",
     nombre: "Marisol P.",
     rol: "Cabeza de hogar · Cartagena",
     texto:
@@ -986,7 +986,14 @@ function Page() {
                     className={`ugc-square-card ${expanded ? "is-expanded" : ""}`}
                   >
                     <div className="ugc-square-foto">
-                      <Image src={t.foto} alt={t.nombre} width={400} height={400} />
+                      <Image
+                        src={t.foto}
+                        alt={t.nombre}
+                        width={400}
+                        height={400}
+                        loading={i < 2 ? "eager" : "lazy"}
+                        sizes="(max-width: 768px) 240px, 260px"
+                      />
                     </div>
                     <div className="ugc-square-body">
                       <div className="stars" style={{ fontSize: 13, marginBottom: 6 }}>★★★★★</div>
@@ -1191,7 +1198,14 @@ function Page() {
               {SIN_CARA.map((s) => (
                 <div key={s.src} className="sincara-card">
                   <div className="sincara-foto">
-                    <Image src={s.src} alt={s.titulo} width={500} height={620} />
+                    <Image
+                      src={s.src}
+                      alt={s.titulo}
+                      width={500}
+                      height={620}
+                      loading="lazy"
+                      sizes="(max-width: 768px) 260px, 320px"
+                    />
                     <span className="sincara-momento">{s.momento}</span>
                   </div>
                   <div className="sincara-titulo">{s.titulo}</div>
@@ -1238,7 +1252,14 @@ function Page() {
                     className={`ugc-square-card ${expanded ? "is-expanded" : ""}`}
                   >
                     <div className="ugc-square-foto">
-                      <Image src={t.foto} alt={t.nombre} width={400} height={400} />
+                      <Image
+                        src={t.foto}
+                        alt={t.nombre}
+                        width={400}
+                        height={400}
+                        loading="lazy"
+                        sizes="(max-width: 768px) 240px, 260px"
+                      />
                     </div>
                     <div className="ugc-square-body">
                       <div className="stars" style={{ fontSize: 13, marginBottom: 6 }}>★★★★★</div>
@@ -1283,7 +1304,14 @@ function Page() {
               {Array.from({ length: 2 }).flatMap((_, dup) => [
                 <div key={`act-${dup}`} className="ugc-square-card">
                   <div className="ugc-square-foto">
-                    <Image src="/img/capsula-6-activos.png" alt="6 activos: selenio, yodo, zinc, L-tirosina, B12, D3" width={400} height={400} />
+                    <Image
+                      src="/img/capsula-6-activos.webp"
+                      alt="6 activos: selenio, yodo, zinc, L-tirosina, B12, D3"
+                      width={400}
+                      height={400}
+                      loading="lazy"
+                      sizes="(max-width: 768px) 240px, 260px"
+                    />
                   </div>
                   <div className="ugc-square-body">
                     <p>Fórmula <strong>desarrollada con respaldo médico</strong>: selenio, yodo, zinc, L-tirosina, B12 y D3 en dosis específicas para apoyar la función tiroidea.</p>
