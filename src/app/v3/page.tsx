@@ -56,11 +56,11 @@ function shuffleWithSeed<T>(array: readonly T[], seed: number): T[] {
 }
 
 const HERO_IMAGES = [
-  { src: "/img/hero-1.png", alt: "¿Llevas años cansada pensando que es la edad? Síntomas de tiroides" },
-  { src: "/img/hero-2.png", alt: "Hormonas vs MI TIROIDES — repara la causa, no tapa el síntoma" },
-  { src: "/img/hero-3.png", alt: "MI TIROIDES fórmula con 6 ingredientes naturales y dosis" },
-  { src: "/img/hero-4.png", alt: "Tu energía vuelve paso a paso — timeline de 7 a 30 días" },
-  { src: "/img/hero-5-v2.png", alt: "Resultados reales y precio MI TIROIDES — pack 2 frascos" },
+  { src: "/img/hero-1.webp", alt: "¿Llevas años cansada pensando que es la edad? Síntomas de tiroides" },
+  { src: "/img/hero-2.webp", alt: "Hormonas vs MI TIROIDES — repara la causa, no tapa el síntoma" },
+  { src: "/img/hero-3.webp", alt: "MI TIROIDES fórmula con 6 ingredientes naturales y dosis" },
+  { src: "/img/hero-4.webp", alt: "Tu energía vuelve paso a paso — timeline de 7 a 30 días" },
+  { src: "/img/hero-5-v2.webp", alt: "Resultados reales y precio MI TIROIDES — pack 2 frascos" },
 ];
 
 const SIN_CARA = [
@@ -123,7 +123,7 @@ const INGREDIENTES: Ingrediente[] = [
     n: "Selenio",
     d: "200 mcg",
     resumen: "El nutriente con más evidencia para Hashimoto.",
-    foto: "/img/ing-selenio.jpg",
+    foto: "/img/ing-selenio.webp",
     porQue:
       "El selenio forma parte de las enzimas glutation-peroxidasa que protegen a la tiroides del daño oxidativo. En Hashimoto la inflamación crónica daña la glándula y el selenio es el escudo natural que la defiende.",
     evidencia: [
@@ -137,7 +137,7 @@ const INGREDIENTES: Ingrediente[] = [
     n: "Yodo",
     d: "150 mcg",
     resumen: "La materia prima de las hormonas T3 y T4.",
-    foto: "/img/ing-yodo.jpg",
+    foto: "/img/ing-yodo.webp",
     porQue:
       "Sin yodo, la tiroides no puede fabricar las hormonas T3 y T4. La OMS recomienda 150 mcg/día. Pero ojo: en Hashimoto, dosis muy altas empeoran el cuadro — por eso usamos solo la dosis fisiológica segura.",
     evidencia: [
@@ -151,7 +151,7 @@ const INGREDIENTES: Ingrediente[] = [
     n: "Zinc",
     d: "15 mg",
     resumen: "Activa la conversión de T4 en T3.",
-    foto: "/img/ing-zinc.jpg",
+    foto: "/img/ing-zinc.webp",
     porQue:
       "T4 es la hormona inactiva; T3 es la activa que da energía. La conversión depende de la enzima deiodinasa que necesita zinc. Sin zinc suficiente, tu cuerpo tiene T4 pero no la puede usar.",
     evidencia: [
@@ -165,7 +165,7 @@ const INGREDIENTES: Ingrediente[] = [
     n: "L-Tirosina",
     d: "500 mg",
     resumen: "El aminoácido precursor de las hormonas tiroideas.",
-    foto: "/img/ing-tirosina.jpg",
+    foto: "/img/ing-tirosina.webp",
     porQue:
       "T3 y T4 se construyen literalmente uniendo yodo a una molécula de tirosina. Si no tienes suficiente tirosina, tu tiroides no tiene los ladrillos para fabricar hormonas.",
     evidencia: [
@@ -179,7 +179,7 @@ const INGREDIENTES: Ingrediente[] = [
     n: "Vitamina B12",
     d: "500 mcg",
     resumen: "Combate la fatiga característica del hipotiroidismo.",
-    foto: "/img/ing-b12.jpg",
+    foto: "/img/ing-b12.webp",
     porQue:
       "Hasta el 40% de pacientes con hipotiroidismo tiene deficiencia de B12. Esta vitamina es clave para producir energía celular y para el sistema nervioso. Su deficiencia explica gran parte del cansancio crónico.",
     evidencia: [
@@ -193,7 +193,7 @@ const INGREDIENTES: Ingrediente[] = [
     n: "Vitamina D3",
     d: "2000 UI",
     resumen: "El 70% de mujeres colombianas tiene niveles bajos.",
-    foto: "/img/ing-d3.jpg",
+    foto: "/img/ing-d3.webp",
     porQue:
       "La D3 modula el sistema inmune. En enfermedades autoinmunes como Hashimoto, niveles óptimos de D3 reducen la actividad de los anticuerpos contra la tiroides. Además mejora ánimo y energía.",
     evidencia: [
@@ -344,7 +344,7 @@ const TESTI_LARGOS = [
   },
   // 4 sobrevivientes (textos recortados, sin info muy personal)
   {
-    foto: "/img/cliente-patricia.png",
+    foto: "/img/cliente-patricia.webp",
     nombre: "Martha V.",
     rol: "Empresaria · Bucaramanga",
     texto:
@@ -352,7 +352,7 @@ const TESTI_LARGOS = [
     tag: "Premenopausia",
   },
   {
-    foto: "/img/cliente-andrea.png",
+    foto: "/img/cliente-andrea.webp",
     nombre: "Aura P.",
     rol: "Mamá · Quibdó",
     texto:
@@ -360,7 +360,7 @@ const TESTI_LARGOS = [
     tag: "Postparto",
   },
   {
-    foto: "/img/cliente-bea.png",
+    foto: "/img/cliente-bea.webp",
     nombre: "Beatriz O.",
     rol: "Trabajadora · Medellín",
     texto:
@@ -368,7 +368,7 @@ const TESTI_LARGOS = [
     tag: "Caída de cabello",
   },
   {
-    foto: "/img/cliente-rosa.png",
+    foto: "/img/cliente-rosa.webp",
     nombre: "Rosa P.",
     rol: "Comerciante · Villavicencio",
     texto:
@@ -1097,7 +1097,7 @@ function Page() {
                 <tr>
                   <th></th>
                   <th className="ctable-feat">
-                    <Image src="/img/bundle-1.png" alt="MI TIROIDES" width={80} height={80} />
+                    <Image src="/img/bundle-1.webp" alt="MI TIROIDES" width={80} height={80} />
                     <span>MI TIROIDES</span>
                     <small>$89.900 / mes</small>
                     <em className="ctable-tag">RECOMENDADO</em>
@@ -1323,7 +1323,7 @@ function Page() {
                 </div>,
                 <div key={`doc-${dup}`} className="ugc-square-card">
                   <div className="ugc-square-foto">
-                    <Image src="/img/doctora.png" alt="Dra. Ana López" width={300} height={300} />
+                    <Image src="/img/doctora.webp" alt="Dra. Ana López" width={300} height={300} />
                   </div>
                   <div className="ugc-square-body">
                     <p>“No reemplaza tu medicamento — lo <strong>complementa</strong>. Reúne los nutrientes que más vemos deficitarios en mujeres con hipotiroidismo en Colombia.”</p>
@@ -1696,7 +1696,7 @@ function Page() {
                         )}
                         <div className="modal-plan-img">
                           <Image
-                            src={`/img/bundle-${p.frascos}.png`}
+                            src={`/img/bundle-${p.frascos}.webp`}
                             alt={p.label}
                             width={300}
                             height={300}
