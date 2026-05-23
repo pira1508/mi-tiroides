@@ -73,6 +73,7 @@ export async function GET() {
     rows.find((e) => e.tipo === tipo && e.variant === variant)?.total ?? 0;
 
   const pedidos = rows
+    .filter((row) => row.estado !== "preliminar")
     .map((row) => ({
       id: row.id,
       nombre: row.nombre || "—",
