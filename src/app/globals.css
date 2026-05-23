@@ -880,8 +880,9 @@ footer.site-footer {
 .modal-planes {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  gap: 10px;
   margin-bottom: 20px;
+  padding-top: 14px;
 }
 .modal-plan {
   background: #fff;
@@ -901,27 +902,45 @@ footer.site-footer {
 }
 .modal-plan-tag {
   position: absolute;
-  top: -10px;
+  top: -11px;
   left: 50%;
   transform: translateX(-50%);
   background: var(--verde);
   color: #fff;
-  font-size: 9.5px;
+  font-size: 9px;
   font-weight: 800;
-  letter-spacing: 0.4px;
-  padding: 5px 10px;
+  letter-spacing: 0.3px;
+  padding: 4px 9px;
   border-radius: 999px;
   white-space: nowrap;
   text-transform: uppercase;
   box-shadow: 0 2px 8px rgba(31, 61, 43, 0.25);
   z-index: 2;
+  max-width: 95%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .modal-plan-tag.gold {
   background: var(--dorado);
   color: #1c1c1c;
 }
 @media (max-width: 480px) {
-  .modal-plan-tag { font-size: 8px; padding: 4px 8px; letter-spacing: 0.2px; }
+  .modal-plan-tag {
+    font-size: 8px;
+    padding: 3px 7px;
+    letter-spacing: 0.15px;
+    top: -10px;
+  }
+  .modal-planes {
+    gap: 6px;
+    padding-top: 12px;
+  }
+}
+@media (max-width: 380px) {
+  .modal-plan-tag {
+    font-size: 7px;
+    padding: 3px 6px;
+  }
 }
 .modal-plan-img {
   background: #fff;

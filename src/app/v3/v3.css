@@ -1,0 +1,260 @@
+/* v3 padding overrides — ~30% reducción vertical */
+.v3-root .section { padding: 56px 0; }
+.v3-root .section-tight { padding: 40px 0; }
+
+@media (max-width: 899px) {
+  .v3-root .section { padding: 44px 0; }
+  .v3-root .section-tight { padding: 32px 0; }
+}
+
+/* h2 más compacto en v3 */
+.v3-root .h2 { margin-bottom: 16px; }
+.v3-root .lead { margin-bottom: 24px; }
+
+/* UGC cuadrado deslizable */
+.v3-root .ugc-square-scroller {
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  margin: 0 -20px;
+  padding: 0 20px 4px;
+}
+.v3-root .ugc-square-scroller::-webkit-scrollbar { display: none; }
+
+.v3-root .ugc-square-track {
+  display: flex;
+  gap: 14px;
+}
+
+.v3-root .ugc-square-card {
+  flex: 0 0 240px;
+  background: #fff;
+  border: 1px solid #ebe2cc;
+  border-radius: 14px;
+  overflow: hidden;
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+}
+
+.v3-root .ugc-square-foto {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+}
+.v3-root .ugc-square-foto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.v3-root .ugc-square-body {
+  padding: 12px 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+.v3-root .ugc-square-body p {
+  font-size: 13px;
+  line-height: 1.45;
+  color: #3a3a3a;
+  margin: 0;
+  flex: 1;
+}
+.v3-root .ugc-square-meta {
+  display: flex;
+  flex-direction: column;
+  font-size: 12px;
+  margin-top: 6px;
+  padding-top: 8px;
+  border-top: 1px solid #f0e9d6;
+}
+.v3-root .ugc-square-meta strong {
+  color: #1f3d2b;
+  font-size: 12px;
+}
+.v3-root .ugc-square-meta span {
+  color: #888;
+  font-size: 11px;
+}
+
+/* Layout UGC: nombre + profesión + beneficio + ver más */
+.v3-root .ugc-square-name {
+  font-size: 14px;
+  font-weight: 800;
+  color: #1f3d2b;
+  line-height: 1.2;
+}
+.v3-root .ugc-square-prof {
+  font-size: 11.5px;
+  color: #c9a14a;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  margin-top: 2px;
+}
+.v3-root .ugc-square-benefit {
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: #3a3a3a;
+  margin: 8px 0 10px;
+  font-style: italic;
+  flex: 1;
+}
+.v3-root .ugc-square-full {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #3a3a3a;
+  margin: 10px 0;
+  flex: 1;
+}
+.v3-root .ugc-square-vermas {
+  background: transparent;
+  border: 1px solid #1f3d2b;
+  color: #1f3d2b;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 7px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: auto;
+  transition: all 0.15s;
+  align-self: flex-start;
+}
+.v3-root .ugc-square-vermas:hover {
+  background: #1f3d2b;
+  color: #fff;
+}
+
+/* Card expandida: foto + texto en disposición horizontal */
+.v3-root .ugc-square-card.is-expanded {
+  flex: 0 0 360px;
+  flex-direction: row;
+  transition: flex-basis 0.3s ease;
+}
+.v3-root .ugc-square-card.is-expanded .ugc-square-foto {
+  width: 130px;
+  aspect-ratio: auto;
+  flex-shrink: 0;
+}
+.v3-root .ugc-square-card.is-expanded .ugc-square-foto img {
+  height: 100%;
+}
+.v3-root .ugc-square-card.is-expanded .ugc-square-body {
+  padding: 12px 14px;
+}
+
+@media (min-width: 700px) {
+  .v3-root .ugc-square-card.is-expanded { flex: 0 0 440px; }
+  .v3-root .ugc-square-card.is-expanded .ugc-square-foto { width: 170px; }
+}
+
+@media (min-width: 900px) {
+  .v3-root .ugc-square-card { flex: 0 0 260px; }
+}
+
+/* Auto-scroll + drag manual híbrido */
+.v3-root .ugc-square-scroller.auto-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: none;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 24px, #000 calc(100% - 24px), transparent 100%);
+          mask-image: linear-gradient(90deg, transparent 0, #000 24px, #000 calc(100% - 24px), transparent 100%);
+  cursor: grab;
+}
+.v3-root .ugc-square-scroller.auto-scroll::-webkit-scrollbar { display: none; }
+.v3-root .ugc-square-scroller.auto-scroll:active { cursor: grabbing; }
+
+.v3-root .ugc-square-scroller.auto-scroll .ugc-square-track {
+  animation: v3-marquee 38s linear infinite;
+  width: max-content;
+}
+.v3-root .ugc-square-scroller.auto-scroll:hover .ugc-square-track,
+.v3-root .ugc-square-scroller.auto-scroll.is-paused .ugc-square-track {
+  animation-play-state: paused;
+}
+
+@keyframes v3-marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .v3-root .ugc-square-scroller.auto-scroll .ugc-square-track {
+    animation: none;
+  }
+}
+
+/* Sello "Hecho en Colombia" estilo certificado */
+.v3-root .v3-sello-colombia {
+  width: 180px;
+  height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.v3-root .v3-sello-borde {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: #fff;
+  border: 4px double #1f3d2b;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  box-shadow: 0 4px 14px rgba(31, 61, 43, 0.18);
+  position: relative;
+}
+.v3-root .v3-sello-borde::before {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  border-radius: 50%;
+  border: 1px solid #c9a14a;
+  pointer-events: none;
+}
+.v3-root .v3-sello-bandera {
+  display: flex;
+  flex-direction: column;
+  width: 56px;
+  height: 32px;
+  border-radius: 3px;
+  overflow: hidden;
+  border: 1px solid rgba(0,0,0,0.08);
+  margin-bottom: 8px;
+}
+.v3-root .v3-sello-bandera span {
+  flex: 1;
+  display: block;
+}
+.v3-root .v3-sello-bandera span:first-child { flex: 2; }
+.v3-root .v3-sello-texto {
+  text-align: center;
+  color: #1f3d2b;
+  line-height: 1.05;
+}
+.v3-root .v3-sello-titulo {
+  font-size: 10px;
+  letter-spacing: 2px;
+  font-weight: 600;
+  color: #c9a14a;
+}
+.v3-root .v3-sello-titulo2 {
+  font-size: 17px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  margin-top: 1px;
+}
+.v3-root .v3-sello-sub {
+  font-size: 9px;
+  letter-spacing: 2px;
+  font-weight: 700;
+  color: #c9a14a;
+  margin-top: 4px;
+}
