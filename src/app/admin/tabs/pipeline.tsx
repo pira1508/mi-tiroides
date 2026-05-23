@@ -15,7 +15,7 @@ type PipelineOrder = {
   transportadora?: string;
   novedadResolucion?: string;
   carrier: "hoko" | "envia" | "interrap" | "—";
-  stage: "nuevo" | "confirmado" | "subido_hoko" | "guia_generada" | "guia_activa" | "en_bodega" | "bodega_2da_vez" | "espera_ruta" | "mercancia_recogida" | "en_reparto" | "entregado" | "pagado" | "novedad" | "novedad_resuelta" | "devolucion" | "cancelado";
+  stage: "preliminar" | "nuevo" | "confirmado" | "subido_hoko" | "guia_generada" | "guia_activa" | "en_bodega" | "bodega_2da_vez" | "espera_ruta" | "mercancia_recogida" | "en_reparto" | "entregado" | "pagado" | "novedad" | "novedad_resuelta" | "devolucion" | "cancelado";
   total: number;
   cantidad: number;
   diasTratamiento?: number;
@@ -54,6 +54,7 @@ const CARRIERS = {
 
 // Estados alineados con Hoko: labels y orden idénticos al panel de Hoko
 const STAGES: { id: PipelineOrder["stage"]; label: string; color: string; estadoBot: string }[] = [
+  { id: "preliminar",        label: "⚠️ Preliminar",      color: "#B45309", estadoBot: "preliminar" },
   { id: "nuevo",             label: "Nuevo",              color: "#D97706", estadoBot: "nuevo" },
   { id: "confirmado",        label: "Confirmado",         color: "#0284C7", estadoBot: "confirmado" },
   { id: "subido_hoko",       label: "Creado en Hoko",     color: "#0EA5E9", estadoBot: "subido_hoko" },

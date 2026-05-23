@@ -9,8 +9,8 @@ async function checkAuth() {
 }
 
 export async function POST(
-  req: NextRequest,
-  { params }: { params: { id: string } }
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   if (!(await checkAuth())) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
@@ -19,7 +19,7 @@ export async function POST(
   const BOT_URL = process.env.BOT_CONFIRMADOR_URL || "https://tiroides-bot.poudman.online/pedido";
   const BOT_BASE = BOT_URL.replace(/\/pedido\/?$/, "");
   const BOT_SECRET = process.env.BOT_CONFIRMADOR_SECRET || "";
-  const id = params.id;
+  const { id } = await params;
 
   try {
     const r = await fetch(`${BOT_BASE}/admin/preliminares/${id}/confirmar`, {
