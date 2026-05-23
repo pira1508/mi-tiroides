@@ -72,30 +72,32 @@ export async function GET() {
   const evCount = (rows: EventRow[], tipo: string, variant: string) =>
     rows.find((e) => e.tipo === tipo && e.variant === variant)?.total ?? 0;
 
-  const pedidos = rows.map((row) => ({
-    id: row.id,
-    nombre: row.nombre || "—",
-    telefonoCliente: row.telefono || "",
-    ciudad: row.ciudad || "",
-    departamento: row.departamento || "",
-    direccion: row.direccion || "",
-    referencia: row.referencia,
-    cantidad: Number(row.cantidad || 0),
-    diasTratamiento: Number(row.dias_tratamiento || row.cantidad * 45 || 0),
-    total: Number(row.total || 0),
-    creadoEn: row.creado_en,
-    actualizadoEn: row.actualizado_en,
-    estado: row.estado,
-    guia: row.guia || null,
-    transportadora: row.transportadora || null,
-    novedadResolucion: row.novedad_resolucion || null,
-    novedadTipo: row.novedad_tipo || null,
-    novedadInicio: row.novedad_inicio || null,
-    motivoNoEntrega: row.motivo_no_entrega || null,
-    bodega2daVez: row.bodega_2da_vez === 1,
-    fuente: row.fuente || null,
-    fuenteRaw: row.fuente_raw || null,
-  }));
+  const pedidos = rows
+    .filter((row) => row.estado !== "preliminar")
+    .map((row) => ({
+      id: row.id,
+      nombre: row.nombre || "—",
+      telefonoCliente: row.telefono || "",
+      ciudad: row.ciudad || "",
+      departamento: row.departamento || "",
+      direccion: row.direccion || "",
+      referencia: row.referencia,
+      cantidad: Number(row.cantidad || 0),
+      diasTratamiento: Number(row.dias_tratamiento || row.cantidad * 45 || 0),
+      total: Number(row.total || 0),
+      creadoEn: row.creado_en,
+      actualizadoEn: row.actualizado_en,
+      estado: row.estado,
+      guia: row.guia || null,
+      transportadora: row.transportadora || null,
+      novedadResolucion: row.novedad_resolucion || null,
+      novedadTipo: row.novedad_tipo || null,
+      novedadInicio: row.novedad_inicio || null,
+      motivoNoEntrega: row.motivo_no_entrega || null,
+      bodega2daVez: row.bodega_2da_vez === 1,
+      fuente: row.fuente || null,
+      fuenteRaw: row.fuente_raw || null,
+    }));
 
   // A/B Testing: agrupar por variant
   const v1Rows = rows.filter((r) => r.variant === "v1" && r.estado !== "cancelado");

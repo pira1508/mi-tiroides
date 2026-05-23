@@ -122,7 +122,7 @@ export async function GET(req: Request) {
     let unidadesDespachadas = 0;
 
     for (const p of pedidos) {
-      if (p.estado === "nuevo") continue;
+      if (p.estado === "nuevo" || p.estado === "preliminar") continue;
       if (ESTADOS_CANCELADOS.has(p.estado)) {
         // Cancelado = no se confirmó / no se despachó → solo lo contamos para info.
         totalCancelados++;

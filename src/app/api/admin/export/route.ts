@@ -53,7 +53,9 @@ export async function GET(req: Request) {
 
   // "Confirmado pendiente de subir a HOKO" = estado=confirmado y no tiene guia todavía
   // Si el operador filtra por otro estado, lo usamos directo
+  // IMPORTANTE: Excluir estado='preliminar' de cualquier export
   const filtrados = rows.filter((p) => {
+    if (p.estado === "preliminar") return false;
     if (estadoFiltro === "confirmado") {
       return p.estado === "confirmado" && !p.guia;
     }
