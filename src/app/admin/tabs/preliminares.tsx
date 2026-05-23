@@ -30,12 +30,7 @@ export function Preliminares() {
     setLoading(true);
     setError(null);
     try {
-      const secret = localStorage.getItem("admin_secret") || prompt("Secret:");
-      if (!secret) return;
-
-      const r = await fetch("/api/admin/preliminares", {
-        headers: { "x-secret": secret },
-      });
+      const r = await fetch("/api/admin/preliminares", { cache: "no-store" });
       if (!r.ok) throw new Error(`Error ${r.status}`);
 
       const datos = await r.json();
@@ -55,16 +50,8 @@ export function Preliminares() {
 
   const confirmar = async (id: string) => {
     try {
-      const secret = localStorage.getItem("admin_secret") || prompt("Secret:");
-      if (!secret) return;
-
-      const r = await fetch(`/api/admin/preliminares/${id}/confirmar`, {
-        method: "POST",
-        headers: { "x-secret": secret },
-      });
+      const r = await fetch(`/api/admin/preliminares/${id}/confirmar`, { method: "POST" });
       if (!r.ok) throw new Error(`Error ${r.status}`);
-
-      // Recargar lista
       await cargarPrelimi();
     } catch (e) {
       alert(`Error confirmar: ${e}`);
@@ -73,17 +60,9 @@ export function Preliminares() {
 
   const descartar = async (id: string) => {
     if (!confirm(`¿Descartar pedido ${id}?`)) return;
-
     try {
-      const secret = localStorage.getItem("admin_secret") || prompt("Secret:");
-      if (!secret) return;
-
-      const r = await fetch(`/api/admin/preliminares/${id}/cancelar`, {
-        method: "POST",
-        headers: { "x-secret": secret },
-      });
+      const r = await fetch(`/api/admin/preliminares/${id}/cancelar`, { method: "POST" });
       if (!r.ok) throw new Error(`Error ${r.status}`);
-
       await cargarPrelimi();
     } catch (e) {
       alert(`Error descartar: ${e}`);
