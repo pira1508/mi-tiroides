@@ -32,6 +32,7 @@ type BotRow = {
   bodega_2da_vez?: number | null;
   fuente?: string | null;
   fuente_raw?: string | null;
+  rescatado_de_preliminar?: number | null;
 };
 
 function fechaBogota(iso: string): string {
@@ -96,6 +97,7 @@ export async function GET() {
       bodega2daVez: row.bodega_2da_vez === 1,
       fuente: row.fuente || null,
       fuenteRaw: row.fuente_raw || null,
+      rescatadoDePreliminar: row.rescatado_de_preliminar === 1,
     }));
 
   // A/B Testing: agrupar por variant
@@ -126,9 +128,12 @@ export async function GET() {
     },
   };
 
+  const nuevosArr = pedidos.filter((p) => p.estado === "nuevo");
   const stats = {
     total: pedidos.length,
-    nuevos: pedidos.filter((p) => p.estado === "nuevo").length,
+    nuevos: nuevosArr.length,
+    nuevosDirectos: nuevosArr.filter((p) => !p.rescatadoDePreliminar).length,
+    nuevosRescatados: nuevosArr.filter((p) => p.rescatadoDePreliminar).length,
     confirmados: pedidos.filter((p) => p.estado === "confirmado").length,
     despachados: pedidos.filter((p) => p.estado === "despachado").length,
     entregados: pedidos.filter((p) => p.estado === "entregado").length,

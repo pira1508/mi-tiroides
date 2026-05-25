@@ -29,6 +29,7 @@ type Pedido = {
   estado: "nuevo" | "confirmado" | "despachado" | "entregado" | "cancelado";
   fuente?: string | null;
   fuenteRaw?: string | null;
+  rescatadoDePreliminar?: boolean;
 };
 
 // Mapeo fuente → { label, icono, color }
@@ -56,6 +57,8 @@ type AbStats = {
 type Stats = {
   total: number;
   nuevos: number;
+  nuevosDirectos?: number;
+  nuevosRescatados?: number;
   confirmados: number;
   despachados: number;
   entregados: number;
@@ -784,6 +787,20 @@ function Dashboard({
           value={fmtCOP(ticketProm)}
           foot={pedidosRango.length ? `${pedidosRango.length} pedidos` : undefined}
         />
+        <Kpi
+          label="Nuevos · directos del form"
+          value={String(stats?.nuevosDirectos ?? 0)}
+          icon={<Icon name="bolt" size={14} />}
+          foot="formulario completo"
+          accent="info"
+        />
+        <Kpi
+          label="Nuevos · rescatados de preliminar"
+          value={String(stats?.nuevosRescatados ?? 0)}
+          icon={<Icon name="refresh" size={14} />}
+          foot="ex-carrito abandonado"
+          accent="warning"
+        />
       </div>
 
       {/* Embudo + Top ciudades */}
@@ -963,6 +980,7 @@ function Dashboard({
                 <th>Fecha</th>
                 <th>Cliente</th>
                 <th>Ciudad</th>
+                <th>Origen</th>
                 <th className="t-right">Frascos</th>
                 <th className="t-right">Total</th>
                 <th>Estado</th>
@@ -978,13 +996,24 @@ function Dashboard({
                     <div className="muted" style={{ fontSize: 11 }}>{p.telefonoCliente}</div>
                   </td>
                   <td>{p.ciudad}</td>
+                  <td>
+                    {p.rescatadoDePreliminar ? (
+                      <span className="pill" style={{ background: "#D9770622", color: "#D97706", borderColor: "#D9770655", fontSize: 10, fontWeight: 600 }} title="Rescatado de carrito abandonado (preliminar)">
+                        🔄 RESCATADO
+                      </span>
+                    ) : (
+                      <span className="pill" style={{ background: "#0284C722", color: "#0284C7", borderColor: "#0284C755", fontSize: 10, fontWeight: 600 }} title="Llenó el formulario completo">
+                        ⚡ DIRECTO
+                      </span>
+                    )}
+                  </td>
                   <td className="t-right num">{p.cantidad}</td>
                   <td className="t-right num"><strong>{fmtCOP(p.total)}</strong></td>
                   <td><span className={`pill ${PILL_ESTADO[p.estado]}`}>{p.estado}</span></td>
                 </tr>
               ))}
               {pedidos.length === 0 && (
-                <tr><td colSpan={7} style={{ textAlign: "center", padding: 40, color: "var(--text-muted)" }}>📦 Sin pedidos en el rango</td></tr>
+                <tr><td colSpan={8} style={{ textAlign: "center", padding: 40, color: "var(--text-muted)" }}>📦 Sin pedidos en el rango</td></tr>
               )}
             </tbody>
           </table>
@@ -1674,14 +1703,21 @@ function MetaAdsTab() {
 }
 
 // ============ COMPONENTES ============
-function Kpi({ label, value, foot, icon, spark, accent }: { label: string; value: string; foot?: string; icon?: React.ReactNode; spark?: number[]; accent?: "success" | "warning" | "danger" }) {
+function Kpi({ label, value, foot, icon, spark, accent }: { label: string; value: string; foot?: string; icon?: React.ReactNode; spark?: number[]; accent?: "success" | "warning" | "danger" | "info" }) {
+  const colorMap: Record<string, string> = {
+    success: "var(--success)",
+    warning: "#D97706",
+    danger: "var(--danger)",
+    info: "#0284C7",
+  };
+  const accentColor = accent ? colorMap[accent] : undefined;
   return (
     <div className="kpi">
       <div className="kpi-label">
         {icon}
         {label}
       </div>
-      <div className="kpi-value" style={accent === "success" ? { color: "var(--success)" } : undefined}>{value}</div>
+      <div className="kpi-value" style={accentColor ? { color: accentColor } : undefined}>{value}</div>
       <div className="kpi-foot">
         <span style={{ flex: 1 }}>{foot}</span>
         {spark && <Sparkline data={spark} color={accent === "success" ? "#16A34A" : "#0F3D2E"} />}
