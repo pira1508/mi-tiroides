@@ -1,4 +1,30 @@
 import { NextResponse, NextRequest } from "next/server";
+import { DEPARTAMENTOS } from "../../colombia";
+
+// Normalizar para comparación: lowercase + sin acentos + trim
+function norm(s: string): string {
+  return String(s || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .trim();
+}
+
+// Validar que ciudad+departamento existan en la lista oficial Colombia
+function ciudadValida(ciudad: string | null | undefined, depto: string | null | undefined): boolean {
+  if (!ciudad || !depto) return false;
+  const c = norm(ciudad);
+  const d = norm(depto);
+  if (c.length < 2 || d.length < 2) return false;
+
+  // Buscar departamento (case/accent-insensitive)
+  const deptoKey = Object.keys(DEPARTAMENTOS).find((k) => norm(k) === d);
+  if (!deptoKey) return false;
+
+  // Validar que ciudad esté en la lista de ciudades del departamento
+  const ciudadesOK = DEPARTAMENTOS[deptoKey].some((cd) => norm(cd) === c);
+  return ciudadesOK;
+}
 
 const PRECIOS_BY_VARIANT: Record<string, Record<string, { precio: number; frascos: number; label: string }>> = {
   v1: {
@@ -64,8 +90,18 @@ export async function POST(req: NextRequest) {
   // para que el bot pueda hacer follow-up tipo Camila SIN tratarlo como pedido confirmado.
   const esAbandono = data.tipo === "abandono_form";
 
-  // Rate limit solo para pedidos confirmados, no para abandonos
-  if (!esAbandono) {
+  // VALIDACIÓN CRÍTICA — ciudad+departamento deben estar en lista oficial Colombia
+  // Si NO son válidos → tratar como preliminar (no como pedido real)
+  // Esto evita: 1) datos basura a Hoko, 2) Pixel Purchase falsos a Meta
+  const ciudadOK = ciudadValida(data.ciudad, data.departamento);
+  const esPreliminar = esAbandono || !ciudadOK;
+
+  if (!ciudadOK && !esAbandono) {
+    console.log(`[validacion] pedido sin ciudad válida: tel=${data.telefono} ciudad="${data.ciudad}" depto="${data.departamento}" → tratado como preliminar`);
+  }
+
+  // Rate limit solo para pedidos confirmados, no para abandonos/preliminares
+  if (!esPreliminar) {
     const clientIp = req.headers.get("x-forwarded-for")?.split(",")[0].trim() ||
                      req.headers.get("x-real-ip") ||
                      "unknown";
@@ -85,15 +121,19 @@ export async function POST(req: NextRequest) {
   const variant = data.variant === "v2" ? "v2" : "v1";
   const PRECIOS = PRECIOS_BY_VARIANT[variant];
   const plan = PRECIOS[String(data.cantidad)] ?? PRECIOS["1"];
-  const id = esAbandono
-    ? `ABAND-${Date.now().toString(36).toUpperCase()}`
-    : `MIT-${Date.now().toString(36).toUpperCase()}`;
+  // Prefijos por tipo: ABAND para abandono, PRELIM para preliminar por ciudad inválida, MIT para pedido real
+  const idPrefix = esAbandono ? "ABAND" : !ciudadOK ? "PRELIM" : "MIT";
+  const id = `${idPrefix}-${Date.now().toString(36).toUpperCase()}`;
   const ts = new Date().toISOString();
 
   // Log estructurado del pedido — visible en Vercel Logs
   // Cuando armemos el dashboard, basta con leer estos logs (o migrar a DB)
   const pedido = {
-    tipo: esAbandono ? "ABANDONO_FORM_MI_TIROIDES" : "PEDIDO_MI_TIROIDES",
+    tipo: esAbandono
+      ? "ABANDONO_FORM_MI_TIROIDES"
+      : !ciudadOK
+      ? "PRELIMINAR_CIUDAD_INVALIDA"
+      : "PEDIDO_MI_TIROIDES",
     id,
     timestamp: ts,
     cliente: {
@@ -134,7 +174,12 @@ export async function POST(req: NextRequest) {
         // SIN tratarlo como pedido confirmado. El bot (Camila) puede decidir
         // si manda un mensaje del tipo: "Vi que empezaste a hacer tu pedido,
         // ¿te ayudo a terminarlo?"
-        estado: esAbandono ? "abandono_form" : "pedido_confirmado",
+        // NUEVO: si ciudad no es válida, también va como preliminar (Camila pide ciudad)
+        estado: esAbandono
+          ? "abandono_form"
+          : !ciudadOK
+          ? "preliminar_sin_ciudad"
+          : "pedido_confirmado",
         fbclid: data.fbclid || undefined,
         ttclid: data.ttclid || undefined,
         utm_source: data.utm_source || undefined,
@@ -156,5 +201,18 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  return NextResponse.json({ ok: true, id, estado: esAbandono ? "abandono_form" : "pedido_confirmado" });
+  // Estado de respuesta: el frontend usa esto para decidir si dispara Pixel Purchase
+  // SOLO "pedido_confirmado" debe disparar Purchase. Los demás NO van a Meta.
+  const estadoFinal = esAbandono
+    ? "abandono_form"
+    : !ciudadOK
+    ? "preliminar_sin_ciudad"
+    : "pedido_confirmado";
+
+  return NextResponse.json({
+    ok: true,
+    id,
+    estado: estadoFinal,
+    valido: ciudadOK && !esAbandono, // ← frontend chequea esto para Pixel
+  });
 }

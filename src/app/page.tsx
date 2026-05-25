@@ -643,9 +643,16 @@ export default function Page() {
         keepalive: true,
       });
       if (res.ok) {
-        try { const j = await res.clone().json(); if (j?.id) pedidoId = j.id; } catch {}
+        let backendValido = false;
+        try {
+          const j = await res.clone().json();
+          if (j?.id) pedidoId = j.id;
+          // Backend marca valido=true solo cuando ciudad+depto están en lista oficial
+          backendValido = j?.valido === true;
+        } catch {}
         registroOk = true;
-        if (!alreadyFired) {
+        // Pixel Purchase SOLO si backend valida ciudad (evita mandar data sucia a Meta)
+        if (!alreadyFired && backendValido) {
           trackPurchase(total, pedidoId);
           try { localStorage.setItem(lastKey, JSON.stringify({ fp: fingerprint, ts: Date.now() })); } catch {}
         }
