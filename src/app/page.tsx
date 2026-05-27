@@ -1561,7 +1561,7 @@ export default function Page() {
                 </p>
                 <a
                   className="btn btn-block"
-                  href={`https://wa.me/573227617545?text=${encodeURIComponent(
+                  href={`https://wa.me/573237451763?text=${encodeURIComponent(
                     `Hola 🌿 Acabo de hacer mi pedido en MI TIROIDES. Mi número de pedido es: ${pedidoConfirmado.id}`,
                   )}`}
                   target="_blank"

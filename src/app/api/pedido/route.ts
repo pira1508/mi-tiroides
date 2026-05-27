@@ -111,7 +111,7 @@ export async function POST(req: NextRequest) {
       console.log(`[rate-limit] bloqueado IP ${clientIp}: ${rateCheck.razon}`);
       return NextResponse.json(
         {
-          error: "Ya hiciste un pedido hace menos de 24 horas. Si tienes alguna duda, escríbenos por WhatsApp 👉 wa.me/573227617545",
+          error: "Ya hiciste un pedido hace menos de 24 horas. Si tienes alguna duda, escríbenos por WhatsApp 👉 wa.me/573237451763",
         },
         { status: 429 }
       );
