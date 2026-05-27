@@ -1622,7 +1622,12 @@ function Page() {
                 <a
                   className="btn btn-block"
                   href={`https://wa.me/573237451763?text=${encodeURIComponent(
-                    `Hola 🌿 Acabo de hacer mi pedido en MI TIROIDES. Mi número de pedido es: ${pedidoConfirmado.id}`,
+                    `¡Hola! 💚 Soy ${nombre || 'una clienta nueva'} y acabo de hacer mi pedido en MI TIROIDES.\n\n` +
+                    `📦 ${cantidad} frasco${cantidad !== '1' ? 's' : ''}\n` +
+                    `💰 $${pedidoConfirmado.total.toLocaleString('es-CO')} contra entrega\n` +
+                    (ciudad ? `📍 ${ciudad}\n` : '') +
+                    (direccion ? `🏠 ${direccion}\n` : '') +
+                    `\n¿Cuándo me llega? 🙏`,
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
