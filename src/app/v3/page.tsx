@@ -769,6 +769,10 @@ function Page() {
       setError("Selecciona tu departamento y ciudad.");
       return;
     }
+    if (!referencia.trim() || referencia.trim().length < 5) {
+      setError("Escribe el barrio y un punto de referencia para que el repartidor te encuentre.");
+      return;
+    }
 
     setEnviando(true);
 
@@ -1879,12 +1883,13 @@ function Page() {
                   </label>
 
                   <label>
-                    <span className="modal-label">Punto de referencia <small style={{ color: "var(--gris)" }}>(opcional)</small></span>
+                    <span className="modal-label">Barrio y punto de referencia <em>*</em></span>
                     <div className="modal-input-icon">
                       <span>🧭</span>
                       <input
                         name="referencia"
-                        placeholder="Edificio Aries, torre al frente del ARA"
+                        required
+                        placeholder="Ej: Barrio Cedritos, frente al ARA"
                         value={referencia}
                         onChange={(e) => setReferencia(e.target.value)}
                       />
