@@ -577,6 +577,25 @@ export default function Page() {
     }, { event_id: eventId });
   }
 
+  // Validación COMPUTADA en tiempo real — usada para deshabilitar el botón
+  // hasta que TODOS los campos estén OK. Esto evita que el cliente envíe
+  // el form con ciudad vacía / depto vacío / ciudad que no matchea con la
+  // lista oficial del depto seleccionado.
+  // La misma lógica se ejecuta en onSubmit como doble seguridad.
+  const ciudadMatcheaDepto = !!depto && !!ciudad &&
+    (DEPARTAMENTOS[depto] || []).some(
+      (c) => c.toLowerCase().trim() === ciudad.toLowerCase().trim()
+    );
+
+  const formValido =
+    esCelularCOValido(telefono) &&
+    nombre.trim().length >= 3 &&
+    direccion.trim().length >= 8 &&
+    !!depto &&
+    !!ciudad &&
+    ciudadMatcheaDepto &&
+    referencia.trim().length >= 5;
+
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
@@ -595,6 +614,10 @@ export default function Page() {
     }
     if (!depto || !ciudad) {
       setError("Selecciona tu departamento y ciudad.");
+      return;
+    }
+    if (!ciudadMatcheaDepto) {
+      setError("La ciudad debe seleccionarse del listado del departamento. Si no aparece, escríbenos al WhatsApp.");
       return;
     }
     if (!referencia.trim() || referencia.trim().length < 5) {
@@ -1895,7 +1918,12 @@ export default function Page() {
                     </div>
                   )}
 
-                  <button className="btn btn-block modal-confirm" type="submit" disabled={enviando}>
+                  <button
+                    className="btn btn-block modal-confirm"
+                    type="submit"
+                    disabled={enviando || !formValido}
+                    title={!formValido ? "Completa todos los campos para continuar" : undefined}
+                  >
                     {enviando ? "Enviando…" : (
                       <>
                         PEDIR AHORA — PAGO AL RECIBIR
