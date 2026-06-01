@@ -184,6 +184,7 @@ export async function POST(req: NextRequest) {
         ttclid: data.ttclid || undefined,
         utm_source: data.utm_source || undefined,
         utm_campaign: data.utm_campaign || undefined,
+        utm_content: data.utm_content || undefined,
         utm_medium: data.utm_medium || undefined,
         referrer: data.referrer || undefined,
         dedupeKey: `${pedido.cliente.telefono}-${pedido.plan.cantidad}`,

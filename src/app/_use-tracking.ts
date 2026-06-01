@@ -13,6 +13,9 @@ export type TrackingPayload = {
   ttclid?: string;
   utm_source?: string;
   utm_campaign?: string;
+  // Nombre del ad específico ({{ad.name}} en Meta). Permite saber en el CRM
+  // exactamente qué creativo generó cada pedido/preliminar.
+  utm_content?: string;
   utm_medium?: string;
   referrer?: string;
 };
@@ -26,6 +29,7 @@ export function capturarTracking() {
     const ttclid = sp.get("ttclid"); if (ttclid) datos.ttclid = ttclid;
     const utm_source = sp.get("utm_source"); if (utm_source) datos.utm_source = utm_source;
     const utm_campaign = sp.get("utm_campaign"); if (utm_campaign) datos.utm_campaign = utm_campaign;
+    const utm_content = sp.get("utm_content"); if (utm_content) datos.utm_content = utm_content;
     const utm_medium = sp.get("utm_medium"); if (utm_medium) datos.utm_medium = utm_medium;
 
     // Solo guardar si trae algo. No pisar lo previo si la nueva URL es "limpia"
