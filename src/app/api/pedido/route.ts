@@ -1,5 +1,6 @@
 import { NextResponse, NextRequest } from "next/server";
 import { DEPARTAMENTOS } from "../../colombia";
+import { sendPurchaseToAllPixels } from "@/lib/pixels-server";
 
 // Normalizar para comparación: lowercase + sin acentos + trim
 function norm(s: string): string {
@@ -209,6 +210,31 @@ export async function POST(req: NextRequest) {
     : !ciudadOK
     ? "preliminar_sin_ciudad"
     : "pedido_confirmado";
+
+  // SERVER-SIDE PIXELS — Meta CAPI + TikTok Events API
+  // Solo si es pedido_confirmado real (no abandono ni preliminar sin ciudad).
+  // Fire-and-forget: no bloquea la respuesta al cliente.
+  // event_id = ID del pedido → matchea con el del browser para dedup.
+  if (estadoFinal === "pedido_confirmado") {
+    const ip =
+      req.headers.get("x-forwarded-for")?.split(",")[0].trim() ||
+      req.headers.get("x-real-ip") ||
+      null;
+    const userAgent = req.headers.get("user-agent") || null;
+
+    sendPurchaseToAllPixels({
+      eventId: id,
+      value: plan.precio,
+      currency: "COP",
+      telefono: pedido.cliente.telefono,
+      nombre: pedido.cliente.nombre,
+      fbclid: data.fbclid || null,
+      ttclid: data.ttclid || null,
+      ip,
+      userAgent,
+      eventSourceUrl: data.referrer || "https://mi-tiroides.vercel.app",
+    });
+  }
 
   return NextResponse.json({
     ok: true,
