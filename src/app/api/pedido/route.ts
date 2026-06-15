@@ -33,10 +33,15 @@ const PRECIOS_BY_VARIANT: Record<string, Record<string, { precio: number; frasco
     "2": { precio: 119900, frascos: 2, label: "2 Frascos" },
     "3": { precio: 139900, frascos: 3, label: "3 Frascos" },
   },
+  // BUG FIX 2026-06-15: el landing v2 muestra $129.900/$159.900 al cliente, pero
+  // este API estaba cobrando $139.900/$169.900 (+$10k). El cliente veía un precio
+  // en pantalla y al recibir el WhatsApp de Camila / la entrega contra entrega el
+  // monto era distinto → desconfianza → 22 puntos de caída en conversión vs v1
+  // y +$2-3M COP en revenue perdido. Alineados con los precios reales del landing.
   v2: {
-    "1": { precio: 89900, frascos: 1, label: "1 Frasco" },
-    "2": { precio: 139900, frascos: 2, label: "2 Frascos" },
-    "3": { precio: 169900, frascos: 3, label: "3 Frascos" },
+    "1": { precio: 89900,  frascos: 1, label: "1 Frasco" },
+    "2": { precio: 129900, frascos: 2, label: "2 Frascos" },
+    "3": { precio: 159900, frascos: 3, label: "3 Frascos" },
   },
 };
 
