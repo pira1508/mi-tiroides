@@ -497,6 +497,9 @@ function Page() {
       abandonTimer.current = setTimeout(() => {
         const tel = sanitizarTelefonoCO(telefono);
         try {
+          // BUG FIX 2026-06-16: el beacon no incluía tracking (utm/fbclid/ttclid),
+          // por eso los preliminares aparecían como "Sin atribuir" en el pipeline.
+          const tracking = leerTracking();
           const blob = new Blob([JSON.stringify({
             tipo: "abandono_form",
             nombre: nombre.trim(),
@@ -508,6 +511,7 @@ function Page() {
             variant: VARIANT,
             total: PLANES[cantidad].precio,
             ts: new Date().toISOString(),
+            ...tracking,
           })], { type: "application/json" });
           navigator.sendBeacon?.("/api/pedido", blob);
         } catch {}

@@ -486,6 +486,11 @@ export default function Page() {
       abandonTimer.current = setTimeout(() => {
         const tel = sanitizarTelefonoCO(telefono);
         try {
+          // BUG FIX 2026-06-16: el beacon NO incluía el tracking (utm_source,
+          // fbclid, ttclid, etc.) de sessionStorage. Por eso 135 preliminares
+          // del mes quedaron como "Sin atribuir" en el pipeline aunque venían
+          // de Meta/TikTok. Ahora se incluye explícitamente el tracking.
+          const tracking = leerTracking();
           const blob = new Blob([JSON.stringify({
             tipo: "abandono_form",
             nombre: nombre.trim(),
@@ -497,6 +502,7 @@ export default function Page() {
             variant: "v1",
             total: PLANES[cantidad].precio,
             ts: new Date().toISOString(),
+            ...tracking,  // utm_source, utm_campaign, utm_content, utm_medium, fbclid, ttclid, referrer
           })], { type: "application/json" });
           navigator.sendBeacon?.("/api/pedido", blob);
         } catch {}
