@@ -369,7 +369,7 @@ export default function Page() {
   const [ingActivo, setIngActivo] = useState<Ingrediente | null>(null);
   const [depto, setDepto] = useState("");
   const [ciudad, setCiudad] = useState("");
-  const [angulo, setAngulo] = useState<"cabello" | "validacion" | "niebla">("validacion");
+  const [angulo, setAngulo] = useState<"cabello" | "validacion" | "niebla">("cabello");
   useEffect(() => {
     const a = new URLSearchParams(window.location.search).get("angle");
     if (a === "cabello" || a === "validacion" || a === "niebla") {
