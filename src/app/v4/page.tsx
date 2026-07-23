@@ -51,11 +51,11 @@ function shuffleWithSeed<T>(array: readonly T[], seed: number): T[] {
 }
 
 const HERO_IMAGES = [
-  { src: "/img/hero-1.webp", alt: "¿Llevas años cansada pensando que es la edad? Síntomas de tiroides" },
   { src: "/img/hero-2.webp", alt: "Hormonas vs MI TIROIDES — repara la causa, no tapa el síntoma" },
   { src: "/img/hero-3.webp", alt: "MI TIROIDES fórmula con 6 ingredientes naturales y dosis" },
   { src: "/img/hero-4.webp", alt: "Tu energía vuelve paso a paso — timeline de 7 a 30 días" },
   { src: "/img/hero-5.webp", alt: "Resultados reales y precio MI TIROIDES — pack 2 frascos" },
+  { src: "/img/hero-1.webp", alt: "Síntomas de tiroides que muchas confunden con estrés o edad" },
 ];
 
 const SIN_CARA = [
@@ -250,28 +250,20 @@ const TESTI_CORTOS = [
       "Llevaba 3 años con levotiroxina y seguía cansada. Al segundo mes con MI TIROIDES empecé a despertarme con energía.",
   },
   {
+    foto: "/img/cliente-sofia.webp",
+    nombre: "Sofía",
+    edad: 29,
+    ciudad: "Manizales",
+    texto:
+      "Estudio y trabajo, y la niebla mental no me dejaba concentrarme. En unas semanas se me aclaró la cabeza y volví a rendir.",
+  },
+  {
     foto: "/img/cliente-marcela.webp",
     nombre: "Luisa",
-    edad: 36,
-    ciudad: "Pereira",
+    edad: 34,
+    ciudad: "Bogotá",
     texto:
-      "Antes pedía a iHerb 4 frascos distintos. Ahora un solo frasco colombiano con todo. Llegó en 3 días con pago contra entrega.",
-  },
-  {
-    foto: "/img/cliente-diana.webp",
-    nombre: "Yenifer",
-    edad: 44,
-    ciudad: "Barranquilla",
-    texto:
-      "Mi endocrinóloga aprobó complementar con selenio y yodo. Encontrar todo en una cápsula me cambió la vida.",
-  },
-  {
-    foto: "/img/cliente-patricia.webp",
-    nombre: "Martha",
-    edad: 52,
-    ciudad: "Bucaramanga",
-    texto:
-      "Con la premenopausia mi tiroides se descontroló. En 8 semanas con MI TIROIDES dejé de sentirme tan cansada.",
+      "Pensé que me había vuelto floja en el trabajo. Era mi tiroides. Recuperé la energía sin el bajón de media tarde.",
   },
   {
     foto: "/img/cliente-andrea.webp",
@@ -279,7 +271,7 @@ const TESTI_CORTOS = [
     edad: 39,
     ciudad: "Quibdó",
     texto:
-      "Pensaba que había engordado pero era inflamación por la tiroides. En 6 semanas dejé de sentirme hinchada al despertar.",
+      "Se me caía el pelo y pensé que era el shampoo. Al segundo mes la caída bajó muchísimo y me volvió el brillo.",
   },
 ];
 
