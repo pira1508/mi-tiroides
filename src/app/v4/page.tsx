@@ -50,12 +50,20 @@ function shuffleWithSeed<T>(array: readonly T[], seed: number): T[] {
   return result;
 }
 
-const HERO_IMAGES = [
+// Primer slide del carrusel = hero DISEÑADO joven que hace message-match con el ad (por ?angle).
+// Mismo acabado que los slides originales (crema/verde/dorado + frasco real), copy del avatar 28-42.
+const HERO_JOVEN: Record<"cabello" | "validacion" | "niebla", { src: string; alt: string }> = {
+  validacion: { src: "/img/hero-joven-validacion.jpg", alt: "No eres floja: es tu tiroides, aunque el examen diga normal" },
+  cabello: { src: "/img/hero-joven-cabello.jpg", alt: "El pelo a mechones no es el shampoo, es tu tiroides" },
+  niebla: { src: "/img/hero-joven-niebla.jpg", alt: "Adiós a la niebla mental: tu cabeza vuelve a rendir" },
+};
+
+// Slides neutrales (sirven a cualquier edad); se dejó fuera hero-1 (gancho de "edad", del avatar mayor).
+const HERO_RESTO = [
   { src: "/img/hero-2.webp", alt: "Hormonas vs MI TIROIDES — repara la causa, no tapa el síntoma" },
   { src: "/img/hero-3.webp", alt: "MI TIROIDES fórmula con 6 ingredientes naturales y dosis" },
   { src: "/img/hero-4.webp", alt: "Tu energía vuelve paso a paso — timeline de 7 a 30 días" },
   { src: "/img/hero-5.webp", alt: "Resultados reales y precio MI TIROIDES — pack 2 frascos" },
-  { src: "/img/hero-1.webp", alt: "Síntomas de tiroides que muchas confunden con estrés o edad" },
 ];
 
 const SIN_CARA = [
@@ -242,7 +250,7 @@ type Cantidad = keyof typeof PLANES;
 
 const TESTI_CORTOS = [
   {
-    foto: "/img/cliente-camila.webp",
+    foto: "/img/joven-camila.jpg",
     nombre: "Camila",
     edad: 33,
     ciudad: "Medellín",
@@ -250,7 +258,7 @@ const TESTI_CORTOS = [
       "Llevaba 3 años con levotiroxina y seguía cansada. Al segundo mes con MI TIROIDES empecé a despertarme con energía.",
   },
   {
-    foto: "/img/cliente-sofia.webp",
+    foto: "/img/joven-sofia.jpg",
     nombre: "Sofía",
     edad: 29,
     ciudad: "Manizales",
@@ -258,7 +266,7 @@ const TESTI_CORTOS = [
       "Estudio y trabajo, y la niebla mental no me dejaba concentrarme. En unas semanas se me aclaró la cabeza y volví a rendir.",
   },
   {
-    foto: "/img/cliente-marcela.webp",
+    foto: "/img/joven-luisa.jpg",
     nombre: "Luisa",
     edad: 34,
     ciudad: "Bogotá",
@@ -266,7 +274,7 @@ const TESTI_CORTOS = [
       "Pensé que me había vuelto floja en el trabajo. Era mi tiroides. Recuperé la energía sin el bajón de media tarde.",
   },
   {
-    foto: "/img/cliente-andrea.webp",
+    foto: "/img/joven-aura.jpg",
     nombre: "Aura",
     edad: 39,
     ciudad: "Quibdó",
@@ -277,7 +285,7 @@ const TESTI_CORTOS = [
 
 const TESTI_LARGOS = [
   {
-    foto: "/img/cliente-camila.webp",
+    foto: "/img/joven-camila.jpg",
     nombre: "Camila Quintero",
     rol: "Contadora · Medellín",
     texto:
@@ -285,7 +293,7 @@ const TESTI_LARGOS = [
     tag: "Energía recuperada",
   },
   {
-    foto: "/img/cliente-marcela.webp",
+    foto: "/img/joven-luisa.jpg",
     nombre: "Luisa Restrepo",
     rol: "Diseñadora · Pereira",
     texto:
@@ -309,7 +317,7 @@ const TESTI_LARGOS = [
     tag: "Premenopausia",
   },
   {
-    foto: "/img/cliente-andrea.webp",
+    foto: "/img/joven-aura.jpg",
     nombre: "Aura Patiño",
     rol: "Mamá y emprendedora · Quibdó",
     texto:
@@ -341,7 +349,7 @@ const TESTI_LARGOS = [
     tag: "Frío constante",
   },
   {
-    foto: "/img/cliente-sofia.webp",
+    foto: "/img/joven-sofia.jpg",
     nombre: "Sofía Ramírez",
     rol: "Estudiante de medicina · Manizales",
     texto:
@@ -376,15 +384,15 @@ const TESTI_LARGOS = [
 
 const ANGULOS: Record<"cabello" | "validacion" | "niebla", { h1: string; sub: string }> = {
   cabello: {
-    h1: "MI TIROIDES Avanzado | El pelo a mechones no es el shampoo. Es tu tiroides.",
+    h1: "El pelo a mechones no es el shampoo. Es tu tiroides.",
     sub: "Cambiaste de shampoo mil veces y sigue cayendo. Los 6 nutrientes que tu tiroides necesita para frenar la caída — los que tu pastilla no te da. Va con tu Eutirox, no lo reemplaza.",
   },
   validacion: {
-    h1: "MI TIROIDES Avanzado | No eres floja. No estás loca. Es tu tiroides.",
+    h1: "No eres floja. No estás loca. Es tu tiroides.",
     sub: "Tienes 30 y tantos, tomas tu pastilla juiciosa y aun así: se te cae el pelo, vives en niebla mental y te dicen “floja”. Aunque tu examen diga “normal”, algo no está bien. Selenio, yodo, zinc, L-tirosina, B12 y D3 — los nutrientes que tu pastilla no trae, en una sola cápsula.",
   },
   niebla: {
-    h1: "MI TIROIDES Avanzado | Tu cabeza volvió: adiós a la niebla mental de la tiroides.",
+    h1: "Tu cabeza volvió: adiós a la niebla mental de la tiroides.",
     sub: "Rinde todo el día sin el bajón de las 3 p. m. 6 nutrientes que ayudan a tu tiroides a activar su hormona — la que de verdad usas. Va con tu pastilla, no la reemplaza.",
   },
 };
@@ -404,8 +412,13 @@ export default function Page() {
   const [angulo, setAngulo] = useState<"cabello" | "validacion" | "niebla">("validacion");
   useEffect(() => {
     const a = new URLSearchParams(window.location.search).get("angle");
-    if (a === "cabello" || a === "validacion" || a === "niebla") setAngulo(a);
+    if (a === "cabello" || a === "validacion" || a === "niebla") {
+      setAngulo(a);
+      setHeroIdx(0);
+    }
   }, []);
+  // El primer slide siempre es el hero joven del ángulo activo; detrás van los neutrales.
+  const heroImages = [HERO_JOVEN[angulo], ...HERO_RESTO];
   const [nombre, setNombre] = useState("");
   const [telefono, setTelefono] = useState("");
   const [direccion, setDireccion] = useState("");
@@ -758,16 +771,16 @@ export default function Page() {
           <div>
             <div className="hero-img">
               <Image
-                src={HERO_IMAGES[heroIdx].src}
-                alt={HERO_IMAGES[heroIdx].alt}
+                src={heroImages[heroIdx].src}
+                alt={heroImages[heroIdx].alt}
                 width={896}
                 height={1152}
                 priority
-                key={HERO_IMAGES[heroIdx].src}
+                key={heroImages[heroIdx].src}
               />
             </div>
             <div className="hero-thumbs">
-              {HERO_IMAGES.map((img, i) => (
+              {heroImages.map((img, i) => (
                 <button
                   key={img.src}
                   type="button"
@@ -786,7 +799,7 @@ export default function Page() {
                 <button
                   key={k}
                   type="button"
-                  onClick={() => setAngulo(k)}
+                  onClick={() => { setAngulo(k); setHeroIdx(0); }}
                   className="badge"
                   style={{ cursor: "pointer", ...(angulo === k ? { background: "#1f3d2b", color: "#fff", borderColor: "#1f3d2b" } : {}) }}
                 >
