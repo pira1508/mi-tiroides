@@ -131,7 +131,7 @@ const INGREDIENTES: Ingrediente[] = [
   {
     n: "Yodo",
     d: "150 mcg",
-    resumen: "La materia prima de las hormonas T3 y T4.",
+    resumen: "Sí trae yodo — la materia prima de T3 y T4 (muchos importados vienen sin él).",
     foto: "/img/ing-yodo.webp",
     porQue:
       "Sin yodo, la tiroides no puede fabricar las hormonas T3 y T4. La OMS recomienda 150 mcg/día. Pero ojo: en Hashimoto, dosis muy altas empeoran el cuadro — por eso usamos solo la dosis fisiológica segura.",
@@ -382,6 +382,21 @@ const TESTI_LARGOS = [
   },
 ];
 
+const ANGULOS: Record<"cabello" | "validacion" | "niebla", { h1: string; sub: string }> = {
+  cabello: {
+    h1: "MI TIROIDES Avanzado | El pelo a mechones no es el shampoo. Es tu tiroides.",
+    sub: "Cambiaste de shampoo mil veces y sigue cayendo. Los 6 nutrientes que tu tiroides necesita para frenar la caída — los que tu pastilla no te da. Va con tu Eutirox, no lo reemplaza.",
+  },
+  validacion: {
+    h1: "MI TIROIDES Avanzado | No eres floja. No estás loca. Es tu tiroides.",
+    sub: "Tienes 30 y tantos, tomas tu pastilla juiciosa y aun así: se te cae el pelo, vives en niebla mental y te dicen “floja”. Aunque tu examen diga “normal”, algo no está bien. Selenio, yodo, zinc, L-tirosina, B12 y D3 — los nutrientes que tu pastilla no trae, en una sola cápsula.",
+  },
+  niebla: {
+    h1: "MI TIROIDES Avanzado | Tu cabeza volvió: adiós a la niebla mental de la tiroides.",
+    sub: "Rinde todo el día sin el bajón de las 3 p. m. 6 nutrientes que ayudan a tu tiroides a activar su hormona — la que de verdad usas. Va con tu pastilla, no la reemplaza.",
+  },
+};
+
 export default function Page() {
   useCapturarTrackingOnMount();
   const [cantidad, setCantidad] = useState<Cantidad>("3");
@@ -394,6 +409,11 @@ export default function Page() {
   const [ingActivo, setIngActivo] = useState<Ingrediente | null>(null);
   const [depto, setDepto] = useState("");
   const [ciudad, setCiudad] = useState("");
+  const [angulo, setAngulo] = useState<"cabello" | "validacion" | "niebla">("validacion");
+  useEffect(() => {
+    const a = new URLSearchParams(window.location.search).get("angle");
+    if (a === "cabello" || a === "validacion" || a === "niebla") setAngulo(a);
+  }, []);
   const [nombre, setNombre] = useState("");
   const [telefono, setTelefono] = useState("");
   const [direccion, setDireccion] = useState("");
@@ -769,14 +789,25 @@ export default function Page() {
             </div>
           </div>
           <div>
-            <h1 className="h1">MI TIROIDES Avanzado | No eres floja. No estás loca. Es tu tiroides.</h1>
+            <div className="badges" style={{ marginBottom: 12 }} role="group" aria-label="¿Qué te trajo aquí?">
+              {(["cabello", "validacion", "niebla"] as const).map((k) => (
+                <button
+                  key={k}
+                  type="button"
+                  onClick={() => setAngulo(k)}
+                  className="badge"
+                  style={{ cursor: "pointer", ...(angulo === k ? { background: "#1f3d2b", color: "#fff", borderColor: "#1f3d2b" } : {}) }}
+                >
+                  {k === "cabello" ? "Se me cae el pelo" : k === "validacion" ? "Me dicen floja" : "Vivo en niebla"}
+                </button>
+              ))}
+            </div>
+            <h1 className="h1">{ANGULOS[angulo].h1}</h1>
             <div className="rating-row">
               <span className="stars">★★★★★</span>
               <span><strong>4.8/5</strong> basado en +2.500 mujeres colombianas</span>
             </div>
-            <p style={{ color: "var(--gris)", fontSize: 16, margin: "0 0 12px" }}>
-              Tienes 30 y tantos, tomas tu pastilla juiciosa y aun así: se te cae el pelo, vives en niebla mental y te dicen “floja”. Aunque tu examen diga “normal”, algo no está bien. Selenio, yodo, zinc, L-tirosina, B12 y D3 — los nutrientes que tu pastilla no trae, en una sola cápsula.
-            </p>
+            <p style={{ color: "var(--gris)", fontSize: 16, margin: "0 0 12px" }}>{ANGULOS[angulo].sub}</p>
             <div className="badges">
               <span className="badge">Vegano</span>
               <span className="badge">Sin gluten</span>
@@ -1357,6 +1388,39 @@ export default function Page() {
           <h2 className="h2">Resolvemos tus dudas</h2>
 
           <div className="faq">
+            <details>
+              <summary>¿Es otro de esos suplementos de TikTok?</summary>
+              <p>
+                No. MI TIROIDES tiene <strong>registro INVIMA</strong>, se fabrica en Colombia bajo Buenas
+                Prácticas y se paga <strong>contra entrega</strong>. Si no te convence, tienes
+                <strong> garantía de 30 días</strong> y te devolvemos el dinero.
+              </p>
+            </details>
+            <details>
+              <summary>¿Qué lo diferencia de un multivitamínico?</summary>
+              <p>
+                Un multivitamínico reparte un poco de todo. Este trae <strong>dosis específicas para la
+                tiroides</strong> —selenio 200 mcg, yodo, zinc y L-tirosina— pensadas para
+                <strong> activar tu hormona T3</strong>, no para “nutrir en general”.
+              </p>
+            </details>
+            <details>
+              <summary>¿Lo puedo tomar con mi Eutirox / levotiroxina?</summary>
+              <p>
+                Sí. <strong>Apoya, no reemplaza.</strong> Toma tu pastilla en ayunas y MI TIROIDES con el
+                desayuno, para que no se interfieran. Muchas de nuestras clientas están en levotiroxina +
+                MI TIROIDES. Ante cualquier duda, consulta a tu médico.
+              </p>
+            </details>
+            <details>
+              <summary>En Rappi hay suplementos de $40.000, ¿por qué este?</summary>
+              <p>
+                Porque no es lo mismo. Aquí pagas por una <strong>fórmula específica con dosis que sí
+                sirven</strong> (yodo + selenio juntos), más el <strong>acompañamiento de Camila por
+                WhatsApp</strong> y la <strong>garantía de 30 días</strong>. Un genérico barato rara vez
+                trae eso.
+              </p>
+            </details>
             <details>
               <summary>¿Cuándo veo resultados?</summary>
               <p>
