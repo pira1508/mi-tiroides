@@ -287,7 +287,7 @@ const TESTI_LARGOS = [
   {
     foto: "/img/joven-camila.jpg",
     nombre: "Camila Quintero",
-    rol: "Contadora · Medellín",
+    rol: "Contadora · 33 · Medellín",
     texto:
       "Trabajo 9 horas frente al computador y llegaba a la casa sin energía para nada. Desde la 4ta semana con MI TIROIDES ya no necesito siesta a las 3pm. Mi esposo fue el primero en notarlo.",
     tag: "Energía recuperada",
@@ -295,90 +295,50 @@ const TESTI_LARGOS = [
   {
     foto: "/img/joven-luisa.jpg",
     nombre: "Luisa Restrepo",
-    rol: "Diseñadora · Pereira",
+    rol: "Diseñadora · 34 · Pereira",
     texto:
       "Yo era la típica que decía 'eso no sirve' con los suplementos. Mi hermana me regaló un frasco. Al mes me desperté sin la cara hinchada por primera vez en años. Ya voy por mi tercer frasco.",
     tag: "Escéptica convertida",
   },
   {
-    foto: "/img/cliente-diana.webp",
+    foto: "/img/joven-yenifer.jpg",
     nombre: "Yenifer Torres",
-    rol: "Profesora · Barranquilla",
+    rol: "Profesora · 28 · Barranquilla",
     texto:
-      "Tengo Hashimoto desde los 25. La medicina sola no me alcanzaba. Mi endocrinóloga aprobó complementar con selenio y yodo. MI TIROIDES tiene todo en una cápsula y mis anticuerpos bajaron en el último examen.",
+      "Me diagnosticaron Hashimoto a los 25 y la pastilla sola no me alcanzaba. Mi endocrinóloga aprobó complementar con selenio y yodo. MI TIROIDES tiene todo en una cápsula y mis anticuerpos bajaron en el último examen.",
     tag: "Hashimoto",
-  },
-  {
-    foto: "/img/cliente-patricia.webp",
-    nombre: "Martha Vargas",
-    rol: "Empresaria · Bucaramanga",
-    texto:
-      "Con la premenopausia subí 6 kilos sin razón aparente. Mi médica me dijo que era la tiroides. Con MI TIROIDES en 3 meses recuperé energía y empecé a soltar peso sin dietas extremas.",
-    tag: "Premenopausia",
   },
   {
     foto: "/img/joven-aura.jpg",
     nombre: "Aura Patiño",
-    rol: "Mamá y emprendedora · Quibdó",
+    rol: "Mamá y emprendedora · 39 · Quibdó",
     texto:
       "Después del embarazo me quedó una fatiga horrible y caída de cabello. Probé multivitamínicos genéricos sin resultado. MI TIROIDES fue lo único que de verdad notó la diferencia.",
     tag: "Postparto",
   },
   {
-    foto: "/img/cliente-lina.webp",
-    nombre: "Doris Herrera",
-    rol: "Campesina · Boyacá",
-    texto:
-      "Paso todo el día trabajando en la finca. Llegaba a la casa sin pilas. Ahora con MI TIROIDES termino el día y me alcanza para hacer mis cosas en la casa. No exagero.",
-    tag: "Energía al final del día",
-  },
-  {
-    foto: "/img/cliente-bea.webp",
+    foto: "/img/joven-beatriz.jpg",
     nombre: "Beatriz Ochoa",
-    rol: "Arquitecta · Medellín",
+    rol: "Arquitecta · 38 · Medellín",
     texto:
-      "A los 39 años empecé a notar caída de cabello brutal. Mi médica me dijo que era hipotiroidismo. Con MI TIROIDES en el segundo mes la caída bajó muchísimo y volví a verme el cabello con cuerpo.",
+      "A los 38 empecé a notar caída de cabello brutal y me daba pánico. Mi médica me dijo que era hipotiroidismo. Con MI TIROIDES en el segundo mes la caída bajó muchísimo y volví a verme el cabello con cuerpo.",
     tag: "Caída de cabello",
-  },
-  {
-    foto: "/img/cliente-rosa.webp",
-    nombre: "Rosa Pinto",
-    rol: "Comerciante · Villavicencio",
-    texto:
-      "En el llano hace mucho calor pero yo me la pasaba con frío todo el tiempo. Era la tiroides. Tomé MI TIROIDES juicios 2 frascos y ya no soy la única tapada en la casa.",
-    tag: "Frío constante",
   },
   {
     foto: "/img/joven-sofia.jpg",
     nombre: "Sofía Ramírez",
-    rol: "Estudiante de medicina · Manizales",
+    rol: "Estudiante de medicina · 29 · Manizales",
     texto:
       "Estudio 10 horas al día y no me podía concentrar. Mi endocrinólogo me explicó que la niebla mental es un síntoma común. Con MI TIROIDES llevo 3 meses y mi memoria mejoró notablemente.",
     tag: "Niebla mental",
   },
   {
-    foto: "/img/cliente-elena.webp",
-    nombre: "Elena Cifuentes",
-    rol: "Pensionada · Bogotá",
+    foto: "/img/joven-daniela.jpg",
+    nombre: "Daniela Ospina",
+    rol: "Fisioterapeuta · 31 · Cali",
     texto:
-      "A los 55 estaba desanimada, sin ganas de salir. Mi hija insistió que probara. Hoy estoy en el cuarto frasco y vuelvo al gimnasio dos veces por semana. Recuperé las ganas.",
-    tag: "+55 años",
-  },
-  {
-    foto: "/img/cliente-juliana.webp",
-    nombre: "Juliana Quenán",
-    rol: "Profesora · Pasto",
-    texto:
-      "En el sur el yodo de la dieta es bajo y muchas mujeres aquí tenemos tiroides. MI TIROIDES llegó hasta Pasto en 4 días y desde el segundo mes ya siento la diferencia.",
-    tag: "Sur de Colombia",
-  },
-  {
-    foto: "/img/cliente-paula.webp",
-    nombre: "Paula Mosquera",
-    rol: "Líder comunitaria · Quibdó",
-    texto:
-      "En el Chocó conseguir un suplemento decente era misión imposible. MI TIROIDES nos llega contra entrega y la fórmula es justo lo que la endocrinóloga me había recomendado.",
-    tag: "Pacífico colombiano",
+      "Después de los 30 el peso no me bajaba con nada y vivía cansada, y eso que entreno. Mi doctora me habló de la tiroides. Con MI TIROIDES volví a rendir en el gym y solté 4 kilos sin dietas locas.",
+    tag: "Peso y energía",
   },
 ];
 
