@@ -51,11 +51,11 @@ function shuffleWithSeed<T>(array: readonly T[], seed: number): T[] {
 }
 
 const HERO_IMAGES = [
-  { src: "/img/joven-validacion.jpg", alt: "Mujer joven colombiana en casa, tranquila con su tiroides bajo control" },
-  { src: "/img/joven-cabello.jpg", alt: "Mujer joven con el cabello sano gracias a MI TIROIDES" },
-  { src: "/img/joven-niebla.jpg", alt: "Mujer joven concentrada, sin niebla mental" },
+  { src: "/img/hero-2.webp", alt: "Hormonas vs MI TIROIDES — repara la causa, no tapa el síntoma" },
   { src: "/img/hero-3.webp", alt: "MI TIROIDES fórmula con 6 ingredientes naturales y dosis" },
+  { src: "/img/hero-4.webp", alt: "Tu energía vuelve paso a paso — timeline de 7 a 30 días" },
   { src: "/img/hero-5.webp", alt: "Resultados reales y precio MI TIROIDES — pack 2 frascos" },
+  { src: "/img/hero-1.webp", alt: "Síntomas de tiroides que muchas confunden con estrés o edad" },
 ];
 
 const SIN_CARA = [
@@ -404,7 +404,7 @@ export default function Page() {
   const [angulo, setAngulo] = useState<"cabello" | "validacion" | "niebla">("validacion");
   useEffect(() => {
     const a = new URLSearchParams(window.location.search).get("angle");
-    if (a === "cabello" || a === "validacion" || a === "niebla") { setAngulo(a); setHeroIdx(a === "cabello" ? 1 : a === "niebla" ? 2 : 0); }
+    if (a === "cabello" || a === "validacion" || a === "niebla") setAngulo(a);
   }, []);
   const [nombre, setNombre] = useState("");
   const [telefono, setTelefono] = useState("");
@@ -786,7 +786,7 @@ export default function Page() {
                 <button
                   key={k}
                   type="button"
-                  onClick={() => { setAngulo(k); setHeroIdx(k === "cabello" ? 1 : k === "niebla" ? 2 : 0); }}
+                  onClick={() => setAngulo(k)}
                   className="badge"
                   style={{ cursor: "pointer", ...(angulo === k ? { background: "#1f3d2b", color: "#fff", borderColor: "#1f3d2b" } : {}) }}
                 >
