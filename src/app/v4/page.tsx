@@ -859,10 +859,10 @@ export default function Page() {
       <section className="section">
         <div className="container">
           <div className="eyebrow">¿Te suena familiar?</div>
-          <h2 className="h2">Tomas tu levotiroxina, comes bien, descansas…<br />pero sigues sintiéndote agotada</h2>
+          <h2 className="h2">Te tomas tu pastilla juiciosa, comes bien, duermes…<br />y aun así se te cae el pelo y vives agotada</h2>
           <div className="dolor-grid">
             {[
-              ["💇‍♀️", "Caída del cabello", "Encuentras pelo en la almohada, en la ducha y al peinarte cada mañana."],
+              ["💇‍♀️", "Se te cae el pelo", "Mechones en la almohada, en la ducha, en el cepillo — y ya se te nota menos volumen."],
               ["🧠", "Niebla mental", "Olvidas cosas, te cuesta concentrarte y sientes que tu cabeza va lenta."],
               ["🥱", "Cansancio constante", "Te despiertas agotada y al mediodía ya no puedes más, aunque dormiste bien."],
               ["⚖️", "Peso que no baja", "Cuidas tu alimentación pero los kilos no se mueven o suben sin explicación."],
@@ -880,11 +880,11 @@ export default function Page() {
           </div>
           <p style={{ textAlign: "center", maxWidth: 640, margin: "10px auto 0", fontSize: 16 }}>
             Si te identificas con al menos 2 de estos puntos,{" "}
-            <strong>no eres floja, no estás loca y no es la edad — es tu tiroides, aunque tu examen diga “normal”.</strong>
+            <strong>no eres floja, no estás loca, no es el shampoo ni el estrés de la semana — es tu tiroides, aunque tu examen diga “normal”.</strong>
           </p>
           <p style={{ textAlign: "center", color: "var(--gris)", maxWidth: 640, margin: "8px auto 0", fontSize: 15 }}>
-            La levotiroxina reemplaza la hormona, pero no le da a tu tiroides los nutrientes que necesita
-            para funcionar. Por eso muchas mujeres siguen mal aunque sus exámenes salgan “normales”.
+            Tu pastilla reemplaza la hormona, pero no le da a tu tiroides los nutrientes que necesita
+            para trabajar. Por eso sigues igual aunque tu examen salga “normal” y te digan que todo está bien.
           </p>
         </div>
       </section>
@@ -942,8 +942,8 @@ export default function Page() {
       <section className="section section-beige">
         <div className="container">
           <div className="eyebrow">Compara y decide</div>
-          <h2 className="h2">¿Por qué elegir MI TIROIDES?</h2>
-          <p className="lead">Compara de un vistazo cada alternativa para tu tiroides.</p>
+          <h2 className="h2">Ya probaste de todo. Esto es distinto.</h2>
+          <p className="lead">Cambiaste de shampoo, probaste el multivitamínico de la farmacia, hasta subiste la dosis. Mira por qué MI TIROIDES ataca lo que las demás ni tocan.</p>
 
           {/* Hint mobile: desliza para ver más */}
           <div
