@@ -893,31 +893,32 @@ export default function Page() {
       <section className="section section-beige">
         <div className="container">
           <div className="eyebrow">La causa que casi nadie te explica</div>
-          <h2 className="h2">El estrés crónico es el detonante silencioso de tu tiroides</h2>
+          <h2 className="h2">Con pastilla y todo, sigues igual — y esta es la razón</h2>
           <p className="lead">
-            Cuando vives en alerta constante, tu cuerpo libera cortisol durante meses. Ese cortisol
-            elevado <strong>frena directamente la conversión de T4 a T3</strong> — la hormona activa
-            que tu cuerpo necesita. Resultado: cansancio, peso que no baja, caída de cabello… y más
-            estrés. Un círculo del que no se sale solo con dormir más.
+            Vives corriendo: trabajo, pantallas, la lista de pendientes que no acaba. Tu cuerpo lleva
+            meses en alerta y suelta cortisol sin parar. Ese cortisol <strong>frena la conversión de T4
+            en T3</strong> (la hormona que de verdad usas) y le quema a tu tiroides el selenio, el zinc y
+            el yodo que necesita. Tu pastilla te repone la hormona… pero no esos nutrientes. Por eso el
+            pelo se sigue cayendo y vives cansada, aunque tu TSH salga “normal”.
           </p>
 
           <div className="estres-grid">
             <div className="estres-card">
               <div className="estres-num">1</div>
               <strong>Estrés sostenido</strong>
-              <p>Trabajo, hijos, familia, finanzas. Tu cuerpo entra en modo supervivencia y no sale.</p>
+              <p>Trabajo, estudio, pantallas, dormir mal. Tu cuerpo lleva meses en modo supervivencia y no sale.</p>
             </div>
             <div className="estres-arrow">→</div>
             <div className="estres-card">
               <div className="estres-num">2</div>
               <strong>Cortisol elevado</strong>
-              <p>Tu cuerpo gasta selenio, zinc, magnesio y B12 a una velocidad 3x más rápida.</p>
+              <p>Quema tu selenio, zinc y B12 hasta 3x más rápido — justo los que tu tiroides necesita.</p>
             </div>
             <div className="estres-arrow">→</div>
             <div className="estres-card">
               <div className="estres-num">3</div>
               <strong>Tiroides sin combustible</strong>
-              <p>Sin esos minerales, no produce T3 activa. Te sientes cansada aunque tu TSH salga “normal”.</p>
+              <p>Sin esos nutrientes no produce T3 activa. Se te cae el pelo y vives cansada… aunque tu TSH salga “normal”.</p>
             </div>
           </div>
 
@@ -930,9 +931,9 @@ export default function Page() {
               <li><strong>Yodo:</strong> repone las reservas que se queman cuando vives en alerta.</li>
             </ul>
             <p className="estres-disclaimer">
-              MI TIROIDES no es un ansiolítico. Es el soporte nutricional que tu tiroides necesita para
-              recuperarse del impacto del estrés crónico. Combínalo con sueño, movimiento y respiración —
-              y verás resultados reales en 60-90 días.
+              MI TIROIDES no es magia ni un ansiolítico. Es el combustible que a tu tiroides le falta para
+              trabajar — el que tu pastilla no trae. Va con tu Eutirox, no lo reemplaza. Dale 60-90 días
+              con sueño y movimiento, y nótalo tú misma.
             </p>
           </div>
         </div>
@@ -941,7 +942,7 @@ export default function Page() {
       {/* COMPARATIVA - tabla horizontal */}
       <section className="section section-beige">
         <div className="container">
-          <div className="eyebrow">Compara y decide</div>
+          <div className="eyebrow">Ya intentaste lo demás</div>
           <h2 className="h2">Ya probaste de todo. Esto es distinto.</h2>
           <p className="lead">Cambiaste de shampoo, probaste el multivitamínico de la farmacia, hasta subiste la dosis. Mira por qué MI TIROIDES ataca lo que las demás ni tocan.</p>
 
@@ -1061,9 +1062,8 @@ export default function Page() {
               color: "#1f3d2b",
             }}
           >
-            La diferencia entre <strong>seguir igual en 60 días</strong> o
-            sentirte como antes empieza con la decisión que estás a punto de
-            tomar.
+            En 60 días vas a estar frente al mismo espejo, con el mismo cepillo
+            lleno de pelo… o no. <strong>La diferencia empieza con lo que decidas hoy.</strong>
           </div>
         </div>
       </section>
