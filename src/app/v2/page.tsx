@@ -680,6 +680,9 @@ function Page() {
     setEnviando(true);
 
     const telSanitizado = sanitizarTelefonoCO(telefono);
+    // anti-fraude: honeypot (leído del form) + time-to-submit (desde carga de página)
+    const empresaHoneypot = ((e.currentTarget as HTMLFormElement)?.querySelector("input[name='empresa']") as HTMLInputElement | null)?.value || "";
+    const formLoadedAt = typeof performance !== "undefined" && performance.timeOrigin ? Math.round(performance.timeOrigin) : Date.now();
     const tracking = leerTracking();
     const data = {
       nombre: nombre.trim(),
@@ -691,6 +694,8 @@ function Page() {
       cantidad,
       variant: VARIANT,
       total: PLANES[cantidad as Cantidad].precio,
+      empresa: empresaHoneypot,
+      formLoadedAt,
       ...tracking,
     };
     const plan = PLANES[cantidad];
@@ -1719,6 +1724,9 @@ function Page() {
                 {/* DATOS */}
                 <div className="modal-section-title green">Ingresa tu dirección de envío</div>
                 <form className="modal-form" onSubmit={onSubmit} noValidate>
+                  {/* honeypot anti-bot — oculto a humanos; los bots lo llenan y quedan marcados */}
+                  <input type="text" name="empresa" defaultValue="" tabIndex={-1} autoComplete="off" aria-hidden="true"
+                    style={{ position: "absolute", left: "-9999px", width: 1, height: 1, opacity: 0, pointerEvents: "none" }} />
                   <label>
                     <span className="modal-label">WhatsApp <em>*</em></span>
                     <div className="modal-input-icon">

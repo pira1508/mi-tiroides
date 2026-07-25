@@ -1,6 +1,19 @@
 import { NextResponse, NextRequest } from "next/server";
 import { DEPARTAMENTOS } from "../../colombia";
 import { sendPurchaseToAllPixels } from "@/lib/pixels-server";
+import {
+  CFG,
+  RATE_LIMIT_MESSAGE,
+  getClientIp,
+  sanearInput,
+  esHoneypot,
+  tiempoSospechoso,
+  patronBasura,
+  calcularScore,
+  verificarRateLimit,
+  turnstileRequerido,
+  verificarTurnstile,
+} from "@/lib/anti-fraud";
 
 // Normalizar para comparación: lowercase + sin acentos + trim
 function norm(s: string): string {
@@ -18,11 +31,9 @@ function ciudadValida(ciudad: string | null | undefined, depto: string | null | 
   const d = norm(depto);
   if (c.length < 2 || d.length < 2) return false;
 
-  // Buscar departamento (case/accent-insensitive)
   const deptoKey = Object.keys(DEPARTAMENTOS).find((k) => norm(k) === d);
   if (!deptoKey) return false;
 
-  // Validar que ciudad esté en la lista de ciudades del departamento
   const ciudadesOK = DEPARTAMENTOS[deptoKey].some((cd) => norm(cd) === c);
   return ciudadesOK;
 }
@@ -34,121 +45,124 @@ const PRECIOS_BY_VARIANT: Record<string, Record<string, { precio: number; frasco
     "3": { precio: 139900, frascos: 3, label: "3 Frascos" },
   },
   // BUG FIX 2026-06-15: el landing v2 muestra $129.900/$159.900 al cliente, pero
-  // este API estaba cobrando $139.900/$169.900 (+$10k). El cliente veía un precio
-  // en pantalla y al recibir el WhatsApp de Camila / la entrega contra entrega el
-  // monto era distinto → desconfianza → 22 puntos de caída en conversión vs v1
-  // y +$2-3M COP en revenue perdido. Alineados con los precios reales del landing.
+  // este API estaba cobrando $139.900/$169.900 (+$10k). Alineados con los precios reales.
   v2: {
-    "1": { precio: 89900,  frascos: 1, label: "1 Frasco" },
+    "1": { precio: 89900, frascos: 1, label: "1 Frasco" },
     "2": { precio: 129900, frascos: 2, label: "2 Frascos" },
     "3": { precio: 159900, frascos: 3, label: "3 Frascos" },
   },
 };
 
-// Rate limit: máximo 1 pedido confirmado por IP en 24h
-async function verificarRateLimitIP(ip: string): Promise<{ permitido: boolean; razon?: string }> {
-  // Localhost nunca está rate limitado
-  if (ip === "127.0.0.1" || ip === "::1" || ip?.startsWith("192.168") || ip?.includes("localhost")) {
-    return { permitido: true };
-  }
-
-  try {
-    const botUrl = process.env.BOT_CHECK_RATE_LIMIT_URL;
-    const botSecret = process.env.BOT_CONFIRMADOR_SECRET;
-
-    if (!botUrl || !botSecret) {
-      // Si no está configurado, no hace rate limit
-      console.warn("[rate-limit] endpoint no configurado, permitiendo");
-      return { permitido: true };
-    }
-
-    const r = await fetch(botUrl, {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        "x-secret": botSecret,
-      },
-      body: JSON.stringify({ ip }),
-    });
-
-    if (!r.ok) {
-      console.error("[rate-limit] error consultando bot:", r.status);
-      return { permitido: true }; // En caso de error, permitimos (fail open)
-    }
-
-    const { permitido, razon } = await r.json();
-    return { permitido, razon };
-  } catch (err) {
-    console.error("[rate-limit] error:", err);
-    return { permitido: true }; // Fail open
-  }
-}
-
 export async function POST(req: NextRequest) {
   const data = await req.json();
+
+  // ── CAPA 3 · HONEYPOT ─────────────────────────────────────────────────────
+  // Campo oculto (empresa/website). Si llega con valor → bot. Respondemos 200
+  // FALSO (no creamos pedido, no Pixel, no bot) para no revelar que se detectó.
+  if (esHoneypot(data)) {
+    console.error(
+      `[anti-fraud] honeypot_hit ip=${getClientIp(req)} tel="${String(data.telefono || "").slice(0, 20)}"`
+    );
+    return NextResponse.json({
+      ok: true,
+      id: `MIT-${Date.now().toString(36).toUpperCase()}`,
+      estado: "ok",
+      valido: false, // frontend NO dispara Pixel
+    });
+  }
 
   if (!data?.nombre || !data?.telefono || !data?.cantidad) {
     return NextResponse.json({ error: "campos faltantes" }, { status: 400 });
   }
 
-  // Fix #4 — manejo de abandono de formulario (cliente que escribió tel+nombre pero no envió)
-  // Se dispara desde el autosave a los 8 segundos. Marca el lead como abandono_form
-  // para que el bot pueda hacer follow-up tipo Camila SIN tratarlo como pedido confirmado.
-  const esAbandono = data.tipo === "abandono_form";
-
-  // VALIDACIÓN CRÍTICA — ciudad+departamento deben estar en lista oficial Colombia
-  // Si NO son válidos → tratar como preliminar (no como pedido real)
-  // Esto evita: 1) datos basura a Hoko, 2) Pixel Purchase falsos a Meta
-  const ciudadOK = ciudadValida(data.ciudad, data.departamento);
-  const esPreliminar = esAbandono || !ciudadOK;
-
-  if (!ciudadOK && !esAbandono) {
-    console.log(`[validacion] pedido sin ciudad válida: tel=${data.telefono} ciudad="${data.ciudad}" depto="${data.departamento}" → tratado como preliminar`);
+  // ── CAPA 2 · SANEO/VALIDACIÓN server-side (nunca confiar en el cliente) ────
+  const s = sanearInput(data);
+  if (s.payloadAbsurdo) {
+    console.error(`[anti-fraud] payload_absurdo ip=${getClientIp(req)}`);
+    return NextResponse.json({ error: "datos inválidos" }, { status: 400 });
   }
 
-  // Rate limit solo para pedidos confirmados, no para abandonos/preliminares
-  if (!esPreliminar) {
-    const clientIp = req.headers.get("x-forwarded-for")?.split(",")[0].trim() ||
-                     req.headers.get("x-real-ip") ||
-                     "unknown";
-    const rateCheck = await verificarRateLimitIP(clientIp);
+  const esAbandono = data.tipo === "abandono_form";
 
-    if (!rateCheck.permitido) {
-      console.log(`[rate-limit] bloqueado IP ${clientIp}: ${rateCheck.razon}`);
+  // VALIDACIÓN CRÍTICA — ciudad+departamento en lista oficial + móvil CO válido.
+  // Si NO → preliminar (no pedido real, no Pixel). No rompe el flujo.
+  const ciudadOK = ciudadValida(s.ciudad, s.departamento);
+  // CONFIRMADO exige: no abandono + ciudad válida + teléfono móvil CO válido.
+  const esConfirmado = !esAbandono && ciudadOK && s.esMovilCO;
+  const esPreliminar = !esConfirmado;
+  const tipo: "confirmado" | "preliminar" | "abandono" = esAbandono
+    ? "abandono"
+    : esConfirmado
+    ? "confirmado"
+    : "preliminar";
+
+  if (!esConfirmado && !esAbandono) {
+    console.log(
+      `[validacion] no-confirmado tel="${s.telefono}" movilCO=${s.esMovilCO} ciudad="${s.ciudad}" depto="${s.departamento}" ciudadOK=${ciudadOK} → preliminar`
+    );
+  }
+
+  // ── CAPAS 4+5 · TIME-TO-SUBMIT + SCORE DE BOT (suave, NO bloquea) ──────────
+  const clientIp = getClientIp(req);
+  const tiempoRapido = tiempoSospechoso(data.formLoadedAt);
+  const telBasura = patronBasura(s.nombre, s.telefono);
+  const { score, señales } = calcularScore(req, {
+    honeypot: false, // ya cortocircuitado arriba
+    tiempoRapido,
+    telBasura,
+  });
+  let sospechoso = score >= CFG.scoreSospechoso;
+
+  // ── CAPA 6 · TURNSTILE (invisible, OFF por defecto) ───────────────────────
+  // Solo si TURNSTILE_ENABLED=true Y score ≥ umbral. Nunca en el camino feliz.
+  if (turnstileRequerido(score)) {
+    const ok = await verificarTurnstile(data.turnstileToken, clientIp);
+    if (!ok) {
       return NextResponse.json(
-        {
-          error: "Ya hiciste un pedido hace menos de 24 horas. Si tienes alguna duda, escríbenos por WhatsApp 👉 wa.me/573237451763",
-        },
-        { status: 429 }
+        { error: "verificación requerida", challenge: "turnstile" },
+        { status: 403 }
       );
     }
+  }
+
+  // ── CAPA 1 · RATE LIMITER (Upstash → Supabase → fail-safe) ────────────────
+  const rate = await verificarRateLimit({ ip: clientIp, telefono: s.telefono, tipo });
+  if (!rate.permitido) {
+    console.log(`[rate-limit] bloqueado ip=${clientIp} tel=${s.telefono} tipo=${tipo} razon=${rate.razon}`);
+    return NextResponse.json({ error: RATE_LIMIT_MESSAGE }, { status: 429 });
+  }
+  // Fail-SAFE: si ninguna capa pudo evaluar, pasa PERO queda sospechoso (ya se
+  // logueó console.error en el módulo).
+  if (!rate.evaluado) {
+    sospechoso = true;
+    señales.push("rate_limit_no_evaluado");
   }
 
   const variant = data.variant === "v2" ? "v2" : "v1";
   const PRECIOS = PRECIOS_BY_VARIANT[variant];
   const plan = PRECIOS[String(data.cantidad)] ?? PRECIOS["1"];
-  // Prefijos por tipo: ABAND para abandono, PRELIM para preliminar por ciudad inválida, MIT para pedido real
-  const idPrefix = esAbandono ? "ABAND" : !ciudadOK ? "PRELIM" : "MIT";
+  const idPrefix = esAbandono ? "ABAND" : !esConfirmado ? "PRELIM" : "MIT";
   const id = `${idPrefix}-${Date.now().toString(36).toUpperCase()}`;
   const ts = new Date().toISOString();
 
-  // Log estructurado del pedido — visible en Vercel Logs
-  // Cuando armemos el dashboard, basta con leer estos logs (o migrar a DB)
   const pedido = {
     tipo: esAbandono
       ? "ABANDONO_FORM_MI_TIROIDES"
-      : !ciudadOK
-      ? "PRELIMINAR_CIUDAD_INVALIDA"
+      : !esConfirmado
+      ? "PRELIMINAR_MI_TIROIDES"
       : "PEDIDO_MI_TIROIDES",
     id,
     timestamp: ts,
+    sospechoso,
+    señales,
+    score,
     cliente: {
-      nombre: String(data.nombre).trim(),
-      telefono: String(data.telefono).trim(),
-      departamento: data.departamento ?? null,
-      ciudad: data.ciudad ?? null,
-      direccion: data.direccion ?? null,
-      referencia: data.referencia ?? null,
+      nombre: s.nombre,
+      telefono: s.telefono,
+      departamento: s.departamento || null,
+      ciudad: s.ciudad || null,
+      direccion: s.direccion || null,
+      referencia: s.referencia || null,
     },
     plan: {
       cantidad: data.cantidad,
@@ -161,8 +175,12 @@ export async function POST(req: NextRequest) {
   };
   // eslint-disable-next-line no-console
   console.log("[PEDIDO]", JSON.stringify(pedido));
+  if (sospechoso) {
+    console.error(`[anti-fraud] sospechoso id=${id} score=${score} señales=${señales.join(",")} ip=${clientIp}`);
+  }
 
-  // Si hay bot-confirmador configurado, intenta enviar (no bloquea si falla)
+  // Bot-confirmador (no bloquea si falla). Se le pasa `sospechoso` para que
+  // Camila lo trate con pinzas (no auto-despacho).
   const url = process.env.BOT_CONFIRMADOR_URL;
   const secret = process.env.BOT_CONFIRMADOR_SECRET;
   if (url && secret) {
@@ -176,16 +194,13 @@ export async function POST(req: NextRequest) {
         referencia: pedido.cliente.referencia,
         cantidad: String(pedido.plan.cantidad),
         variant,
-        // Fix #4 — marcamos abandono para que el bot pueda hacer follow-up
-        // SIN tratarlo como pedido confirmado. El bot (Camila) puede decidir
-        // si manda un mensaje del tipo: "Vi que empezaste a hacer tu pedido,
-        // ¿te ayudo a terminarlo?"
-        // NUEVO: si ciudad no es válida, también va como preliminar (Camila pide ciudad)
         estado: esAbandono
           ? "abandono_form"
-          : !ciudadOK
+          : !esConfirmado
           ? "preliminar_sin_ciudad"
           : "pedido_confirmado",
+        sospechoso, // ← NUEVO: bot/Camila no auto-despacha si true
+        señales_fraude: sospechoso ? señales : undefined,
         fbclid: data.fbclid || undefined,
         ttclid: data.ttclid || undefined,
         utm_source: data.utm_source || undefined,
@@ -208,23 +223,18 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // Estado de respuesta: el frontend usa esto para decidir si dispara Pixel Purchase
-  // SOLO "pedido_confirmado" debe disparar Purchase. Los demás NO van a Meta.
+  // Estado de respuesta: SOLO "pedido_confirmado" dispara Purchase (no romper).
   const estadoFinal = esAbandono
     ? "abandono_form"
-    : !ciudadOK
+    : !esConfirmado
     ? "preliminar_sin_ciudad"
     : "pedido_confirmado";
 
-  // SERVER-SIDE PIXELS — Meta CAPI + TikTok Events API
-  // Solo si es pedido_confirmado real (no abandono ni preliminar sin ciudad).
-  // Fire-and-forget: no bloquea la respuesta al cliente.
-  // event_id = ID del pedido → matchea con el del browser para dedup.
+  // SERVER-SIDE PIXELS — Meta CAPI + TikTok. Solo pedido_confirmado real.
+  // Fire-and-forget. El rate limiter (1 confirmado/IP y /tel por 24h) acota la
+  // exposición de Pixel a bots; los sospechosos los frena el bot-confirmador.
   if (estadoFinal === "pedido_confirmado") {
-    const ip =
-      req.headers.get("x-forwarded-for")?.split(",")[0].trim() ||
-      req.headers.get("x-real-ip") ||
-      null;
+    const ip = clientIp === "unknown" ? null : clientIp;
     const userAgent = req.headers.get("user-agent") || null;
 
     sendPurchaseToAllPixels({
@@ -245,6 +255,6 @@ export async function POST(req: NextRequest) {
     ok: true,
     id,
     estado: estadoFinal,
-    valido: ciudadOK && !esAbandono, // ← frontend chequea esto para Pixel
+    valido: esConfirmado, // ← frontend chequea esto para Pixel
   });
 }
