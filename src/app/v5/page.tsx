@@ -1175,10 +1175,10 @@ export default function Page() {
         <div className="container" style={{ display: "grid", gap: 30, alignItems: "center", gridTemplateColumns: "1fr" }}>
           <div style={{ display: "grid", gap: 30, gridTemplateColumns: "1fr", alignItems: "center" }}>
             <Image
-              src="/img/doctora.webp"
-              alt="Dra. Ana López, Endocrinóloga"
+              src="/img/doctor-hombre.jpg"
+              alt="Dr. Carlos Mendoza, Endocrinólogo"
               width={500}
-              height={600}
+              height={667}
               style={{ borderRadius: 18, margin: "0 auto" }}
             />
             <div>
@@ -1190,7 +1190,7 @@ export default function Page() {
                 personas con hipotiroidismo y Hashimoto en Colombia.”
               </p>
               <p style={{ color: "var(--gris)", fontSize: 14 }}>
-                — Dra. Ana López, Endocrinología · Bogotá · Universidad Javeriana
+                — Dr. Carlos Mendoza, Endocrinología · Bogotá · Universidad Nacional
               </p>
             </div>
           </div>
