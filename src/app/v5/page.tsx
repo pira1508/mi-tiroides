@@ -369,15 +369,15 @@ const TESTI_LARGOS = [
 const ANGULOS: Record<"apaga" | "esposa" | "peso", { h1: string; sub: string }> = {
   apaga: {
     h1: "No es la edad. Es tu tiroides.",
-    sub: "Vives mamado, sin pilas, y el examen “salió normal”. Tu pastilla repone la hormona, pero tu tiroides necesita selenio, zinc y yodo para volver a encender. Los 6 nutrientes que te faltan, en una sola cápsula. Va con tu pastilla, no la reemplaza.",
+    sub: "Te levantas y ya estás cansado. Llegas del trabajo y te desplomas, sin fuerzas ni para tu propia familia. Y cuando por fin te revisas, te dicen que “todo salió normal”… pero tú sabes que algo se apagó por dentro. No es la edad ni el trabajo: tu tiroides trabaja a media máquina y tu pastilla no le da el selenio, el zinc y el yodo que necesita para volver a encender. MI TIROIDES sí — los 6 nutrientes que te faltan, en una sola cápsula. Va con tu pastilla, no la reemplaza.",
   },
   esposa: {
     h1: "¿Tu esposo ya no es el mismo?",
-    sub: "Vive cansado, sin ganas de nada, y pensaste que era la edad o el trabajo. Muchas veces es la tiroides trabajando a media máquina. MI TIROIDES le da los 6 nutrientes que su pastilla no trae — para que vuelva a ser el de antes. Va con su tratamiento, no lo reemplaza.",
+    sub: "Ya no es el hombre con el que te casaste. Vive cansado, callado, sin ganas de nada — ni de salir, ni de la familia, ni de sí mismo. Te dijeron que es la edad o el estrés, pero tú sientes que algo cambió. Muchas veces es la tiroides trabajando a media máquina, y su pastilla no le da los nutrientes que necesita para volver a encender. MI TIROIDES sí — para que vuelva a ser el de antes. Va con su tratamiento, no lo reemplaza.",
   },
   peso: {
     h1: "Comes igual y la barriga no baja.",
-    sub: "No es que comas mal: es tu metabolismo, que la tiroides tiene lento. Selenio, zinc y yodo ayudan a tu tiroides a activar la hormona que de verdad usas. Los 6 nutrientes que tu pastilla no trae, en una sola cápsula. Va con tu pastilla, no la reemplaza.",
+    sub: "Comes igual que siempre, hasta menos… y la barriga sigue ahí, cada vez más grande. Te esfuerzas, caminas, cierras la boca, y la balanza no se mueve — y encima vives cansado y sin energía. No es falta de fuerza de voluntad: es tu metabolismo, frenado por una tiroides lenta a la que le falta selenio, zinc y yodo. MI TIROIDES se los da para reactivar la hormona que quema. Los 6 nutrientes que tu pastilla no trae. Va con tu pastilla, no la reemplaza.",
   },
 };
 
