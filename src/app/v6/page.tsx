@@ -53,13 +53,12 @@ function shuffleWithSeed<T>(array: readonly T[], seed: number): T[] {
 // Primer slide del carrusel = hero DISEÑADO que hace message-match con cada ad (por ?angle).
 // Avatar mujeres 45-55 (hinchazón/gordura por hipotiroidismo). 4 ángulos = los 4 ads:
 // agua (ES AGUA NO ES USTED) · pastilla (SU PASTILLA NO TRABAJA SOLA) · secreto (EL SECRETO) · esponja (LA ESPONJA).
-// TODO: reemplazar por 4 heroes diseñados message-match (Higgsfield, crema/verde/dorado + frasco real).
-// Por ahora reusan el slide diseñado original de señora (hero-1) para que se vea pulido de una.
+// 4 heroes diseñados message-match (Higgsfield nano_banana_pro, crema/verde/dorado + frasco real).
 const HERO_MUJER: Record<"agua" | "pastilla" | "secreto" | "esponja", { src: string; alt: string }> = {
-  agua: { src: "/img/hero-1.webp", alt: "No engordó, se inflamó: es agua, no grasa — es su tiroides" },
-  pastilla: { src: "/img/hero-1.webp", alt: "Su pastilla de la tiroides no trabaja sola: le faltan 6 nutrientes" },
-  secreto: { src: "/img/hero-1.webp", alt: "El secreto que nadie le dijo sobre su barriga y su cansancio" },
-  esponja: { src: "/img/hero-1.webp", alt: "Su cuerpo guarda agua como una esponja: así se desinflama" },
+  agua: { src: "/img/hero-v6-agua.jpg", alt: "No engordó, se inflamó: es agua, no grasa — es su tiroides" },
+  pastilla: { src: "/img/hero-v6-pastilla.jpg", alt: "Su pastilla de la tiroides no trabaja sola: le faltan 6 nutrientes" },
+  secreto: { src: "/img/hero-v6-secreto.jpg", alt: "El secreto que nadie le dijo sobre su barriga y su cansancio" },
+  esponja: { src: "/img/hero-v6-esponja.jpg", alt: "Su cuerpo guarda agua como una esponja: así se desinflama" },
 };
 
 // Slides neutrales diseñados (sirven al avatar 45-55).
