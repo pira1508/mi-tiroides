@@ -54,9 +54,11 @@ function shuffleWithSeed<T>(array: readonly T[], seed: number): T[] {
 // (cansancio y caída de cabello). Van de primeros: son la prueba más fuerte.
 // 🔴 COMPLIANCE META: antes/después SOLO de síntoma. Nunca de peso ni de cuerpo.
 const HERO_IMAGES = [
+  // hero-1 va de PRIMERO: es el hero de control de esta landing, el que ve
+  // la clienta al aterrizar. Los antes/después entran detrás, como refuerzo.
+  { src: "/img/hero-1.webp", alt: "¿Llevas años cansada pensando que es la edad? Síntomas de tiroides" },
   { src: "/img/ba-mujer-cansancio.webp", alt: "Amanecer cansada no es la edad — día 1 sin fuerzas al levantarse vs día 90 con energía" },
   { src: "/img/ba-mujer-cabello.webp", alt: "No era el shampoo, era la tiroides — cepillo lleno de pelo antes vs casi limpio a los 90 días" },
-  { src: "/img/hero-1.webp", alt: "¿Llevas años cansada pensando que es la edad? Síntomas de tiroides" },
   { src: "/img/hero-2.webp", alt: "Hormonas vs MI TIROIDES — repara la causa, no tapa el síntoma" },
   { src: "/img/hero-3.webp", alt: "MI TIROIDES fórmula con 6 ingredientes naturales y dosis" },
   { src: "/img/hero-4.webp", alt: "Tu energía vuelve paso a paso — timeline de 7 a 30 días" },
