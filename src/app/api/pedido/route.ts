@@ -43,6 +43,15 @@ const PRECIOS_BY_VARIANT: Record<string, Record<string, { precio: number; frasco
     "2": { precio: 129900, frascos: 2, label: "2 Frascos" },
     "3": { precio: 159900, frascos: 3, label: "3 Frascos" },
   },
+  // v7 (landing framework Mark, 3-ago-2026): MISMOS precios que v1 a propósito.
+  // Existe solo para que el pedido quede etiquetado v7 en el CRM y se pueda
+  // medir EPV por landing. Si alguna vez v7 cambia de precio en pantalla,
+  // hay que cambiarlo AQUÍ también o se repite el bug de v2 del 15-jun.
+  v7: {
+    "1": { precio: 89900,  frascos: 1, label: "1 Frasco" },
+    "2": { precio: 119900, frascos: 2, label: "2 Frascos" },
+    "3": { precio: 139900, frascos: 3, label: "3 Frascos" },
+  },
 };
 
 // Rate limit: máximo 1 pedido confirmado por IP en 24h
@@ -124,7 +133,13 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const variant = data.variant === "v2" ? "v2" : "v1";
+  // Whitelist explícita: cualquier variante desconocida cae a v1 (comportamiento
+  // histórico). v7 se agrega para que sus pedidos NO se confundan con los de v1
+  // en el CRM — sin esto no hay forma de medir EPV por landing.
+  const variant =
+    data.variant === "v2" ? "v2"
+    : data.variant === "v7" ? "v7"
+    : "v1";
   const PRECIOS = PRECIOS_BY_VARIANT[variant];
   const plan = PRECIOS[String(data.cantidad)] ?? PRECIOS["1"];
   // Prefijos por tipo: ABAND para abandono, PRELIM para preliminar por ciudad inválida, MIT para pedido real
