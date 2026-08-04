@@ -59,7 +59,12 @@ const HERO_JOVEN: Record<"apaga" | "esposa" | "peso", { src: string; alt: string
 };
 
 // Slides neutrales (sirven a cualquier edad); se dejó fuera hero-1 (gancho de "edad", del avatar mayor).
+// Antes/después de las 2 problemáticas principales de este avatar
+// (cansancio que no se va y sin fuerzas ni ánimo). Van de primeros.
+// 🔴 COMPLIANCE META: antes/después SOLO de síntoma. Nunca de barriga ni de cuerpo.
 const HERO_RESTO = [
+  { src: "/img/ba-hombre-cansancio.webp", alt: "No es la edad, es tu tiroides — llegar del trabajo sin fuerzas antes vs con energía a los 90 días" },
+  { src: "/img/ba-hombre-animo.webp", alt: "Volvió a ser el de antes — sin ánimo de salir antes vs saliendo a caminar a los 90 días" },
   { src: "/img/hero-2.webp", alt: "Hormonas vs MI TIROIDES — repara la causa, no tapa el síntoma" },
   { src: "/img/hero-3.webp", alt: "MI TIROIDES fórmula con 6 ingredientes naturales y dosis" },
   { src: "/img/hero-4.webp", alt: "Tu energía vuelve paso a paso — timeline de 7 a 30 días" },
