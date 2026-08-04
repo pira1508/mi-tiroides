@@ -57,15 +57,21 @@ const HERO_IMAGES = [
   // hero-1 va de PRIMERO: es el hero de control de esta landing, el que ve
   // la clienta al aterrizar. Los antes/después entran detrás, como refuerzo.
   { src: "/img/hero-1.webp", alt: "¿Llevas años cansada pensando que es la edad? Síntomas de tiroides" },
-  // ⚠️ Antes/después de ABDOMEN, decisión explícita de Andrés (4-ago) tras
-  // advertirle el riesgo. Reemplaza al de "amanecer cansada", que era flojo.
-  // Mitigaciones que hay que MANTENER si alguien regenera la imagen:
-  //   · blusa PUESTA en las dos mitades — nunca torso ni ombligo descubierto;
+  // UNA sola imagen con las 4 señoras (rejilla 2x2, un síntoma cada una).
+  // Van ARREGLADAS en las dos mitades
+  // (peinadas, ropa de calle, luz de día): una clienta no se identifica con
+  // una mujer que se dejó ver fea, se identifica con una como ella, cuidada
+  // y aun así derrotada — ese contraste es el que vende. El síntoma se
+  // muestra con props y con la mirada, nunca "recién levantada" ni en pijama.
+  //
+  // ⚠️ El de la panza es un antes/después de ABDOMEN, decisión explícita de
+  // Andrés (4-ago) tras advertirle el riesgo. Mitigaciones que hay que
+  // MANTENER si alguien regenera la imagen:
+  //   · misma blusa PUESTA en las dos mitades — nunca torso ni ombligo al aire;
   //   · encuadre de INFLAMACIÓN (se desinfla), no de pérdida de peso;
   //   · sin báscula, sin cinta métrica, sin kilos ni números.
   // Si Meta rechaza los ads de esta landing, es la primera sospechosa.
-  { src: "/img/ba-mujer-panza.webp", alt: "No era grasa, era inflamación — abdomen hinchado y la ropa apretando antes vs desinflamada a los 90 días" },
-  { src: "/img/ba-mujer-cabello.webp", alt: "No era el shampoo, era la tiroides — cepillo lleno de pelo antes vs casi limpio a los 90 días" },
+  { src: "/img/ba-sras-4.webp", alt: "4 mujeres, 4 síntomas: hinchazón, cara hinchada, caída de cabello y cansancio — antes y a los 90 días" },
   { src: "/img/hero-2.webp", alt: "Hormonas vs MI TIROIDES — repara la causa, no tapa el síntoma" },
   { src: "/img/hero-3.webp", alt: "MI TIROIDES fórmula con 6 ingredientes naturales y dosis" },
   { src: "/img/hero-4.webp", alt: "Tu energía vuelve paso a paso — timeline de 7 a 30 días" },
