@@ -57,7 +57,14 @@ const HERO_IMAGES = [
   // hero-1 va de PRIMERO: es el hero de control de esta landing, el que ve
   // la clienta al aterrizar. Los antes/después entran detrás, como refuerzo.
   { src: "/img/hero-1.webp", alt: "¿Llevas años cansada pensando que es la edad? Síntomas de tiroides" },
-  { src: "/img/ba-mujer-cansancio.webp", alt: "Amanecer cansada no es la edad — día 1 sin fuerzas al levantarse vs día 90 con energía" },
+  // ⚠️ Antes/después de ABDOMEN, decisión explícita de Andrés (4-ago) tras
+  // advertirle el riesgo. Reemplaza al de "amanecer cansada", que era flojo.
+  // Mitigaciones que hay que MANTENER si alguien regenera la imagen:
+  //   · blusa PUESTA en las dos mitades — nunca torso ni ombligo descubierto;
+  //   · encuadre de INFLAMACIÓN (se desinfla), no de pérdida de peso;
+  //   · sin báscula, sin cinta métrica, sin kilos ni números.
+  // Si Meta rechaza los ads de esta landing, es la primera sospechosa.
+  { src: "/img/ba-mujer-panza.webp", alt: "No era grasa, era inflamación — abdomen hinchado y la ropa apretando antes vs desinflamada a los 90 días" },
   { src: "/img/ba-mujer-cabello.webp", alt: "No era el shampoo, era la tiroides — cepillo lleno de pelo antes vs casi limpio a los 90 días" },
   { src: "/img/hero-2.webp", alt: "Hormonas vs MI TIROIDES — repara la causa, no tapa el síntoma" },
   { src: "/img/hero-3.webp", alt: "MI TIROIDES fórmula con 6 ingredientes naturales y dosis" },

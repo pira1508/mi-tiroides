@@ -59,12 +59,19 @@ const HERO_JOVEN: Record<"apaga" | "esposa" | "peso", { src: string; alt: string
 };
 
 // Slides neutrales (sirven a cualquier edad); se dejó fuera hero-1 (gancho de "edad", del avatar mayor).
-// Antes/después de las 2 problemáticas principales de este avatar
-// (cansancio que no se va y sin fuerzas ni ánimo). Van de primeros.
-// 🔴 COMPLIANCE META: antes/después SOLO de síntoma. Nunca de barriga ni de cuerpo.
+// Antes/después de las 2 problemáticas más duras del avatar hombre:
+// la panza que no baja y el sueño a toda hora. Van de primeros.
+//
+// ⚠️ El de la panza es un antes/después de ABDOMEN, decisión explícita de
+// Andrés (4-ago) después de advertirle el riesgo. Se mitiga así y hay que
+// mantenerlo así si alguien regenera la imagen:
+//   · camisa PUESTA en las dos mitades — nunca torso desnudo;
+//   · encuadre de INFLAMACIÓN (se desinfla), no de pérdida de peso;
+//   · sin báscula, sin cinta métrica, sin kilos ni números.
+// Si Meta rechaza los ads de v5, esta imagen es la primera sospechosa.
 const HERO_RESTO = [
-  { src: "/img/ba-hombre-cansancio.webp", alt: "No es la edad, es tu tiroides — llegar del trabajo sin fuerzas antes vs con energía a los 90 días" },
-  { src: "/img/ba-hombre-animo.webp", alt: "Volvió a ser el de antes — sin ánimo de salir antes vs saliendo a caminar a los 90 días" },
+  { src: "/img/ba-hombre-panza.webp", alt: "La panza no era la cerveza — abdomen inflamado y la camisa apretando antes vs desinflamado a los 90 días" },
+  { src: "/img/ba-hombre-sueno.webp", alt: "Se dormía viendo el noticiero — dormido en la silla antes vs despierto y conversando a los 90 días" },
   { src: "/img/hero-2.webp", alt: "Hormonas vs MI TIROIDES — repara la causa, no tapa el síntoma" },
   { src: "/img/hero-3.webp", alt: "MI TIROIDES fórmula con 6 ingredientes naturales y dosis" },
   { src: "/img/hero-4.webp", alt: "Tu energía vuelve paso a paso — timeline de 7 a 30 días" },
