@@ -70,8 +70,10 @@ const HERO_JOVEN: Record<"apaga" | "esposa" | "peso", { src: string; alt: string
 //   · sin báscula, sin cinta métrica, sin kilos ni números.
 // Si Meta rechaza los ads de v5, esta imagen es la primera sospechosa.
 const HERO_RESTO = [
-  { src: "/img/ba-hombre-panza.webp", alt: "La panza no era la cerveza — abdomen inflamado y la camisa apretando antes vs desinflamado a los 90 días" },
-  { src: "/img/ba-hombre-sueno.webp", alt: "Se dormía viendo el noticiero — dormido en la silla antes vs despierto y conversando a los 90 días" },
+  // UNA sola imagen con 4 personas (rejilla 2x2), un síntoma cada una.
+  // Van ARREGLADAS en las dos mitades — peinadas, ropa de calle, luz de día.
+  // El síntoma se muestra con props y con la mirada, nunca "recién levantada".
+  { src: "/img/ba-hombres-4.webp", alt: "4 hombres, 4 síntomas: la panza, sueño a toda hora, sin fuerzas y niebla mental — antes y a los 90 días" },
   { src: "/img/hero-2.webp", alt: "Hormonas vs MI TIROIDES — repara la causa, no tapa el síntoma" },
   { src: "/img/hero-3.webp", alt: "MI TIROIDES fórmula con 6 ingredientes naturales y dosis" },
   { src: "/img/hero-4.webp", alt: "Tu energía vuelve paso a paso — timeline de 7 a 30 días" },

@@ -67,8 +67,10 @@ const HERO_MUJER: Record<"agua" | "pastilla" | "secreto" | "esponja", { src: str
 // son la prueba más fuerte del ángulo.
 // 🔴 COMPLIANCE META: nunca antes/después de peso ni de cuerpo — solo síntoma.
 const HERO_RESTO = [
-  { src: "/img/hero-v6-antes-cara.webp", alt: "No es sueño, es retención — día 1 con la cara y los párpados hinchados vs día 90 desinflamada" },
-  { src: "/img/hero-v6-antes-anillo.webp", alt: "El anillo volvió a entrar — antes apretaba el dedo por retención de líquido, a los 90 días entra sin dieta" },
+  // UNA sola imagen con 4 personas (rejilla 2x2), un síntoma cada una.
+  // Van ARREGLADAS en las dos mitades — peinadas, ropa de calle, luz de día.
+  // El síntoma se muestra con props y con la mirada, nunca "recién levantada".
+  { src: "/img/ba-sras-retencion-4.webp", alt: "4 mujeres, 4 señales de retención: la cara, el anillo, la ropa que aprieta y los tobillos — antes y a los 90 días" },
   { src: "/img/hero-2.webp", alt: "Hormonas vs MI TIROIDES — repara la causa, no tapa el síntoma" },
   { src: "/img/hero-3.webp", alt: "MI TIROIDES fórmula con 6 ingredientes naturales y dosis" },
   { src: "/img/hero-4.webp", alt: "Su energía vuelve paso a paso — timeline de 7 a 30 días" },
