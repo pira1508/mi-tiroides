@@ -62,7 +62,13 @@ const HERO_MUJER: Record<"agua" | "pastilla" | "secreto" | "esponja", { src: str
 };
 
 // Slides neutrales diseñados (sirven al avatar 45-55).
+// Los dos primeros son antes/después de SÍNTOMA de retención (cara y anillo),
+// que es justo la tesis de v6: "es agua, no grasa". Van de primeros porque
+// son la prueba más fuerte del ángulo.
+// 🔴 COMPLIANCE META: nunca antes/después de peso ni de cuerpo — solo síntoma.
 const HERO_RESTO = [
+  { src: "/img/hero-v6-antes-cara.webp", alt: "No es sueño, es retención — día 1 con la cara y los párpados hinchados vs día 90 desinflamada" },
+  { src: "/img/hero-v6-antes-anillo.webp", alt: "El anillo volvió a entrar — antes apretaba el dedo por retención de líquido, a los 90 días entra sin dieta" },
   { src: "/img/hero-2.webp", alt: "Hormonas vs MI TIROIDES — repara la causa, no tapa el síntoma" },
   { src: "/img/hero-3.webp", alt: "MI TIROIDES fórmula con 6 ingredientes naturales y dosis" },
   { src: "/img/hero-4.webp", alt: "Su energía vuelve paso a paso — timeline de 7 a 30 días" },
