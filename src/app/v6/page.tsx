@@ -491,7 +491,7 @@ export default function Page() {
             ciudad: ciudad || null,
             direccion: direccion || null,
             cantidad,
-            variant: "v1",
+            variant: "v6",
             total: PLANES[cantidad].precio,
             ts: new Date().toISOString(),
             ...tracking,  // utm_source, utm_campaign, utm_content, utm_medium, fbclid, ttclid, referrer
@@ -638,7 +638,7 @@ export default function Page() {
       referencia: referencia.trim(),
       direccion: direccion.trim(),
       cantidad,
-      variant: "v1",
+      variant: "v6",
       total: PLANES[cantidad as Cantidad].precio,
       empresa: empresaHoneypot,
       formLoadedAt,

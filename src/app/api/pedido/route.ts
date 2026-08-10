@@ -43,6 +43,17 @@ const PRECIOS_BY_VARIANT: Record<string, Record<string, { precio: number; frasco
     "2": { precio: 129900, frascos: 2, label: "2 Frascos" },
     "3": { precio: 159900, frascos: 3, label: "3 Frascos" },
   },
+  // BUG FIX 2026-08-10: MISMO bug que v2 tuvo en junio, pero al revés. /v3
+  // MUESTRA $129.900/$159.900 y cobraba con la tabla de v1 ($119.900/$139.900)
+  // porque la lista blanca de abajo solo reconocía "v2". Se perdían $10k-$20k
+  // por pedido en la landing a la que apuntan los ganadores de hinchazón.
+  // Estos números son los que muestra v3/page.tsx y los que ya tenía el webhook
+  // del CRM (que es el que le dice al mensajero cuánto cobrar). Los tres iguales.
+  v3: {
+    "1": { precio: 89900,  frascos: 1, label: "1 Frasco" },
+    "2": { precio: 129900, frascos: 2, label: "2 Frascos" },
+    "3": { precio: 159900, frascos: 3, label: "3 Frascos" },
+  },
 };
 
 // Rate limit: máximo 1 pedido confirmado por IP en 24h
@@ -124,7 +135,21 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const variant = data.variant === "v2" ? "v2" : "v1";
+  // ── ATRIBUCIÓN vs PRECIO: dos cosas distintas (10-ago-2026) ────────────────
+  // Antes esta línea hacía las dos con una lista blanca de un solo valor, y eso
+  // causaba dos bugs:
+  //   1) MEDICIÓN: v3/v4/v5/v6 caían todas en "v1" → el 100% de los pedidos se
+  //      registraba como v1 y era imposible saber qué landing convierte o cobra.
+  //   2) PLATA: /v3 mostraba un precio y cobraba otro (ver comentario arriba).
+  //
+  // `landing` = de dónde vino (atribución pura, no toca plata).
+  // `variant` = qué tabla de precios aplica. Una landing nueva NO cambia precios
+  // hasta que se le agregue su tabla acá Y en el webhook del CRM.
+  const LANDINGS_CONOCIDOS = new Set(["v1", "v2", "v3", "v4", "v5", "v6", "v7", "clientes", "quiz"]);
+  const landingRaw = String(data.variant ?? "v1");
+  const landing = LANDINGS_CONOCIDOS.has(landingRaw) ? landingRaw : "v1";
+
+  const variant = PRECIOS_BY_VARIANT[landing] ? landing : "v1";
   const PRECIOS = PRECIOS_BY_VARIANT[variant];
   const plan = PRECIOS[String(data.cantidad)] ?? PRECIOS["1"];
   // Prefijos por tipo: ABAND para abandono, PRELIM para preliminar por ciudad inválida, MIT para pedido real
@@ -157,6 +182,7 @@ export async function POST(req: NextRequest) {
       precio_cop: plan.precio,
     },
     variant,
+    landing, // ← de dónde vino de verdad. NO decide precio.
     fuente: "landing-mi-tiroides",
   };
   // eslint-disable-next-line no-console
@@ -176,6 +202,7 @@ export async function POST(req: NextRequest) {
         referencia: pedido.cliente.referencia,
         cantidad: String(pedido.plan.cantidad),
         variant,
+        landing,
         // Fix #4 — marcamos abandono para que el bot pueda hacer follow-up
         // SIN tratarlo como pedido confirmado. El bot (Camila) puede decidir
         // si manda un mensaje del tipo: "Vi que empezaste a hacer tu pedido,
