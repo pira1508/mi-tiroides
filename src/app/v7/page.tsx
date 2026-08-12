@@ -56,14 +56,22 @@ function shuffleWithSeed<T>(array: readonly T[], seed: number): T[] {
 // transformación de síntoma ×4 → objeción del tiempo → prueba social + oferta.
 // 🔴 COMPLIANCE META: los antes/después son SIEMPRE de un SÍNTOMA
 // (hinchazón facial, cabello, anillo, energía). NUNCA de peso ni de cuerpo.
+// 12-ago: eran 7 slides con CUATRO antes/después seguidos — demasiado, y el
+// carrusel se leía como muro de testimonios en vez de explicar el mecanismo.
+// Ahora: los neutrales DISEÑADOS que ya usan /, v4, v5 y v6 (hero-2..hero-5)
+// cargan el argumento, y quedan solo DOS antes/después — los de OBJETO
+// (anillo y cepillo), que son el patrón que gana y el más seguro para Meta.
+// Fuera: la cara (día 1 vs 90, el más reclamable), el lifestyle de "energía",
+// el slide de tiempos que prometía "a los 7 días amaneces menos pesada", y el
+// de clienta (redundante con hero-5, que ya trae prueba social + precio).
 const HERO_IMAGES = [
-  { src: "/img/v7-hero-1-producto.webp", alt: "Energía en 7 días sin dejar tu pastilla — MI TIROIDES, 6 activos, registro INVIMA, pagas al recibir" },
-  { src: "/img/v7-hero-2-hinchazon.webp", alt: "Amanecer hinchada no es normal — día 1 vs día 90: «Yo creía que era de dormir mal», Gladys, 51" },
-  { src: "/img/v7-hero-3-energia.webp", alt: "No era pereza, era tu T3 — antes vs ahora: «Volví a levantarme de una», Martha, 52" },
-  { src: "/img/v7-hero-4-cabello.webp", alt: "No era el shampoo, era la tiroides — cepillo antes vs a los 90 días: «Dejé de encontrar pelo en la almohada», Beatriz, 39" },
+  { src: "/img/v7-hero-1-producto.webp", alt: "MI TIROIDES: 6 activos para tu tiroides, registro INVIMA, pagas al recibir" },
+  { src: "/img/hero-2.webp", alt: "Las hormonas tapan el síntoma. MI TIROIDES repara la causa" },
+  { src: "/img/hero-3.webp", alt: "La fórmula que repara desde adentro — selenio, zinc, L-tirosina, B12, D3 y yodo con sus dosis" },
   { src: "/img/v7-hero-5-anillo.webp", alt: "El anillo volvió a entrar — antes vs a los 90 días: «Sin dieta, se me bajó la hinchazón», Rosa, 52" },
-  { src: "/img/v7-hero-6-tiempos.webp", alt: "¿En cuánto lo voy a sentir? A los 7 días amaneces menos pesada, a los 30 energía estable, a los 90 el tratamiento completo" },
-  { src: "/img/v7-hero-7-clienta.webp", alt: "+2.500 colombianas ya la toman — 4.8 de 5, envío gratis, pagas cuando llega" },
+  { src: "/img/v7-hero-4-cabello.webp", alt: "No era el shampoo, era la tiroides — cepillo antes vs a los 90 días: «Dejé de encontrar pelo en la almohada», Beatriz, 39" },
+  { src: "/img/hero-4.webp", alt: "Tu energía vuelve paso a paso — del día 7 al día 30" },
+  { src: "/img/hero-5.webp", alt: "Resultados reales y precio MI TIROIDES — pack 2 frascos" },
 ];
 
 const SIN_CARA = [
