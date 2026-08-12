@@ -1276,3 +1276,252 @@ footer.site-footer {
   margin: 0;
   line-height: 1.55;
 }
+
+/* =========================================================
+   ===== LANDING v7 — clases NUEVAS únicamente =============
+   No modificar nada de arriba: v1 está en producción.
+   ========================================================= */
+
+/* ===== MECANISMO DIFERENCIADOR (nivel 4) ===== */
+.mecanismo-pasos {
+  display: grid;
+  gap: 16px;
+  margin: 30px 0 26px;
+}
+@media (min-width: 900px) {
+  .mecanismo-pasos { grid-template-columns: repeat(3, 1fr); }
+}
+.mecanismo-paso {
+  background: #fff;
+  border: 1px solid #e6dfcc;
+  border-radius: 16px;
+  padding: 22px 20px 20px;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  box-shadow: 0 2px 14px rgba(31, 61, 42, 0.04);
+}
+.mecanismo-num {
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  background: var(--verde);
+  color: #fff;
+  font-weight: 800;
+  font-size: 17px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.mecanismo-paso h3 {
+  margin: 4px 0 8px;
+  font-size: 16px;
+  line-height: 1.35;
+  color: var(--verde);
+  font-weight: 800;
+}
+.mecanismo-paso p {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--gris);
+}
+.mecanismo-vs {
+  display: block;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed #e0d7bf;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #8a7a52;
+  font-style: italic;
+}
+.mecanismo-imgs {
+  display: grid;
+  gap: 18px;
+  margin: 26px 0;
+}
+@media (min-width: 760px) {
+  .mecanismo-imgs { grid-template-columns: 1fr 1fr; }
+}
+.mecanismo-imgs figure {
+  margin: 0;
+  background: #fff;
+  border: 1px solid #e6dfcc;
+  border-radius: 16px;
+  overflow: hidden;
+}
+.mecanismo-imgs img {
+  width: 100%;
+  height: auto;
+}
+.mecanismo-imgs figcaption {
+  padding: 12px 16px 14px;
+  font-size: 13px;
+  color: var(--gris);
+  line-height: 1.5;
+  text-align: center;
+}
+.mecanismo-cierre {
+  background: var(--verde);
+  color: #e9e2d0;
+  border-radius: 18px;
+  padding: 24px 24px;
+  font-size: 16px;
+  line-height: 1.65;
+  text-align: center;
+  max-width: 760px;
+  margin: 0 auto;
+}
+.mecanismo-cierre strong { color: #fff; }
+
+/* ===== OFERTA ESCALONADA + REGALOS ===== */
+.oferta-grid {
+  display: grid;
+  gap: 18px;
+  margin: 30px 0 22px;
+  align-items: stretch;
+}
+@media (min-width: 900px) {
+  .oferta-grid { grid-template-columns: repeat(3, 1fr); }
+}
+.oferta-card {
+  background: #fff;
+  border: 2px solid #e6dfcc;
+  border-radius: 18px;
+  padding: 20px 20px 22px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
+  font: inherit;
+  color: inherit;
+  transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease;
+}
+.oferta-card:hover { border-color: var(--verde-2); }
+.oferta-card.destacada {
+  border-color: var(--verde);
+  box-shadow: 0 10px 30px rgba(31, 61, 42, 0.13);
+}
+@media (min-width: 900px) {
+  .oferta-card.destacada { transform: translateY(-8px); }
+}
+.oferta-tag {
+  position: absolute;
+  top: -13px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  background: var(--verde);
+  color: #fff;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding: 5px 12px;
+  border-radius: 999px;
+}
+.oferta-tag.gold { background: var(--dorado); color: #2b2109; }
+.oferta-img {
+  width: 100%;
+  max-width: 190px;
+  margin: 8px auto 10px;
+}
+.oferta-titulo {
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--verde);
+  text-align: center;
+}
+.oferta-dias {
+  font-size: 12.5px;
+  color: var(--gris);
+  text-align: center;
+  margin-top: 2px;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+}
+.oferta-precio {
+  text-align: center;
+  margin: 12px 0 2px;
+  font-size: 30px;
+  font-weight: 900;
+  color: var(--tinta);
+  line-height: 1;
+}
+.oferta-tach {
+  text-align: center;
+  color: var(--gris);
+  text-decoration: line-through;
+  font-size: 14px;
+}
+.oferta-perdia {
+  text-align: center;
+  font-size: 13px;
+  color: var(--verde-2);
+  font-weight: 700;
+  margin-top: 4px;
+}
+.oferta-regalos {
+  list-style: none;
+  padding: 14px 0 0;
+  margin: 14px 0 0;
+  border-top: 1px dashed #e0d7bf;
+  display: grid;
+  gap: 9px;
+  flex: 1;
+}
+.oferta-regalos li {
+  position: relative;
+  padding-left: 26px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--tinta);
+}
+.oferta-regalos li::before {
+  content: "🎁";
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-size: 13px;
+}
+.oferta-regalos li.incluido::before { content: "✓"; color: var(--verde); font-weight: 800; }
+.oferta-regalos li small {
+  display: block;
+  color: var(--gris);
+  font-size: 12px;
+  margin-top: 1px;
+}
+.oferta-valor {
+  margin-top: 12px;
+  background: rgba(201, 161, 74, .14);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 12.5px;
+  text-align: center;
+  color: #6b5310;
+  font-weight: 700;
+}
+.oferta-btn {
+  margin-top: 14px;
+  width: 100%;
+  border: none;
+  border-radius: 999px;
+  padding: 13px 16px;
+  font-size: 14.5px;
+  font-weight: 800;
+  cursor: pointer;
+  background: var(--beige);
+  color: var(--verde);
+}
+.oferta-card.destacada .oferta-btn { background: var(--verde); color: #fff; }
+.oferta-nota {
+  text-align: center;
+  color: var(--gris);
+  font-size: 13px;
+  max-width: 640px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
