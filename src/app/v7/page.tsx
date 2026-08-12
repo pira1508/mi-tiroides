@@ -64,12 +64,17 @@ function shuffleWithSeed<T>(array: readonly T[], seed: number): T[] {
 // Fuera: la cara (día 1 vs 90, el más reclamable), el lifestyle de "energía",
 // el slide de tiempos que prometía "a los 7 días amaneces menos pesada", y el
 // de clienta (redundante con hero-5, que ya trae prueba social + precio).
+// Orden INTERCALADO (prueba → argumento → prueba → argumento). Los dos
+// antes/después no van seguidos: agrupados se leían como muro de testimonios.
+// Y el primero entra de SEGUNDO, no de cuarto — abrir con evidencia antes de
+// explicar es lo que hace ganar a la PAPADA («esta era yo hace tres meses»):
+// primero se prueba que pasa, después se explica por qué.
 const HERO_IMAGES = [
   { src: "/img/v7-hero-1-producto.webp", alt: "MI TIROIDES: 6 activos para tu tiroides, registro INVIMA, pagas al recibir" },
-  { src: "/img/hero-2.webp", alt: "Las hormonas tapan el síntoma. MI TIROIDES repara la causa" },
-  { src: "/img/hero-3.webp", alt: "La fórmula que repara desde adentro — selenio, zinc, L-tirosina, B12, D3 y yodo con sus dosis" },
   { src: "/img/v7-hero-5-anillo.webp", alt: "El anillo volvió a entrar — antes vs a los 90 días: «Sin dieta, se me bajó la hinchazón», Rosa, 52" },
+  { src: "/img/hero-2.webp", alt: "Las hormonas tapan el síntoma. MI TIROIDES repara la causa" },
   { src: "/img/v7-hero-4-cabello.webp", alt: "No era el shampoo, era la tiroides — cepillo antes vs a los 90 días: «Dejé de encontrar pelo en la almohada», Beatriz, 39" },
+  { src: "/img/hero-3.webp", alt: "La fórmula que repara desde adentro — selenio, zinc, L-tirosina, B12, D3 y yodo con sus dosis" },
   { src: "/img/hero-4.webp", alt: "Tu energía vuelve paso a paso — del día 7 al día 30" },
   { src: "/img/hero-5.webp", alt: "Resultados reales y precio MI TIROIDES — pack 2 frascos" },
 ];
