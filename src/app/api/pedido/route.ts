@@ -54,7 +54,23 @@ const PRECIOS_BY_VARIANT: Record<string, Record<string, { precio: number; frasco
     "2": { precio: 129900, frascos: 2, label: "2 Frascos" },
     "3": { precio: 159900, frascos: 3, label: "3 Frascos" },
   },
+  // ── /clientes · PRECIOS DE LEALTAD (6-ago-2026) ────────────────────────────
+  // Página para clientas que YA compraron, a la que Camila las manda después de
+  // la llamada de recompra. Estos números tienen que ser IDÉNTICOS a los que
+  // ella dice por teléfono y a los del webhook del CRM (que es el que decide
+  // cuánto cobra el mensajero). Los tres o ninguno.
+  clientes: {
+    "1": { precio: 69900, frascos: 1, label: "1 Frasco" },
+    "2": { precio: 99900, frascos: 2, label: "2 Frascos" },
+    "3": { precio: 129900, frascos: 3, label: "3 Frascos" },
+  },
 };
+
+// Variantes cuyas ventas NO son adquisición de pauta: NO deben disparar el
+// Purchase de Meta/TikTok. Si lo dispararan, le estaríamos enseñando al
+// algoritmo con ventas que no vinieron de un ad, inflando el ROAS reportado y
+// rompiendo la conciliación pixel↔pipeline.
+const VARIANTES_SIN_PIXEL = new Set(["clientes"]);
 
 // Rate limit: máximo 1 pedido confirmado por IP en 24h
 async function verificarRateLimitIP(ip: string): Promise<{ permitido: boolean; razon?: string }> {
@@ -247,7 +263,7 @@ export async function POST(req: NextRequest) {
   // Solo si es pedido_confirmado real (no abandono ni preliminar sin ciudad).
   // Fire-and-forget: no bloquea la respuesta al cliente.
   // event_id = ID del pedido → matchea con el del browser para dedup.
-  if (estadoFinal === "pedido_confirmado") {
+  if (estadoFinal === "pedido_confirmado" && !VARIANTES_SIN_PIXEL.has(variant)) {
     const ip =
       req.headers.get("x-forwarded-for")?.split(",")[0].trim() ||
       req.headers.get("x-real-ip") ||
