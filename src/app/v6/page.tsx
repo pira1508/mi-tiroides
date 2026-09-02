@@ -62,7 +62,15 @@ const HERO_MUJER: Record<"agua" | "pastilla" | "secreto" | "esponja", { src: str
 };
 
 // Slides neutrales diseñados (sirven al avatar 45-55).
+// Los dos primeros son antes/después de SÍNTOMA de retención (cara y anillo),
+// que es justo la tesis de v6: "es agua, no grasa". Van de primeros porque
+// son la prueba más fuerte del ángulo.
+// 🔴 COMPLIANCE META: nunca antes/después de peso ni de cuerpo — solo síntoma.
 const HERO_RESTO = [
+  // UNA sola imagen con 4 personas (rejilla 2x2), un síntoma cada una.
+  // Van ARREGLADAS en las dos mitades — peinadas, ropa de calle, luz de día.
+  // El síntoma se muestra con props y con la mirada, nunca "recién levantada".
+  { src: "/img/ba-sras-retencion-4.webp", alt: "4 mujeres, 4 señales de retención: la cara, el anillo, la ropa que aprieta y los tobillos — antes y a los 90 días" },
   { src: "/img/hero-2.webp", alt: "Hormonas vs MI TIROIDES — repara la causa, no tapa el síntoma" },
   { src: "/img/hero-3.webp", alt: "MI TIROIDES fórmula con 6 ingredientes naturales y dosis" },
   { src: "/img/hero-4.webp", alt: "Su energía vuelve paso a paso — timeline de 7 a 30 días" },
