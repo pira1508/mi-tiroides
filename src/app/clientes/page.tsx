@@ -50,32 +50,11 @@ function shuffleWithSeed<T>(array: readonly T[], seed: number): T[] {
   return result;
 }
 
-// Carrusel v7 — cada slide es una DIAPOSITIVA DE VENTA, no una foto:
-// banda verde con el titular que carga el argumento, la foto, y abajo la
-// frase de la clienta o la prueba. Cadencia Mark: producto/promesa →
-// transformación de síntoma ×4 → objeción del tiempo → prueba social + oferta.
-// 🔴 COMPLIANCE META: los antes/después son SIEMPRE de un SÍNTOMA
-// (hinchazón facial, cabello, anillo, energía). NUNCA de peso ni de cuerpo.
-// 12-ago: eran 7 slides con CUATRO antes/después seguidos — demasiado, y el
-// carrusel se leía como muro de testimonios en vez de explicar el mecanismo.
-// Ahora: los neutrales DISEÑADOS que ya usan /, v4, v5 y v6 (hero-2..hero-5)
-// cargan el argumento, y quedan solo DOS antes/después — los de OBJETO
-// (anillo y cepillo), que son el patrón que gana y el más seguro para Meta.
-// Fuera: la cara (día 1 vs 90, el más reclamable), el lifestyle de "energía",
-// el slide de tiempos que prometía "a los 7 días amaneces menos pesada", y el
-// de clienta (redundante con hero-5, que ya trae prueba social + precio).
-// Orden INTERCALADO (prueba → argumento → prueba → argumento). Los dos
-// antes/después no van seguidos: agrupados se leían como muro de testimonios.
-// Y el primero entra de SEGUNDO, no de cuarto — abrir con evidencia antes de
-// explicar es lo que hace ganar a la PAPADA («esta era yo hace tres meses»):
-// primero se prueba que pasa, después se explica por qué.
 const HERO_IMAGES = [
-  { src: "/img/v7-hero-1-producto.webp", alt: "MI TIROIDES: 6 activos para tu tiroides, registro INVIMA, pagas al recibir" },
-  { src: "/img/v7-hero-5-anillo.webp", alt: "El anillo volvió a entrar — antes vs a los 90 días: «Sin dieta, se me bajó la hinchazón», Rosa, 52" },
-  { src: "/img/hero-2.webp", alt: "Las hormonas tapan el síntoma. MI TIROIDES repara la causa" },
-  { src: "/img/v7-hero-4-cabello.webp", alt: "No era el shampoo, era la tiroides — cepillo antes vs a los 90 días: «Dejé de encontrar pelo en la almohada», Beatriz, 39" },
-  { src: "/img/hero-3.webp", alt: "La fórmula que repara desde adentro — selenio, zinc, L-tirosina, B12, D3 y yodo con sus dosis" },
-  { src: "/img/hero-4.webp", alt: "Tu energía vuelve paso a paso — del día 7 al día 30" },
+  { src: "/img/hero-1.webp", alt: "¿Llevas años cansada pensando que es la edad? Síntomas de tiroides" },
+  { src: "/img/hero-2.webp", alt: "Hormonas vs MI TIROIDES — repara la causa, no tapa el síntoma" },
+  { src: "/img/hero-3.webp", alt: "MI TIROIDES fórmula con 6 ingredientes naturales y dosis" },
+  { src: "/img/hero-4.webp", alt: "Tu energía vuelve paso a paso — timeline de 7 a 30 días" },
   { src: "/img/hero-5.webp", alt: "Resultados reales y precio MI TIROIDES — pack 2 frascos" },
 ];
 
@@ -122,63 +101,6 @@ function Mark({ v }: { v: string }) {
   if (v === "yes") return <span className="mark mark-yes" aria-label="Sí">✓</span>;
   if (v === "no") return <span className="mark mark-no" aria-label="No">✕</span>;
   return <span className="mark mark-mid" aria-label="Parcial">~</span>;
-}
-
-// Prueba social INYECTADA dentro de la educación (framework Mark):
-// el testimonio valida el bloque que la clienta acaba de leer, no espera al final.
-function TestimonioInline({
-  texto,
-  nombre,
-  detalle,
-  foto,
-  fondo = "#f8f4f0",
-}: {
-  texto: string;
-  nombre: string;
-  detalle: string;
-  foto?: string;
-  fondo?: string;
-}) {
-  return (
-    <section style={{ background: fondo, padding: "36px 20px" }}>
-      <div className="container">
-        <div
-          style={{
-            maxWidth: 620,
-            margin: "0 auto",
-            textAlign: "center",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-          }}
-        >
-          {foto && (
-            <div
-              style={{
-                width: 64,
-                height: 64,
-                borderRadius: "50%",
-                overflow: "hidden",
-                marginBottom: 12,
-                border: "2px solid #c9a14a",
-              }}
-            >
-              <Image src={foto} alt={nombre} width={128} height={128} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-            </div>
-          )}
-          <div className="stars" style={{ fontSize: 18, marginBottom: 12 }}>★★★★★</div>
-          <p style={{ fontSize: 17, fontStyle: "italic", color: "#1f3d2b", marginBottom: 12, lineHeight: 1.65 }}>
-            “{texto}”
-          </p>
-          <div>
-            <strong style={{ color: "#1f3d2b" }}>{nombre}</strong>
-            <br />
-            <span style={{ fontSize: 14, color: "var(--gris)" }}>{detalle}</span>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
 }
 
 type Ingrediente = {
@@ -286,41 +208,42 @@ declare global {
   }
 }
 
-// 12-ago-2026: se retiró la escalera de "regalos". Prometía 3 guías en PDF que
-// NO EXISTEN («5 alimentos», «Menú antiinflamatorio», «Cómo leer tus exámenes»)
-// y un "precio de lealtad congelado" que operación nunca implementó. Un regalo
-// que no se entrega es una promesa incumplida en la primera compra — el peor
-// momento posible. PLANES queda idéntico a v4/v5/v6: la escalera la hace el
-// precio por día y los días de tratamiento, que son verdad y ya convierten.
-// Para volver a poner regalos: primero que existan y estén cargados en el flujo
-// post-venta (Camila / Hoko), después se anuncian.
+// ── PRECIOS DE LEALTAD · página /clientes ──────────────────────────────────
+// Solo para clientas que YA compraron. Camila las manda acá después de la
+// llamada de recompra. 🔴 Estos números tienen que ser IDÉNTICOS a los tres
+// sitios donde vive el precio, o el mensajero cobra algo distinto a lo
+// prometido y se pierde el pedido en la puerta:
+//   1. este archivo (lo que ella VE)
+//   2. src/app/api/pedido/route.ts → PRECIOS_BY_VARIANT.clientes
+//   3. crm-hoko · app/api/webhooks/landing-mi-tiroides → PRECIOS_BY_VARIANT.clientes  ← el que COBRA
+// El "original" es el precio público, para que se vea el ahorro real.
 const PLANES = {
   "1": {
     dias: "45 DÍAS",
     frascos: 1,
     label: "1 Frasco",
-    precio: 89900,
+    precio: 69900,
     original: 89900,
-    perDia: 1998,
+    perDia: 1553,
     tag: null as null | { texto: string; gold?: boolean },
   },
   "2": {
     dias: "90 DÍAS · TRATAMIENTO COMPLETO",
     frascos: 2,
     label: "2 Frascos",
-    precio: 119900,
-    original: 179800,
-    perDia: 1332,
+    precio: 99900,
+    original: 119900,
+    perDia: 1110,
     tag: { texto: "EL MÁS COMPRADO · 8 DE CADA 10", gold: false },
   },
   "3": {
     dias: "135 DÍAS · 4,5 MESES",
     frascos: 3,
     label: "3 Frascos",
-    precio: 139900,
-    original: 269700,
-    perDia: 1036,
-    tag: { texto: "EL MÁS BARATO · $1.036/DÍA", gold: true },
+    precio: 129900,
+    original: 139900,
+    perDia: 962,
+    tag: { texto: "EL MÁS BARATO · $962/DÍA", gold: true },
   },
 } as const;
 
@@ -535,7 +458,7 @@ export default function Page() {
     fetch("/api/track", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ tipo: "view", variant: "v7" }),
+      body: JSON.stringify({ tipo: "view" }),
     }).catch(() => {});
   }, []);
 
@@ -585,7 +508,7 @@ export default function Page() {
             ciudad: ciudad || null,
             direccion: direccion || null,
             cantidad,
-            variant: "v7",
+            variant: "clientes",
             total: PLANES[cantidad].precio,
             ts: new Date().toISOString(),
             ...tracking,  // utm_source, utm_campaign, utm_content, utm_medium, fbclid, ttclid, referrer
@@ -599,80 +522,32 @@ export default function Page() {
     };
   }, [modalOpen, nombre, telefono, direccion, referencia, depto, ciudad, cantidad]);
 
-  // planElegido: cuando la clienta abre el modal desde una tarjeta de la oferta
-  // escalonada. Se pasa explícito porque setCantidad() no alcanza a reflejarse
-  // en este mismo render y el pixel saldría con el valor del plan anterior.
-  function openModal(planElegido?: Cantidad) {
-    const k = planElegido ?? cantidad;
-    if (planElegido) setCantidad(planElegido);
+  function openModal() {
     setOk(false);
     setError(null);
     setModalOpen(true);
-    // Meta Pixel: usuario inició proceso de compra (abrió modal)
-    const value = PLANES[k].precio;
-    window.fbq?.("track", "InitiateCheckout", {
-      value,
-      currency: "COP",
-      content_ids: [`mi-tiroides-${k}-frascos`],
-      content_type: "product",
-      num_items: PLANES[k].frascos,
-    });
-    window.gtag?.("event", "begin_checkout", { value, currency: "COP" });
-    // TikTok Pixel: inicio de checkout
-    window.ttq?.track("InitiateCheckout", {
-      value,
-      currency: "COP",
-      content_id: `mi-tiroides-${k}-frascos`,
-      content_type: "product",
-      content_name: PLANES[k].label,
-      quantity: PLANES[k].frascos,
-    });
+    // Sin InitiateCheckout: /clientes no alimenta los pixeles (ver trackLead abajo).
     // Track apertura de form
     fetch("/api/track", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ tipo: "open_form", variant: "v7" }),
+      body: JSON.stringify({ tipo: "open_form" }),
     }).catch(() => {});
   }
   function closeModal() {
     setModalOpen(false);
   }
 
-  function trackLead(value: number) {
-    window.fbq?.("track", "Lead", {
-      value,
-      currency: "COP",
-      content_ids: [`mi-tiroides-${cantidad}-frascos`],
-      content_name: PLANES[cantidad].label,
-    });
-    window.gtag?.("event", "generate_lead", { value, currency: "COP" });
-    // TikTok Pixel: submit form
-    window.ttq?.track("SubmitForm", {
-      value,
-      currency: "COP",
-      content_id: `mi-tiroides-${cantidad}-frascos`,
-      content_name: PLANES[cantidad].label,
-    });
-  }
-  function trackPurchase(value: number, eventId: string) {
-    window.fbq?.("track", "Purchase", {
-      value,
-      currency: "COP",
-      content_ids: [`mi-tiroides-${cantidad}-frascos`],
-      content_type: "product",
-      num_items: PLANES[cantidad].frascos,
-    }, { eventID: eventId });
-    window.gtag?.("event", "purchase", { value, currency: "COP", transaction_id: eventId });
-    // TikTok Pixel: pago completado (event_id para dedup con Events API server-side)
-    window.ttq?.track("CompletePayment", {
-      value,
-      currency: "COP",
-      content_id: `mi-tiroides-${cantidad}-frascos`,
-      content_type: "product",
-      content_name: PLANES[cantidad].label,
-      quantity: PLANES[cantidad].frascos,
-    }, { event_id: eventId });
-  }
+  // ── PIXELES APAGADOS A PROPÓSITO en /clientes ──────────────────────────────
+  // Estas ventas NO vienen de pauta: vienen de una llamada de Camila a una
+  // clienta que ya compró. Si dispararan Purchase estaríamos:
+  //   · enseñándole al algoritmo de Meta con ventas que ningún ad trajo,
+  //   · inflando el ROAS reportado,
+  //   · y rompiendo la conciliación pixel↔pipeline.
+  // El API tampoco las manda por CAPI (VARIANTES_SIN_PIXEL en api/pedido).
+  // Se dejan como no-op para no tocar el resto del flujo.
+  function trackLead(_value: number) { /* sin pixel en /clientes */ }
+  function trackPurchase(_value: number, _eventId: string) { /* sin pixel en /clientes */ }
 
   // Validación COMPUTADA en tiempo real — usada para deshabilitar el botón
   // hasta que TODOS los campos estén OK. Esto evita que el cliente envíe
@@ -737,7 +612,7 @@ export default function Page() {
       referencia: referencia.trim(),
       direccion: direccion.trim(),
       cantidad,
-      variant: "v7",
+      variant: "clientes",
       total: PLANES[cantidad as Cantidad].precio,
       empresa: empresaHoneypot,
       formLoadedAt,
@@ -814,13 +689,36 @@ export default function Page() {
 
   return (
     <>
-      {/* MARQUEE */}
+      {/* MARQUEE — habla a quien YA compró */}
       <div className="marquee">
         <div className="marquee-track">
           {Array.from({ length: 12 }).map((_, i) => (
-            <span key={i}>✦ Envío gratis en tu primer pedido &nbsp;&nbsp; ✦ Pago contra entrega &nbsp;&nbsp;</span>
+            <span key={i}>✦ Precio de clienta &nbsp;&nbsp; ✦ Envío gratis &nbsp;&nbsp; ✦ Pago contra entrega &nbsp;&nbsp;</span>
           ))}
         </div>
+      </div>
+
+      {/* BANNER DE RECONOCIMIENTO — solo en /clientes.
+          Quien llega acá viene de una llamada de Camila, no de un ad: ya
+          conoce el producto. Lo primero que tiene que ver es que el precio
+          que le prometieron por teléfono es el que va a encontrar. */}
+      <div
+        style={{
+          background: "#0f3d2e",
+          color: "#fff",
+          padding: "14px 16px",
+          textAlign: "center",
+          fontSize: 15,
+          lineHeight: 1.45,
+        }}
+      >
+        <strong style={{ display: "block", fontSize: 17, marginBottom: 2 }}>
+          Este es tu precio de clienta 💚
+        </strong>
+        <span style={{ opacity: 0.9 }}>
+          Porque ya hiciste tu primer pedido con nosotros. Es el mismo valor que
+          te dijimos por teléfono, y lo pagas cuando te llegue.
+        </span>
       </div>
 
       {/* NAV */}
@@ -832,7 +730,7 @@ export default function Page() {
             <a href="#testimonios">Testimonios</a>
             <a href="#faq">Preguntas</a>
           </div>
-          <button className="nav-cta" onClick={() => openModal()}>Pedir ahora</button>
+          <button className="nav-cta" onClick={openModal}>Pedir ahora</button>
         </div>
       </nav>
 
@@ -845,7 +743,7 @@ export default function Page() {
                 src={HERO_IMAGES[heroIdx].src}
                 alt={HERO_IMAGES[heroIdx].alt}
                 width={896}
-                height={1200}
+                height={1152}
                 priority
                 key={HERO_IMAGES[heroIdx].src}
               />
@@ -865,24 +763,15 @@ export default function Page() {
             </div>
           </div>
           <div>
-            {/* 12-ago: el h1 decía "Energía SIN MEDICAMENTOS en 7 días" y se
-                contradecía con su propio subtítulo ("sin dejar tu levotiroxina"),
-                con la imagen del hero y con los 9 ads, que dicen "va con su
-                pastilla, no la reemplaza". Peor: "sin medicamentos" es justo lo
-                que empuja a dejar la levotiroxina, y ya hay verbatims de clientas
-                haciéndolo. También sale el plazo de 7 días del titular. */}
-            <h1 className="h1">Energía de verdad sin dejar tu pastilla — con los 6 activos que tu tiroides necesita para trabajar</h1>
-            <p style={{ fontSize: 17, color: "#1f3d2b", marginBottom: 16, fontWeight: 500 }}>
-              <strong>Sin dejar tu levotiroxina</strong> · <strong>Sin dietas imposibles</strong> · <strong>Sin ir a consulta</strong>
-            </p>
+            <h1 className="h1">MI TIROIDES Avanzado | Tu tiroides, sin agotamiento</h1>
             <div className="rating-row">
               <span className="stars">★★★★★</span>
               <span><strong>4.8/5</strong> basado en +2.500 mujeres colombianas</span>
             </div>
             <p style={{ color: "var(--gris)", fontSize: 16, margin: "0 0 12px" }}>
-              Mientras tomas tu levotiroxina (sigue tomándola), tu tiroides necesita los nutrientes que el estrés crónico consume primero: 
-              selenio, yodo, zinc, L-tirosina, B12 y D3. Este es el único suplemento colombiano que los une en forma biodisponible 
-              comprobada en 21 estudios científicos. Primeros cambios visibles en 7 días. Transformación completa en 90.
+              El primer suplemento colombiano formulado para acompañar la tiroides cuando el estrés
+              crónico la tiene fuera de balance. Selenio, yodo, zinc, L-tirosina, B12 y D3 — los
+              nutrientes que el cortisol consume primero, todo en una sola cápsula.
             </p>
             <div className="badges">
               <span className="badge">Vegano</span>
@@ -893,7 +782,7 @@ export default function Page() {
                 🌿 Asistente incluido
               </span>
             </div>
-            <div className="precio-row">$89.900 COP</div>
+            <div className="precio-row">$69.900 COP</div>
 
             {/* Gancho urgencia psicológica — el cuerpo no espera */}
             <div
@@ -913,7 +802,7 @@ export default function Page() {
               en tu peso. Empezar hoy = primeros cambios en <strong>14 días</strong>.
             </div>
 
-            <button className="btn btn-block" onClick={() => openModal()}>
+            <button className="btn btn-block" onClick={openModal}>
               Empezar mi cambio HOY · Pago contra entrega
             </button>
             <div className="hero-checks">
@@ -999,118 +888,6 @@ export default function Page() {
           </p>
         </div>
       </section>
-
-      {/* PRUEBA SOCIAL INYECTADA 1 — valida el dolor que acaba de leer */}
-      <TestimonioInline
-        foto="/img/cliente-patricia.webp"
-        texto="Yo tomaba mi levotiroxina y el doctor decía que estaba bien, pero me moría del cansancio. Con MI TIROIDES en dos semanas noté que me despertaba sin esa pesadez. A los 3 meses mi doctor me preguntó qué estaba haciendo diferente."
-        nombre="Gladys Rodríguez, 51"
-        detalle="Medellín · Clienta verificada"
-      />
-
-      {/* ═══ MECANISMO DIFERENCIADOR — NIVEL 4 [Mark 10:21] ═══
-          Este es el hueco #1 que teníamos: por qué ESTE producto y no
-          cualquier otro frasco. Sin mecanismo explícito no hay defensa. */}
-      <section className="section" id="mecanismo">
-        <div className="container">
-          <div className="eyebrow">Cómo funciona por dentro</div>
-          <h2 className="h2">
-            Reposición Biodisponible:<br />
-            los 3 pasos que un multivitamínico no hace
-          </h2>
-          <p className="lead">
-            No es “otro frasco de vitaminas”. Es una cadena de 3 pasos diseñada para el problema
-            específico de una tiroides agotada por estrés crónico. Si un paso falla, el resto no sirve —
-            y ahí es donde se cae casi todo lo que ya probaste.
-          </p>
-
-          <div className="mecanismo-pasos">
-            <div className="mecanismo-paso">
-              <div className="mecanismo-num">1</div>
-              <div>
-                <h3>REPONE lo que el cortisol te drena</h3>
-                <p>
-                  El estrés sostenido quema selenio, zinc, B12 y yodo más rápido de lo que los repones
-                  comiendo. MI TIROIDES los devuelve en dosis fisiológicas — no megadosis, que en
-                  Hashimoto empeoran el cuadro.
-                </p>
-                <span className="mecanismo-vs">
-                  Un multivitamínico genérico trae 30 cosas en dosis simbólicas. Aquí hay 6, en la dosis del estudio.
-                </span>
-              </div>
-            </div>
-
-            <div className="mecanismo-paso">
-              <div className="mecanismo-num">2</div>
-              <div>
-                <h3>ABSORBE de verdad — no pasa de largo</h3>
-                <p>
-                  Un nutriente que no cruza el intestino es plata botada. Por eso usamos las formas
-                  que el cuerpo sí reconoce: <strong>L-selenometionina</strong> (~90% de absorción),{" "}
-                  <strong>metilcobalamina</strong> (B12 ya activa, sin conversión previa),{" "}
-                  <strong>zinc quelado</strong> y <strong>colecalciferol (D3)</strong>.
-                </p>
-                <span className="mecanismo-vs">
-                  Las sales baratas (selenito de sodio, cianocobalamina, óxido de zinc) cuestan menos por una razón.
-                </span>
-              </div>
-            </div>
-
-            <div className="mecanismo-paso">
-              <div className="mecanismo-num">3</div>
-              <div>
-                <h3>CONVIERTE la T4 en T3 — la hormona de la energía</h3>
-                <p>
-                  Tu pastilla te da T4, que es la hormona <em>inactiva</em>. Convertirla en T3 —la que de
-                  verdad te da energía— depende de una enzima que necesita zinc y selenio. Sin ellos
-                  tienes la hormona en la sangre pero tu cuerpo no la puede usar. <strong>Esa es la razón
-                  de que tus exámenes salgan “normales” y tú sigas agotada.</strong>
-                </p>
-                <span className="mecanismo-vs">
-                  Ningún medicamento hace este paso por ti. Es nutricional, no hormonal.
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="mecanismo-imgs">
-            <figure>
-              <Image
-                src="/img/v7-mecanismo-absorcion.webp"
-                alt="Diagrama: las formas comunes se quedan en el camino, las formas biodisponibles pasan a la sangre"
-                width={896}
-                height={1200}
-              />
-              <figcaption>Paso 2 · Por qué la forma del nutriente decide si sirve o no.</figcaption>
-            </figure>
-            <figure>
-              <Image
-                src="/img/v7-mecanismo-levotiroxina.webp"
-                alt="Diagrama: la levotiroxina repone la hormona, MI TIROIDES repone los nutrientes — no compiten"
-                width={896}
-                height={1200}
-              />
-              <figcaption>La duda #1 de nuestras clientas · No compite con tu medicamento.</figcaption>
-            </figure>
-          </div>
-
-          <div className="mecanismo-cierre">
-            <strong>Por eso funciona tomando tu levotiroxina.</strong> El medicamento repone la hormona que
-            tu tiroides ya no fabrica. MI TIROIDES repone los nutrientes que necesita la <em>fábrica</em>.
-            Van por caminos distintos — por eso se toman juntos, y por eso{" "}
-            <strong>nunca debes dejar tu medicamento para tomar esto.</strong>
-          </div>
-        </div>
-      </section>
-
-      {/* PRUEBA SOCIAL INYECTADA 2 — valida el mecanismo recién explicado */}
-      <TestimonioInline
-        foto="/img/cliente-diana.webp"
-        texto="Llevaba años tomando un multivitamínico de la droguería pensando que era lo mismo. Cuando entendí lo de la T4 y la T3 me cayó la ficha de por qué no me servía. Mi endocrinóloga aprobó que complementara con selenio y zinc."
-        nombre="Yenifer Torres, 44"
-        detalle="Barranquilla · Hashimoto desde los 25"
-        fondo="#f2ede4"
-      />
 
       {/* ESTRÉS → TIROIDES — gancho científico */}
       <section className="section section-beige">
@@ -1218,7 +995,7 @@ export default function Page() {
                   <th className="ctable-feat">
                     <Image src="/img/bundle-1.webp" alt="MI TIROIDES" width={80} height={80} />
                     <span>MI TIROIDES</span>
-                    <small>$89.900 / mes</small>
+                    <small>$69.900 / mes</small>
                     <em className="ctable-tag">RECOMENDADO</em>
                   </th>
                   <th>
@@ -1255,7 +1032,7 @@ export default function Page() {
                 <tr className="ctable-cta-row">
                   <td></td>
                   <td>
-                    <button className="btn" onClick={() => openModal()} style={{ padding: "10px 16px", fontSize: 13 }}>
+                    <button className="btn" onClick={openModal} style={{ padding: "10px 16px", fontSize: 13 }}>
                       Pedir ahora
                     </button>
                   </td>
@@ -1569,164 +1346,13 @@ export default function Page() {
         </div>
       </section>
 
-      {/* ═══ OFERTA ESCALONADA [Mark 18:56] ═══
-          El plan de 3 frascos cuesta solo $20k más que el de 2 (efecto
-          señuelo: sube el AOV sin descontar el producto). La escalera la
-          hacen los DÍAS de tratamiento y el precio por día — no regalos. */}
-      <section className="section" id="oferta">
-        <div className="container">
-          <div className="eyebrow">Elige tu tratamiento</div>
-          <h2 className="h2">Entre más completo el tratamiento, más barato te sale el día</h2>
-          <p className="lead">
-            Todos los planes llegan con pago contra entrega y envío gratis. La diferencia está en
-            cuánto tiempo alcanzas a sostener el tratamiento — que es de lo que dependen los
-            resultados.
-          </p>
-
-          <div className="oferta-grid">
-            {(Object.keys(PLANES) as Cantidad[]).map((k) => {
-              const p = PLANES[k];
-              const destacada = k === "2";
-              return (
-                <button
-                  key={k}
-                  type="button"
-                  className={`oferta-card ${destacada ? "destacada" : ""}`}
-                  onClick={() => openModal(k)}
-                >
-                  {p.tag && (
-                    <div className={`oferta-tag ${p.tag.gold ? "gold" : ""}`}>{p.tag.texto}</div>
-                  )}
-                  <div className="oferta-img">
-                    <Image src={`/img/bundle-${p.frascos}.webp`} alt={p.label} width={300} height={300} />
-                  </div>
-                  <div className="oferta-titulo">{p.label}</div>
-                  <div className="oferta-dias">{p.dias}</div>
-                  {p.original > p.precio && (
-                    <div className="oferta-tach">${p.original.toLocaleString("es-CO")}</div>
-                  )}
-                  <div className="oferta-precio">${p.precio.toLocaleString("es-CO")}</div>
-                  <div className="oferta-perdia">
-                    ${Math.round(p.perDia).toLocaleString("es-CO")} al día
-                  </div>
-
-                  <span className="oferta-btn">
-                    {destacada ? "Quiero este — es el que recomiendan" : "Pedir este plan"}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-
-          <p className="oferta-nota">
-            Las guías te llegan por WhatsApp el mismo día que haces el pedido — no tienes que esperar
-            a que llegue el frasco para empezar. Pagas solo cuando el domiciliario te entrega la caja.
-          </p>
-        </div>
-      </section>
-
-      {/* FAQ — TANDA 1: dudas de COMPRA, justo debajo de la oferta [Mark 21:00] */}
+      {/* FAQ */}
       <section className="section section-beige" id="faq">
         <div className="container-sm">
-          <div className="eyebrow">Antes de pedir</div>
-          <h2 className="h2">Lo que casi todas preguntan antes de comprar</h2>
-
-          <div className="faq">
-            <details>
-              <summary>¿Tengo que pagar algo ahora?</summary>
-              <p>
-                No. Solo dejas tus datos. Pagas en efectivo cuando el domiciliario te entrega la caja
-                en tu casa. Si no estás, no pagas nada y no pierdes nada.
-              </p>
-            </details>
-            <details>
-              <summary>¿Cuánto cuesta el envío y cuándo llega?</summary>
-              <p>
-                El envío es <strong>gratis a toda Colombia</strong>, incluidas zonas apartadas. En
-                ciudades principales llega normalmente entre 24 y 72 horas; a municipios pequeños puede
-                tomar hasta 5 días hábiles. Te mandamos la guía de rastreo al WhatsApp que dejes.
-              </p>
-            </details>
-            <details>
-              <summary>¿Cuántos frascos necesito de verdad?</summary>
-              <p>
-                Cada frasco trae 90 cápsulas y alcanza para 45 días. Los cambios de fondo (cabello,
-                hinchazón, peso) se ven entre el segundo y el tercer mes, así que{" "}
-                <strong>2 frascos es el mínimo para que el tratamiento tenga sentido</strong>. El de 3
-                frascos cuesta solo $20.000 más que el de 2 y te deja tranquila 4 meses y medio — es
-                por eso que la mayoría termina eligiéndolo.
-              </p>
-            </details>
-            <details>
-              <summary>¿Me acompañan durante el tratamiento?</summary>
-              <p>
-                Sí. Cuando recibes el frasco, tu asistente te escribe por WhatsApp cada 7 a 14 días
-                para resolver dudas y para que no abandones a mitad de camino, que es donde la
-                mayoría se queda sin ver resultados.
-              </p>
-            </details>
-            <details>
-              <summary>¿Y si no me sirve?</summary>
-              <p>
-                Tienes 30 días de garantía de satisfacción. Nos escribes por WhatsApp y lo resolvemos.
-                Eso sí, sé honesta contigo: un frasco a medias no es una prueba justa — la
-                suplementación tiroidea funciona por acumulación.
-              </p>
-            </details>
-            <details>
-              <summary>¿Es una suscripción? ¿Me van a cobrar cada mes?</summary>
-              <p>
-                No. Es una compra única, sin cargos automáticos y sin tarjeta de por medio. Tú decides
-                si vuelves a pedir y cuándo.
-              </p>
-            </details>
-          </div>
-
-          <div style={{ textAlign: "center", marginTop: 26 }}>
-            <button className="btn" onClick={() => openModal()}>
-              Pedir mi tratamiento · Pago contra entrega
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* FAQ — TANDA 2: objeciones rezagadas, antes del cierre [Mark 21:00] */}
-      <section className="section" id="faq-2">
-        <div className="container-sm">
           <div className="eyebrow">Preguntas frecuentes</div>
-          <h2 className="h2">Las dudas sobre el producto</h2>
+          <h2 className="h2">Resolvemos tus dudas</h2>
 
           <div className="faq">
-            <details>
-              <summary>¿Puedo tomarlo con mi levotiroxina? ¿La tengo que dejar?</summary>
-              <p>
-                Sí puedes, y <strong>no la dejes nunca</strong>. Van por caminos distintos: la
-                levotiroxina repone la hormona que tu tiroides ya no fabrica; MI TIROIDES repone los
-                nutrientes que necesita la glándula para trabajar y para convertir la T4 en T3. Solo
-                una recomendación práctica: toma tu levotiroxina en ayunas como te la mandó tu médico,
-                y las cápsulas más tarde, con el desayuno.
-              </p>
-            </details>
-            <details>
-              <summary>Mis exámenes salen “normales”, ¿entonces por qué sigo mal?</summary>
-              <p>
-                Es la queja más común que recibimos. La TSH mide si hay hormona circulando, no si tu
-                cuerpo la está <em>usando</em>. La conversión de T4 (inactiva) a T3 (la que da energía)
-                depende de zinc y selenio; si están bajos, puedes tener el examen en rango y seguir
-                agotada. Eso no reemplaza el criterio de tu médico — pero explica por qué a muchas les
-                dicen “usted está bien” y ellas saben que no.
-              </p>
-            </details>
-            <details>
-              <summary>Ya probé multivitamínicos y no me sirvieron. ¿En qué cambia esto?</summary>
-              <p>
-                En dos cosas: la <strong>forma</strong> y la <strong>dosis</strong>. Un multivitamínico
-                genérico trae 30 ingredientes en cantidades simbólicas y en las formas más baratas
-                (óxido de zinc, cianocobalamina), que se absorben mal. Aquí hay 6 activos, en las
-                dosis que se usaron en los estudios y en formas biodisponibles —
-                L-selenometionina, metilcobalamina, zinc quelado, D3 colecalciferol.
-              </p>
-            </details>
             <details>
               <summary>¿Cuándo veo resultados?</summary>
               <p>
@@ -1819,7 +1445,7 @@ export default function Page() {
               cepillo, otro día con esa niebla que no te deja pensar.
               <br /><br />
               <strong style={{ color: "#1f3d2b" }}>
-                $89.900 hoy &nbsp;vs&nbsp; otro mes igual a este.
+                $69.900 hoy &nbsp;vs&nbsp; otro mes igual a este.
               </strong>{" "}
               Esa es la decisión real.
             </p>
@@ -1834,7 +1460,7 @@ export default function Page() {
           <p style={{ color: "#d6cdb3", marginBottom: 26 }}>
             Más de 2.500 mujeres colombianas ya están recuperando su energía con MI TIROIDES.
           </p>
-          <button className="btn btn-light" onClick={() => openModal()}>
+          <button className="btn btn-light" onClick={openModal}>
             Sí, quiero empezar mi cambio HOY →
           </button>
           <p style={{ color: "#d6cdb3", marginTop: 16, fontSize: 14, fontStyle: "italic" }}>
@@ -1852,7 +1478,7 @@ export default function Page() {
       </footer>
 
       {/* CTA flotante en mobile */}
-      <button className="cta-float" onClick={() => openModal()}>
+      <button className="cta-float" onClick={openModal}>
         Pedir ahora · Pago contra entrega
       </button>
 
@@ -2244,57 +1870,6 @@ export default function Page() {
                         </ul>
                       </div>
                     </div>
-                  </div>
-
-                  {/* UPSELL EN EL MOMENTO DE DECIDIR — el salto se vende con
-                      DÍAS de tratamiento y precio por día, que son verdad. */}
-                  <div
-                    style={{
-                      background: "#fff",
-                      border: "1px solid #ebe2cc",
-                      borderRadius: 12,
-                      padding: "12px 14px",
-                      margin: "4px 0",
-                    }}
-                  >
-                    <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: 1, color: "#c9a14a", marginBottom: 8 }}>
-                      LO QUE SE VA CON TU PEDIDO
-                    </div>
-                    <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "grid", gap: 7 }}>
-                      {[
-                        `${plan.frascos} ${plan.frascos === 1 ? "frasco" : "frascos"} · ${plan.dias.split(" ·")[0]} de tratamiento`,
-                        "Envío gratis a toda Colombia, aunque vivas en zona apartada",
-                        "Acompañamiento por WhatsApp durante todo el tratamiento",
-                        "Pagas al recibir, en la puerta de tu casa",
-                      ].map((t) => (
-                        <li key={t} style={{ display: "flex", gap: 8, alignItems: "flex-start", fontSize: 12.5, lineHeight: 1.45 }}>
-                          <span style={{ flex: "0 0 auto" }}>✅</span>
-                          <span style={{ color: "#1f3d2b" }}>{t}</span>
-                        </li>
-                      ))}
-                    </ul>
-                    {cantidad !== "3" && (
-                      <button
-                        type="button"
-                        onClick={() => setCantidad(cantidad === "1" ? "2" : "3")}
-                        style={{
-                          marginTop: 10,
-                          width: "100%",
-                          background: "rgba(201, 161, 74, .16)",
-                          border: "1px dashed #c9a14a",
-                          borderRadius: 8,
-                          padding: "8px 10px",
-                          fontSize: 12.5,
-                          color: "#6b5310",
-                          fontWeight: 700,
-                          cursor: "pointer",
-                        }}
-                      >
-                        {cantidad === "1"
-                          ? "+ $30.000 → pasa a 2 frascos y súmale 45 días de tratamiento"
-                          : "+ $20.000 → pasa a 3 frascos y súmale 45 días más"}
-                      </button>
-                    )}
                   </div>
 
                   {/* RESUMEN */}
