@@ -411,7 +411,7 @@ function Page() {
   const initialCantidad: Cantidad =
     planFromQuiz === "1" || planFromQuiz === "2" || planFromQuiz === "3"
       ? planFromQuiz
-      : "3";
+      : "2";
   const [cantidad, setCantidad] = useState<Cantidad>(initialCantidad);
   const [enviando, setEnviando] = useState(false);
   const [ok, setOk] = useState(false);

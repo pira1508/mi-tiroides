@@ -374,7 +374,7 @@ const ANGULOS: Record<"agua" | "pastilla" | "secreto" | "esponja", { h1: string;
 
 export default function Page() {
   useCapturarTrackingOnMount();
-  const [cantidad, setCantidad] = useState<Cantidad>("3");
+  const [cantidad, setCantidad] = useState<Cantidad>("2");
   const [enviando, setEnviando] = useState(false);
   const [ok, setOk] = useState(false);
   const [pedidoConfirmado, setPedidoConfirmado] = useState<{ id: string; total: number } | null>(null);
