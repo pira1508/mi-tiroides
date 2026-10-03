@@ -1558,3 +1558,12 @@ footer.site-footer {
 .v6b-sticky .btn { padding: 12px 18px; font-size: 14px; white-space: nowrap; }
 .v6b-spacer { height: 84px; }
 @media (min-width: 900px) { .v6b-sticky, .v6b-spacer { display: none; } }
+/* v6b: en móvil el texto + oferta van primero y la imagen después (la oferta en la primera pantalla) */
+@media (max-width: 899px) {
+  .v6b-hero { padding-top: 22px; }
+  .v6b-hero .v6b-hero-media { order: 2; }
+}
+@media (max-width: 899px) {
+  .v6b-sub { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .v6b-hero .h1 { font-size: 30px; }
+}

@@ -747,8 +747,8 @@ export default function Page() {
 
       {/* HERO */}
       <section>
-        <div className="container hero">
-          <div>
+        <div className="container hero v6b-hero">
+          <div className="v6b-hero-media">
             <div className="hero-img">
               <Image
                 src={heroImages[heroIdx].src}
@@ -774,34 +774,12 @@ export default function Page() {
             </div>
           </div>
           <div>
-            <div className="badges" style={{ marginBottom: 12 }} role="group" aria-label="¿Qué la trajo aquí?">
-              {(["agua", "pastilla", "secreto", "esponja"] as const).map((k) => (
-                <button
-                  key={k}
-                  type="button"
-                  onClick={() => { setAngulo(k); setHeroIdx(0); }}
-                  className="badge"
-                  style={{ cursor: "pointer", ...(angulo === k ? { background: "#1f3d2b", color: "#fff", borderColor: "#1f3d2b" } : {}) }}
-                >
-                  {k === "agua" ? "Es agua, no grasa" : k === "pastilla" ? "Tomo mi pastilla y sigo igual" : k === "secreto" ? "Mi barriga no baja" : "Vivo hinchada"}
-                </button>
-              ))}
-            </div>
             <h1 className="h1">{ANGULOS[angulo].h1}</h1>
             <div className="rating-row">
               <span className="stars">★★★★★</span>
               <span><strong>+6.600 pedidos entregados</strong> en 511 municipios de Colombia</span>
             </div>
-            <p style={{ color: "var(--gris)", fontSize: 16, margin: "0 0 12px" }}>{ANGULOS[angulo].sub}</p>
-            <div className="badges">
-              <span className="badge">Vegano</span>
-              <span className="badge">Sin gluten</span>
-              <span className="badge">Registro INVIMA</span>
-              <span className="badge">6 nutrientes</span>
-              <span className="badge" style={{ background: "#1f3d2b", color: "#fff", borderColor: "#1f3d2b" }}>
-                🌿 Asistente incluido
-              </span>
-            </div>
+            <p className="v6b-sub" style={{ color: "var(--gris)", fontSize: 16, margin: "0 0 12px" }}>{ANGULOS[angulo].sub}</p>
             {/* V6B · OFERTA EN LA PRIMERA PANTALLA (3-oct-2026): escalera 1/2/3 visible,
                 garantía 90 días desde la entrega, objeción de la pastilla al lado del botón. */}
             <div className="v6b-oferta" role="radiogroup" aria-label="Elija su tratamiento">
@@ -839,6 +817,28 @@ export default function Page() {
               <div>Envío gratis a toda Colombia · llega en 1-3 días</div>
               <div><strong>Garantía de 90 días</strong> desde el día que lo recibe</div>
               <div>Va con su pastilla, no la reemplaza</div>
+            </div>
+            <div className="badges">
+              <span className="badge">Vegano</span>
+              <span className="badge">Sin gluten</span>
+              <span className="badge">Registro INVIMA</span>
+              <span className="badge">6 nutrientes</span>
+              <span className="badge" style={{ background: "#1f3d2b", color: "#fff", borderColor: "#1f3d2b" }}>
+                🌿 Asistente incluido
+              </span>
+            </div>
+            <div className="badges" style={{ marginBottom: 12 }} role="group" aria-label="¿Qué la trajo aquí?">
+              {(["agua", "pastilla", "secreto", "esponja"] as const).map((k) => (
+                <button
+                  key={k}
+                  type="button"
+                  onClick={() => { setAngulo(k); setHeroIdx(0); }}
+                  className="badge"
+                  style={{ cursor: "pointer", ...(angulo === k ? { background: "#1f3d2b", color: "#fff", borderColor: "#1f3d2b" } : {}) }}
+                >
+                  {k === "agua" ? "Es agua, no grasa" : k === "pastilla" ? "Tomo mi pastilla y sigo igual" : k === "secreto" ? "Mi barriga no baja" : "Vivo hinchada"}
+                </button>
+              ))}
             </div>
           </div>
         </div>
