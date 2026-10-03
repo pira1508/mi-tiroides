@@ -161,7 +161,7 @@ export async function POST(req: NextRequest) {
   // `landing` = de dónde vino (atribución pura, no toca plata).
   // `variant` = qué tabla de precios aplica. Una landing nueva NO cambia precios
   // hasta que se le agregue su tabla acá Y en el webhook del CRM.
-  const LANDINGS_CONOCIDOS = new Set(["v1", "v2", "v3", "v4", "v5", "v6", "v7", "clientes", "quiz"]);
+  const LANDINGS_CONOCIDOS = new Set(["v1", "v2", "v3", "v4", "v5", "v6", "v6b", "v7", "clientes", "quiz"]); // v6b (3-oct-2026): test A/B de oferta en el hero; misma tabla de precios v1
   const landingRaw = String(data.variant ?? "v1");
   const landing = LANDINGS_CONOCIDOS.has(landingRaw) ? landingRaw : "v1";
 
