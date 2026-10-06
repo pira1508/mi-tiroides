@@ -89,9 +89,9 @@ const SIN_CARA = [
   },
   {
     src: "/img/sincara-3.webp",
-    titulo: "Lleva el frasco contigo",
+    titulo: "Lleve el frasco con usted",
     momento: "Si sales temprano",
-    caption: "Cabe en la cartera. Si te vas a la oficina antes de desayunar, te las tomas allá con un café.",
+    caption: "Cabe en la cartera. Si sale antes de desayunar, se las toma allá con un café.",
   },
   {
     src: "/img/sincara-4.webp",
@@ -101,13 +101,13 @@ const SIN_CARA = [
   },
   {
     src: "/img/sincara-5.webp",
-    titulo: "Marca tu progreso",
+    titulo: "Marque su progreso",
     momento: "Día 30",
     caption: "Menos explosiones en la semana. Duerme y descansa. En su casa empiezan a notarlo antes que usted.",
   },
   {
     src: "/img/sincara-6.webp",
-    titulo: "Cierra tu día",
+    titulo: "Cierre su día",
     momento: "Día 60-90",
     caption: "La memoria vuelve, el sueño descansa y la paciencia se sostiene sola. Vuelve a reconocerse.",
   },
@@ -164,7 +164,7 @@ const INGREDIENTES: Ingrediente[] = [
     resumen: "Activa la conversión de T4 en T3.",
     foto: "/img/ing-zinc.webp",
     porQue:
-      "T4 es la hormona inactiva; T3 es la activa que da energía. La conversión depende de la enzima deiodinasa que necesita zinc. Sin zinc suficiente, tu cuerpo tiene T4 pero no la puede usar.",
+      "T4 es la hormona inactiva; T3 es la activa que da energía. La conversión depende de la enzima deiodinasa que necesita zinc. Sin zinc suficiente, su cuerpo tiene T4 pero no la puede usar.",
     evidencia: [
       "Mejora la conversión periférica de T4 a T3.",
       "Sinergia comprobada con selenio.",
@@ -178,7 +178,7 @@ const INGREDIENTES: Ingrediente[] = [
     resumen: "El aminoácido precursor de las hormonas tiroideas.",
     foto: "/img/ing-tirosina.webp",
     porQue:
-      "T3 y T4 se construyen literalmente uniendo yodo a una molécula de tirosina. Si no tienes suficiente tirosina, tu tiroides no tiene los ladrillos para fabricar hormonas.",
+      "T3 y T4 se construyen literalmente uniendo yodo a una molécula de tirosina. Si no tiene suficiente tirosina, su tiroides no tiene los ladrillos para fabricar hormonas.",
     evidencia: [
       "Aminoácido precursor directo de T3 y T4.",
       "Bien tolerada en dosis de 500 mg/día.",
@@ -305,6 +305,7 @@ export default function Page() {
     }
   }, []);
   // El primer slide siempre es el hero del ángulo activo; detrás van los neutrales.
+  const [marcados, setMarcados] = useState<number[]>([]);
   const heroImages = [HERO_MUJER[angulo], ...HERO_RESTO];
   const [nombre, setNombre] = useState("");
   const [telefono, setTelefono] = useState("");
@@ -519,27 +520,27 @@ export default function Page() {
     setError(null);
 
     if (!esCelularCOValido(telefono)) {
-      setError("Necesitamos tu celular Colombia (10 dígitos empezando en 3).");
+      setError("Necesitamos su celular Colombia (10 dígitos empezando en 3).");
       return;
     }
     if (!nombre.trim() || nombre.trim().length < 3) {
-      setError("Escribe tu nombre completo.");
+      setError("Escriba su nombre completo.");
       return;
     }
     if (!direccion.trim() || direccion.trim().length < 8) {
-      setError("Escribe tu dirección completa.");
+      setError("Escriba su dirección completa.");
       return;
     }
     if (!depto || !ciudad) {
-      setError("Selecciona tu departamento y ciudad.");
+      setError("Seleccione su departamento y ciudad.");
       return;
     }
     if (!ciudadMatcheaDepto) {
-      setError("La ciudad debe seleccionarse del listado del departamento. Si no aparece, escríbenos al WhatsApp.");
+      setError("La ciudad debe seleccionarse del listado del departamento. Si no aparece, escríbanos al WhatsApp.");
       return;
     }
     if (!referencia.trim() || referencia.trim().length < 5) {
-      setError("Escribe el barrio y un punto de referencia para que el repartidor te encuentre.");
+      setError("Escriba el barrio y un punto de referencia para que el repartidor la encuentre.");
       return;
     }
 
@@ -626,7 +627,7 @@ export default function Page() {
       setPedidoConfirmado({ id: pedidoId, total });
       setOk(true);
     } else {
-      setError("No pudimos registrar tu pedido. Intenta de nuevo o escríbenos por WhatsApp.");
+      setError("No pudimos registrar su pedido. Intente de nuevo o escríbanos por WhatsApp.");
     }
     setEnviando(false);
   }
@@ -639,7 +640,7 @@ export default function Page() {
       <div className="marquee">
         <div className="marquee-track">
           {Array.from({ length: 12 }).map((_, i) => (
-            <span key={i}>✦ Envío gratis en tu primer pedido &nbsp;&nbsp; ✦ Pago contra entrega &nbsp;&nbsp;</span>
+            <span key={i}>✦ Envío gratis en su primer pedido &nbsp;&nbsp; ✦ Pago contra entrega &nbsp;&nbsp;</span>
           ))}
         </div>
       </div>
@@ -729,6 +730,7 @@ export default function Page() {
               <div>Envío gratis a toda Colombia · llega en 1-3 días</div>
               <div><strong>Garantía de 90 días</strong> desde el día que lo recibe</div>
               <div>Va con su pastilla, no la reemplaza</div>
+              <div><strong>${Math.round(PLANES[cantidad].perDia).toLocaleString("es-CO")} al día</strong> con {PLANES[cantidad].frascos} {PLANES[cantidad].frascos === 1 ? "frasco" : "frascos"} — menos que un tinto</div>
             </div>
             <div className="badges">
               <span className="badge">Vegano</span>
@@ -752,6 +754,20 @@ export default function Page() {
                 </button>
               ))}
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* V2 · VIDEO DEL AD (1 min) · poster + play, sin autoplay */}
+      <section className="section-tight">
+        <div className="container">
+          <div className="eyebrow">Mire el video · 1 minuto</div>
+          <h2 className="h2" style={{ marginBottom: 14 }}>Lo que pasa en su cabeza en tres segundos</h2>
+          <div className="v2-video">
+            <video controls playsInline preload="none" poster="/video/paciencia-poster.jpg" onPlay={() => { window.fbq?.("trackCustom", "VideoPlay", { landing: "paciencia" }); }}>
+              <source src="/video/paciencia.mp4" type="video/mp4" />
+            </video>
+            <p className="v2-video-nota">Es el mismo video que la trajo hasta aquí. Toque para verlo con sonido.</p>
           </div>
         </div>
       </section>
@@ -792,7 +808,7 @@ export default function Page() {
                 </div>
               ))}
             </div>
-            <div className="testi-hint">← Desliza para ver más →</div>
+            <div className="testi-hint">← Deslice para ver más →</div>
           </div>
         </div>
       </section>
@@ -802,6 +818,7 @@ export default function Page() {
         <div className="container">
           <div className="eyebrow">¿Le suena familiar?</div>
           <h2 className="h2">Se toma su pastilla, su examen sale “normal”…<br />y aun así explota por nada y ya ni usted se reconoce</h2>
+          <p style={{ textAlign: "center", color: "var(--gris)", margin: "-6px 0 14px", fontSize: 15 }}>Toque las que le pasan a usted.</p>
           <div className="dolor-grid">
             {[
               ["💥", "Explota por nada", "Tira la cuchara, grita, y un minuto después no entiende quién fue esa. Y la culpa."],
@@ -810,24 +827,78 @@ export default function Page() {
               ["🧠", "La memoria falla", "Se le olvidan las cosas, pierde el hilo, y eso la frustra todavía más."],
               ["🌙", "El sueño no descansa", "Duerme, pero amanece como si no hubiera dormido. Y así es más fácil explotar."],
               ["🏠", "En su casa le hablan con miedo", "Sus hijos miden lo que le dicen. Usted lo nota, y le duele."],
-            ].map(([emoji, t, d]) => (
-              <div key={t} className="dolor-card">
-                <div className="dolor-emoji">{emoji}</div>
-                <div>
-                  <strong>{t}</strong>
-                  <p>{d}</p>
-                </div>
-              </div>
-            ))}
+            ].map(([emoji, t, d], k) => {
+              const on = marcados.includes(k);
+              return (
+                <button type="button" key={t} className={`dolor-card v2-check ${on ? "on" : ""}`} aria-pressed={on}
+                  onClick={() => setMarcados(on ? marcados.filter((x) => x !== k) : [...marcados, k])}>
+                  <span className="v2-box">{on ? "✓" : ""}</span>
+                  <div>
+                    <strong>{emoji} {t}</strong>
+                    <p>{d}</p>
+                  </div>
+                </button>
+              );
+            })}
           </div>
-          <p style={{ textAlign: "center", maxWidth: 640, margin: "10px auto 0", fontSize: 16 }}>
-            Si se identifica con al menos 2 de estos puntos,{" "}
-            <strong>no es su carácter ni se volvió amargada — es un cerebro sin T3, aunque su examen diga “normal”.</strong>
+          <div className="v2-resultado" aria-live="polite">
+            {marcados.length === 0 ? (
+              <p style={{ margin: 0, color: "var(--gris)" }}>Si se identifica con al menos 2 de estos puntos, no es su carácter: es un cerebro sin T3, aunque su examen diga “normal”.</p>
+            ) : marcados.length === 1 ? (
+              <p style={{ margin: 0 }}><strong>1 de 6.</strong> Con una sola ya vale la pena revisar la tiroides, sobre todo si toma levotiroxina y el examen sale “normal”.</p>
+            ) : (
+              <>
+                <p style={{ margin: "0 0 12px", fontSize: 17 }}><strong>Marcó {marcados.length} de 6.</strong> No es su carácter ni se volvió amargada: es un cerebro al que no le llega T3. El selenio es lo que le falta a ese freno.</p>
+                <button className="btn" onClick={openModal}>Quiero el selenio que le falta a mi cerebro →</button>
+              </>
+            )}
+          </div>
+          <p style={{ textAlign: "center", color: "var(--gris)", maxWidth: 640, margin: "14px auto 0", fontSize: 15 }}>
+            El examen mide la sangre. Nadie le está midiendo el cerebro. Su pastilla repone la hormona, pero no le da a su cerebro el selenio con el que fabrica su propia T3.
           </p>
-          <p style={{ textAlign: "center", color: "var(--gris)", maxWidth: 640, margin: "8px auto 0", fontSize: 15 }}>
-            El examen mide la sangre. Nadie le está midiendo el cerebro. Su pastilla repone la hormona, pero no le da
-            a su cerebro el selenio con el que fabrica su propia T3. Por eso sigue igual aunque todo salga “normal”.
-          </p>
+        </div>
+      </section>
+
+      {/* V2 · PARA QUIÉN ES / NO ES (claridad = confianza) */}
+      <section className="section section-beige">
+        <div className="container">
+          <div className="eyebrow">Hablemos claro</div>
+          <h2 className="h2">¿Es para usted?</h2>
+          <div className="v2-quien">
+            <div className="v2-quien-card si">
+              <h3>Sí es para usted si…</h3>
+              <ul>
+                <li>Toma levotiroxina (o le dijeron que la tiroides está “lenta”) y aun así explota por nada.</li>
+                <li>Le dijeron que es la menopausia, que se calme, que se tome una aromática.</li>
+                <li>Se le olvidan las cosas, duerme y no descansa, y todo le molesta.</li>
+                <li>Quiere algo que vaya con su pastilla, no que la reemplace.</li>
+              </ul>
+            </div>
+            <div className="v2-quien-card no">
+              <h3>No es para usted si…</h3>
+              <ul>
+                <li>Busca un calmante para hoy en la tarde: esto es un tratamiento de 90 días, no una pastilla para dormir.</li>
+                <li>Su médico le mandó algo para los nervios y no quiere consultarle antes.</li>
+                <li>Espera que una cápsula arregle un problema de pareja o de familia por sí sola.</li>
+                <li>Está embarazada o tiene una condición renal o hepática sin consultar a su médico.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* V2 · LO QUE YA PROBÓ (invalidación honesta) */}
+      <section className="section">
+        <div className="container">
+          <div className="eyebrow">Seamos sinceras</div>
+          <h2 className="h2">Ya probó de todo. Por eso no le funcionó.</h2>
+          <div className="v2-probo">
+            <div><strong>La valeriana</strong> la deja dormida, pero no le lleva selenio al cerebro. Al otro día explota igual.</div>
+            <div><strong>La manzanilla y la aromática</strong> calman cinco minutos. El freno sigue sin energía.</div>
+            <div><strong>«Cálmese»</strong> es lo que más le dicen, y es lo que más la pone peor: nadie se calma por orden.</div>
+            <div><strong>Subir la dosis de la pastilla</strong> le da más T4 de reserva, pero sin selenio el cerebro no la vuelve T3.</div>
+            <div className="ok"><strong>Selenio para la desyodasa tipo 2 de su cerebro.</strong> Es la enzima con la que fabrica su propia T3. MI TIROIDES se lo lleva junto con zinc, yodo y L-tirosina, y va con su pastilla.</div>
+          </div>
         </div>
       </section>
 
@@ -843,6 +914,9 @@ export default function Page() {
             depende de esa T3.
           </p>
 
+          <div className="v2-mec-img">
+            <Image src="/img/paciencia-mecanismo.webp" alt="Cerebro visto de lado: la amígdala enciende la alarma y la corteza prefrontal la frena cuando le llega T3 con selenio" width={800} height={1000} />
+          </div>
           <div className="estres-grid">
             <div className="estres-card">
               <div className="estres-num">1</div>
@@ -901,7 +975,7 @@ export default function Page() {
             className="ctable-hint-mobile"
           >
             <span style={{ animation: "swipeHint 1.6s ease-in-out infinite" }}>👉</span>
-            <span>Desliza la tabla para verla completa</span>
+            <span>Deslice la tabla para verla completa</span>
           </div>
           <style>{`
             @keyframes swipeHint {
@@ -985,7 +1059,7 @@ export default function Page() {
           </div>
 
           <p style={{ textAlign: "center", color: "var(--gris)", marginTop: 18, fontSize: 13 }}>
-            * MI TIROIDES no reemplaza tu medicamento — lo complementa con los nutrientes que falta aportar.
+            * MI TIROIDES no reemplaza su medicamento — lo complementa con los nutrientes que falta aportar.
           </p>
 
           {/* Mini-gancho post-tabla: pivotea de comparación a urgencia */}
@@ -1011,8 +1085,8 @@ export default function Page() {
       <section className="section section-verde" id="ingredientes">
         <div className="container">
           <div className="eyebrow">La fórmula</div>
-          <h2 className="h2">6 nutrientes. 0 rellenos.</h2>
-          <p className="lead">Cada cápsula trae lo que tu tiroides realmente necesita, en dosis con respaldo científico.</p>
+          <h2 className="h2">6 nutrientes. 0 rellenos. Dosis a la vista.</h2>
+          <p className="lead">Cada cápsula trae lo que su tiroides realmente necesita, en dosis con respaldo científico.</p>
 
           <div className="ing-grid">
             {INGREDIENTES.map((ing) => (
@@ -1042,7 +1116,7 @@ export default function Page() {
       <section className="section">
         <div className="container">
           <div className="eyebrow">Conoce MI TIROIDES</div>
-          <h2 className="h2">Tu ritual diario para una tiroides que rinde</h2>
+          <h2 className="h2">Su ritual diario para una tiroides que rinde</h2>
           <p className="lead">2 cápsulas al día. 10 segundos. Sin sabor, sin preparación.</p>
 
           <div className="beneficio-grid">
@@ -1058,6 +1132,27 @@ export default function Page() {
                 <p>{b.d}</p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* V2 · EL DESPUÉS (foto real, sin antes/después de cuerpo) */}
+      <section className="section section-beige">
+        <div className="container">
+          <div className="v2-despues">
+            <Image src="/img/paciencia-despues.webp" alt="Abuela colombiana sirviéndole el almuerzo a su nieto, los dos riéndose en la cocina" width={800} height={1000} />
+            <div>
+              <div className="eyebrow">A los 90 días</div>
+              <h2 className="h2" style={{ textAlign: "left" }}>Que el nieto pregunte tres veces y usted sonría</h2>
+              <p style={{ color: "var(--gris)", fontSize: 16, lineHeight: 1.6 }}>No es que vaya a dejar de tener días malos. Es que el freno vuelve a llegar a tiempo, y usted vuelve a ser la que era antes.</p>
+              <ul>
+                <li>Respira antes de contestar, sin forzarse.</li>
+                <li>Duerme y amanece descansada, de buen genio.</li>
+                <li>Deja de perder el hilo y de olvidar las cosas.</li>
+                <li>En su casa le vuelven a hablar sin medir las palabras.</li>
+              </ul>
+              <button className="btn" style={{ marginTop: 18 }} onClick={openModal}>Quiero volver a ser yo · pago al recibir</button>
+            </div>
           </div>
         </div>
       </section>
@@ -1135,7 +1230,7 @@ export default function Page() {
                 </div>
               ))}
             </div>
-            <div className="testi-hint">← Desliza para ver más →</div>
+            <div className="testi-hint">← Deslice para ver más →</div>
           </div>
         </div>
       </section>
@@ -1146,7 +1241,7 @@ export default function Page() {
           <div className="eyebrow">Cómo se toma · Qué vas a sentir</div>
           <h2 className="h2">Un ritual simple, cambios reales en 90 días</h2>
           <p className="lead">
-            <strong>2 cápsulas, 1 vez al día, con el desayuno.</strong> Eso es todo. Aquí te mostramos cuándo
+            <strong>2 cápsulas, 1 vez al día, con el desayuno.</strong> Eso es todo. Aquí le mostramos cuándo
             tomarlo y qué cambios reportan las mujeres que ya lo usan, semana a semana.
           </p>
 
@@ -1163,12 +1258,12 @@ export default function Page() {
                 </div>
               ))}
             </div>
-            <div className="testi-hint">← Desliza para ver el recorrido completo →</div>
+            <div className="testi-hint">← Deslice para ver el recorrido completo →</div>
           </div>
 
           <div className="ritual-cierre">
             <strong>¿Y si me olvido un día?</strong> No pasa nada — la suplementación tiroidea funciona por
-            acumulación, no por una sola dosis. Solo retoma al día siguiente con tu desayuno.
+            acumulación, no por una sola dosis. Solo retome al día siguiente con su desayuno.
           </div>
         </div>
       </section>
@@ -1181,10 +1276,10 @@ export default function Page() {
         <div className="container-sm">
           <div className="eyebrow" style={{ color: "#c9a14a" }}>Incluido sin costo</div>
           <h2 className="h2" style={{ marginBottom: 6 }}>
-            No estás sola en tu tratamiento.
+            No está sola en su tratamiento.
           </h2>
           <p style={{ color: "var(--gris)", fontSize: 16, lineHeight: 1.6, marginBottom: 28 }}>
-            Con cada pedido recibes acceso GRATIS a tu <strong>asistente personal de bienestar</strong> por WhatsApp, que te acompaña durante todo el tratamiento.
+            Con cada pedido recibe acceso GRATIS a su <strong>asistente personal de bienestar</strong> por WhatsApp, que la acompaña durante todo el tratamiento.
           </p>
 
           <div
@@ -1196,10 +1291,10 @@ export default function Page() {
             }}
           >
             {[
-              { i: "🥗", t: "Alimentos ideales para tu tiroides", d: "Cada semana te enviamos qué incluir y qué evitar según tu etapa del tratamiento." },
+              { i: "🥗", t: "Alimentos ideales para su tiroides", d: "Cada semana le enviamos qué incluir y qué evitar según su etapa del tratamiento." },
               { i: "🌱", t: "Hábitos clave cada semana", d: "Pequeños cambios graduales (sueño, estrés, movimiento) que potencian el efecto del suplemento." },
-              { i: "📊", t: "Seguimiento de tu progreso", d: "Te escribimos cada 7-14 días para saber cómo te sientes y ajustar la guía." },
-              { i: "💬", t: "Resuelve dudas cuando quieras", d: "¿Puedo tomarlo con café? ¿Y si tomo levotiroxina? Te respondemos al momento." },
+              { i: "📊", t: "Seguimiento de su progreso", d: "Le escribimos cada 7-14 días para saber cómo se siente y ajustar la guía." },
+              { i: "💬", t: "Resuelva dudas cuando quiera", d: "¿Puedo tomarlo con café? ¿Y si tomo levotiroxina? Le respondemos al momento." },
             ].map((it) => (
               <div
                 key={it.t}
@@ -1238,7 +1333,23 @@ export default function Page() {
               lineHeight: 1.6,
             }}
           >
-            <strong style={{ color: "#1f3d2b" }}>Importante:</strong> el asistente no reemplaza al médico — es un acompañamiento de hábitos y nutrición. Para temas clínicos siempre te recomendamos consultar a tu especialista.
+            <strong style={{ color: "#1f3d2b" }}>Importante:</strong> el asistente no reemplaza al médico — es un acompañamiento de hábitos y nutrición. Para temas clínicos siempre le recomendamos consultar a su especialista.
+          </div>
+        </div>
+      </section>
+
+      {/* V2 · GARANTÍA COMO PROCESO (riesgo del lado nuestro) */}
+      <section className="section">
+        <div className="container">
+          <div className="v2-garantia">
+            <h3>Garantía de 90 días desde el día que lo recibe</h3>
+            <p className="v2-gsub">El riesgo lo corremos nosotros, no usted. Así funciona:</p>
+            <div className="v2-pasos">
+              <div className="v2-paso"><b>1. Lo recibe y lo paga</b>En efectivo, en su casa, cuando el repartidor se lo entrega. Hoy no paga nada.</div>
+              <div className="v2-paso"><b>2. Lo toma 90 días</b>Los 90 días empiezan el día que lo recibe, no el día que lo pide.</div>
+              <div className="v2-paso"><b>3. Si no nota el cambio, nos escribe</b>Un WhatsApp. Sin devolver el frasco, sin preguntas. Le devolvemos la plata en máximo 3 días hábiles.</div>
+            </div>
+            <p className="v2-gfoot">Más de 6.600 pedidos entregados en 511 municipios. Registro INVIMA. Hecho en Colombia.</p>
           </div>
         </div>
       </section>
@@ -1247,7 +1358,7 @@ export default function Page() {
       <section className="section section-beige" id="faq">
         <div className="container-sm">
           <div className="eyebrow">Preguntas frecuentes</div>
-          <h2 className="h2">Resolvemos tus dudas</h2>
+          <h2 className="h2">Resolvemos sus dudas</h2>
 
           <div className="faq">
             <details>
@@ -1264,21 +1375,21 @@ export default function Page() {
               <p>
                 Un multivitamínico reparte un poco de todo. Este trae <strong>dosis específicas para la
                 tiroides</strong> —selenio 200 mcg, yodo, zinc y L-tirosina— pensadas para
-                <strong> activar tu hormona T3</strong>, no para “nutrir en general”.
+                <strong> activar su hormona T3</strong>, no para “nutrir en general”.
               </p>
             </details>
             <details>
               <summary>¿Lo puedo tomar con mi Eutirox / levotiroxina?</summary>
               <p>
-                Sí. <strong>Apoya, no reemplaza.</strong> Toma tu pastilla en ayunas y MI TIROIDES con el
+                Sí. <strong>Apoya, no reemplaza.</strong> Tome su pastilla en ayunas y MI TIROIDES con el
                 desayuno, para que no se interfieran. Muchas de nuestras clientas están en levotiroxina +
-                MI TIROIDES. Ante cualquier duda, consulta a tu médico.
+                MI TIROIDES. Ante cualquier duda, consulte a su médico.
               </p>
             </details>
             <details>
               <summary>En Rappi hay suplementos de $40.000, ¿por qué este?</summary>
               <p>
-                Porque no es lo mismo. Aquí pagas por una <strong>fórmula específica con dosis que sí
+                Porque no es lo mismo. Aquí paga por una <strong>fórmula específica con dosis que sí
                 sirven</strong> (yodo + selenio juntos), más el <strong>acompañamiento de Camila por
                 WhatsApp</strong> y la <strong>garantía de 90 días</strong>. Un genérico barato rara vez
                 trae eso.
@@ -1309,18 +1420,24 @@ export default function Page() {
               </p>
             </details>
             <details>
+              <summary>¿Y si mi examen sale normal?</summary>
+              <p>
+                El examen mide la T4 y la TSH en la sangre, no cuánta T3 fabrica su cerebro. El cerebro produce cerca del 80 % de su T3 con la desyodasa tipo 2, una enzima hecha de selenio. Sin selenio, la sangre sale “normal” y el cerebro sigue sin freno. Por eso tantas clientas con examen normal viven explotando por nada.
+              </p>
+            </details>
+            <details>
               <summary>¿Tiene efectos secundarios?</summary>
               <p>
-                La fórmula usa dosis fisiológicas seguras. Si tienes una condición renal, hepática o
-                estás embarazada, consulta con tu médico antes de comenzar. No mezcla con
+                La fórmula usa dosis fisiológicas seguras. Si tiene una condición renal, hepática o
+                está embarazada, consulte con su médico antes de comenzar. No mezcla con
                 ashwagandha (no incluida por precaución regulatoria).
               </p>
             </details>
             <details>
               <summary>¿Es una suscripción?</summary>
               <p>
-                No. Es una compra única. Tú decides cuándo volver a pedir. Sin cargos automáticos.
-                Pagas contra entrega cuando el producto llega a tu puerta.
+                No. Es una compra única. Usted decide cuándo volver a pedir. Sin cargos automáticos.
+                Paga contra entrega cuando el producto llega a su puerta.
               </p>
             </details>
             <details>
@@ -1408,7 +1525,7 @@ export default function Page() {
         <div className="container">
           MI TIROIDES Avanzado · Hecho en Colombia · Registro INVIMA
           <br />
-          Este producto no reemplaza el tratamiento médico. Consulta a tu profesional de salud.
+          Este producto no reemplaza el tratamiento médico. Consulte a su profesional de salud.
         </div>
       </footer>
 
@@ -1601,7 +1718,7 @@ export default function Page() {
                 </div>
 
                 {/* DATOS */}
-                <div className="modal-section-title green">Ingresa tu dirección de envío</div>
+                <div className="modal-section-title green">Ingrese su dirección de envío</div>
                 <form className="modal-form" onSubmit={onSubmit} noValidate>
                   {/* honeypot anti-bot — oculto a humanos; los bots lo llenan y quedan marcados */}
                   <input type="text" name="empresa" defaultValue="" tabIndex={-1} autoComplete="off" aria-hidden="true"
@@ -1620,7 +1737,7 @@ export default function Page() {
                         onChange={(e) => setTelefono(formatearTelefono(e.target.value))}
                       />
                     </div>
-                    <small>A este WhatsApp enviaremos tu guía de rastreo</small>
+                    <small>A este WhatsApp enviaremos su guía de rastreo</small>
                   </label>
 
                   <label>
@@ -1666,7 +1783,7 @@ export default function Page() {
                           setCiudadInput("");
                         }}
                       >
-                        <option value="">Selecciona tu departamento</option>
+                        <option value="">Seleccione su departamento</option>
                         {NOMBRES_DEPARTAMENTOS.map((d) => (
                           <option key={d} value={d}>{d}</option>
                         ))}
@@ -1681,7 +1798,7 @@ export default function Page() {
                       <input
                         type="text"
                         required
-                        placeholder={depto ? "Escribe tu ciudad…" : "Primero elige un departamento"}
+                        placeholder={depto ? "Escriba su ciudad…" : "Primero elija un departamento"}
                         disabled={!depto}
                         autoComplete="address-level2"
                         value={ciudadInput}
@@ -1795,7 +1912,7 @@ export default function Page() {
                           Asistente personal de bienestar
                         </div>
                         <div style={{ fontSize: 12, color: "#5a5a5a", lineHeight: 1.45 }}>
-                          Te acompaña durante todo tu tratamiento por WhatsApp:
+                          La acompaña durante todo su tratamiento por WhatsApp:
                         </div>
                         <ul
                           style={{
@@ -1806,12 +1923,12 @@ export default function Page() {
                             lineHeight: 1.6,
                           }}
                         >
-                          <li>Alimentos ideales para tu tiroides</li>
+                          <li>Alimentos ideales para su tiroides</li>
                           <li>Hábitos clave cada semana</li>
-                          <li>Seguimiento de tu progreso</li>
-                          <li>Resuelve dudas cuando quieras</li>
+                          <li>Seguimiento de su progreso</li>
+                          <li>Resuelva dudas cuando quiera</li>
                           <li>
-                            <strong>Precios especiales</strong> al renovar tu tratamiento
+                            <strong>Precios especiales</strong> al renovar su tratamiento
                           </li>
                         </ul>
                       </div>

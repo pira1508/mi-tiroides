@@ -1567,3 +1567,39 @@ footer.site-footer {
   .v6b-sub { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
   .v6b-hero .h1 { font-size: 30px; }
 }
+
+/* ===== V2 PACIENCIA / LIBIDO (5-oct-2026) · video del ad, lista de síntomas interactiva, para quién es, garantía como proceso. Prefijo v2- ===== */
+.v2-video { max-width: 420px; margin: 0 auto; }
+.v2-video video { width: 100%; border-radius: 16px; background: #000; box-shadow: 0 12px 32px rgba(31,61,43,.18); display: block; }
+.v2-video-nota { text-align: center; font-size: 13px; color: var(--gris); margin-top: 10px; }
+.v2-check { cursor: pointer; text-align: left; font-family: inherit; width: 100%; border: 2px solid #ebe2cc; transition: border-color .15s, background .15s; }
+.v2-check.on { border-color: var(--verde); background: #f1f6f2; }
+.v2-check .v2-box { width: 26px; height: 26px; border-radius: 7px; border: 2px solid #b8c7bc; display: inline-flex; align-items: center; justify-content: center; font-weight: 900; color: #fff; flex: none; margin-top: 2px; }
+.v2-check.on .v2-box { background: var(--verde); border-color: var(--verde); }
+.v2-resultado { max-width: 640px; margin: 18px auto 0; background: #fff; border: 2px solid var(--verde); border-radius: 14px; padding: 18px 20px; text-align: center; }
+.v2-resultado strong { color: var(--verde); }
+.v2-quien { display: grid; gap: 14px; margin-top: 18px; }
+@media (min-width: 760px) { .v2-quien { grid-template-columns: 1fr 1fr; } }
+.v2-quien-card { background: #fff; border-radius: 14px; padding: 18px 20px; border: 1px solid #e6dfcc; }
+.v2-quien-card.si { border-color: #2f5a3f; } .v2-quien-card.no { border-color: #d8cfb8; }
+.v2-quien-card h3 { margin: 0 0 10px; font-size: 18px; } .v2-quien-card.si h3 { color: var(--verde); } .v2-quien-card.no h3 { color: var(--gris); }
+.v2-quien-card ul { margin: 0; padding-left: 0; list-style: none; } .v2-quien-card li { padding: 6px 0 6px 28px; position: relative; font-size: 15px; line-height: 1.45; }
+.v2-quien-card.si li::before { content: "✓"; position: absolute; left: 0; color: var(--verde); font-weight: 800; }
+.v2-quien-card.no li::before { content: "✕"; position: absolute; left: 0; color: #b53b2a; font-weight: 800; }
+.v2-probo { max-width: 640px; margin: 18px auto 0; display: grid; gap: 10px; }
+.v2-probo div { background: #fff; border-radius: 12px; padding: 12px 14px 12px 44px; position: relative; font-size: 15px; line-height: 1.5; border: 1px solid #e6dfcc; }
+.v2-probo div::before { content: "✕"; position: absolute; left: 14px; top: 12px; color: #b53b2a; font-weight: 900; font-size: 18px; }
+.v2-probo div.ok { border-color: var(--verde); background: #f1f6f2; } .v2-probo div.ok::before { content: "✓"; color: var(--verde); }
+.v2-mec-img { max-width: 420px; margin: 0 auto 22px; } .v2-mec-img img { width: 100%; height: auto; border-radius: 16px; display: block; }
+.v2-despues { display: grid; gap: 22px; align-items: center; }
+@media (min-width: 760px) { .v2-despues { grid-template-columns: 1fr 1fr; } }
+.v2-despues img { width: 100%; height: auto; border-radius: 16px; display: block; box-shadow: 0 12px 32px rgba(31,61,43,.14); }
+.v2-despues ul { margin: 14px 0 0; padding: 0; list-style: none; } .v2-despues li { padding: 8px 0 8px 30px; position: relative; font-size: 16px; line-height: 1.5; }
+.v2-despues li::before { content: "✓"; position: absolute; left: 0; color: var(--verde); font-weight: 800; }
+.v2-garantia { background: #fff; border: 2px solid var(--dorado); border-radius: 16px; padding: 24px 22px; max-width: 640px; margin: 0 auto; }
+.v2-garantia h3 { margin: 0 0 6px; color: var(--verde); font-size: 24px; text-align: center; }
+.v2-garantia .v2-gsub { text-align: center; color: var(--gris); margin: 0 0 16px; font-size: 15px; }
+.v2-pasos { display: grid; gap: 10px; } @media (min-width: 640px) { .v2-pasos { grid-template-columns: 1fr 1fr 1fr; } }
+.v2-paso { background: var(--crema); border-radius: 12px; padding: 14px; font-size: 14px; line-height: 1.5; }
+.v2-paso b { display: block; color: var(--verde); font-size: 15px; margin-bottom: 4px; }
+.v2-gfoot { margin: 14px 0 0; font-size: 13px; color: var(--gris); text-align: center; }
