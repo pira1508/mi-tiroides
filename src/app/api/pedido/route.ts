@@ -237,6 +237,13 @@ export async function POST(req: NextRequest) {
         utm_medium: data.utm_medium || undefined,
         referrer: data.referrer || undefined,
         dedupeKey: `${pedido.cliente.telefono}-${pedido.plan.cantidad}`,
+        // Navegador de la clienta (19-oct-2026): el CRM lo guarda para reportarle a Meta la compra
+        // que se arma por autoguardado o por Camila, sin que ella oprima «Enviar». Meta exige el
+        // user agent en toda compra web por servidor; la IP y las cookies _fbp/_fbc mejoran el cruce.
+        client_ua: req.headers.get("user-agent") || undefined,
+        client_ip: req.headers.get("x-forwarded-for")?.split(",")[0].trim() || req.headers.get("x-real-ip") || undefined,
+        fbp: req.cookies.get("_fbp")?.value || undefined,
+        fbc: req.cookies.get("_fbc")?.value || undefined,
       };
       const r = await fetch(url, {
         method: "POST",
