@@ -24,6 +24,8 @@ export interface PurchaseEvent {
   ip?: string | null;       // IP cliente (para fbc/ttp)
   userAgent?: string | null;
   eventSourceUrl?: string;  // URL donde ocurrió la conversión
+  contentName?: string;     // ej. "MI TIROIDES Ecuador" (default: sin content_name en Meta, "MI TIROIDES" en TikTok)
+  contentIds?: string[];    // default ["mi-tiroides"]
 }
 
 // SHA-256 lowercase (formato que aceptan ambas APIs para PII)
@@ -79,7 +81,8 @@ export async function sendMetaCAPIPurchase(ev: PurchaseEvent): Promise<{ ok: boo
       currency: ev.currency || "COP",
       value: ev.value,
       content_type: "product",
-      content_ids: ["mi-tiroides"],
+      content_ids: ev.contentIds || ["mi-tiroides"],
+      ...(ev.contentName ? { content_name: ev.contentName } : {}),
     },
   };
 
@@ -142,7 +145,7 @@ export async function sendTikTokEventPurchase(ev: PurchaseEvent): Promise<{ ok: 
           value: ev.value,
           content_id: "mi-tiroides",
           content_type: "product",
-          content_name: "MI TIROIDES",
+          content_name: ev.contentName || "MI TIROIDES",
         },
         page: {
           url: ev.eventSourceUrl || "https://mi-tiroides.vercel.app",
