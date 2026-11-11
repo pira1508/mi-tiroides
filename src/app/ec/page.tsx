@@ -64,17 +64,22 @@ function shuffleWithSeed<T>(array: readonly T[], seed: number): T[] {
 // agua (ES AGUA NO ES USTED) · pastilla (SU PASTILLA NO TRABAJA SOLA) · secreto (EL SECRETO) · esponja (LA ESPONJA).
 // 4 heroes diseñados message-match (Higgsfield nano_banana_pro, crema/verde/dorado + frasco real).
 const HERO_MUJER: Record<"agua" | "pastilla" | "secreto" | "esponja", { src: string; alt: string }> = {
-  agua: { src: "/img/ec-hero-espejo.webp", alt: "Amanece con la cara y los párpados hinchados aunque come igual que siempre" },
-  pastilla: { src: "/img/ec-frasco-pastilla.webp", alt: "MI TIROIDES junto a su pastilla de la tiroides: va con ella, no la reemplaza" },
-  secreto: { src: "/img/ec-hero-costa.webp", alt: "MI TIROIDES: 6 nutrientes que su tiroides usa, en 2 cápsulas al día" },
-  esponja: { src: "/img/ec-sierra-desayuno.webp", alt: "2 cápsulas de MI TIROIDES con el desayuno, todos los días" },
+  agua: { src: "/img/ec-hero-v6-agua.webp", alt: "No engordó, se inflamó: es agua, no grasa — es su tiroides" },
+  pastilla: { src: "/img/ec-hero-v6-pastilla.webp", alt: "Su pastilla de la tiroides no trabaja sola: le faltan 6 nutrientes" },
+  secreto: { src: "/img/ec-hero-v6-secreto.webp", alt: "El secreto que nadie le dijo sobre su barriga" },
+  esponja: { src: "/img/ec-hero-v6-esponja.webp", alt: "Su cuerpo guarda agua como una esponja: así se siente" },
 };
 
-// Escenas generadas para Ecuador (no son clientas) + el frasco.
+// Slides diseñados (mismo diseño de v6b, textos adaptados a Ecuador/ARCSA) + escenas de apoyo.
+// 🔴 Las 4 señales son SOLO síntoma (sin antes/después ni resultados).
 const HERO_RESTO = [
+  { src: "/img/ec-senales-retencion.webp", alt: "¿Reconoce estas 4 señales de retención? La cara, el anillo, la ropa que aprieta y los tobillos" },
+  { src: "/img/ec-hero-2.webp", alt: "Las hormonas tapan el síntoma: MI TIROIDES le aporta lo que le falta" },
+  { src: "/img/ec-hero-3.webp", alt: "La fórmula que su tiroides usa: 6 nutrientes con su dosis" },
+  { src: "/img/ec-hero-4.webp", alt: "Así se siente, paso a paso: 2 cápsulas con el desayuno" },
+  { src: "/img/ec-hero-5.webp", alt: "Cifras reales y pack de 2 frascos MI TIROIDES" },
   { src: "/img/ec-desayuno.webp", alt: "Desayuno con bolón, queso y café: 2 cápsulas de MI TIROIDES con el desayuno" },
   { src: "/img/ec-entrega.webp", alt: "Le llega a la puerta de su casa y paga en efectivo cuando lo recibe" },
-  { src: "/img/bundle-2.webp", alt: "MI TIROIDES · tratamiento de 2 frascos (90 días)" },
 ];
 
 const SIN_CARA = [
@@ -82,37 +87,37 @@ const SIN_CARA = [
     src: "/img/ec-desayuno.webp",
     titulo: "7:00 a.m. · Con el desayuno",
     momento: "Día 1",
-    caption: "2 cápsulas con el desayuno: un bolón, un huevo, un café. El selenio y el zinc se absorben mejor con algo de grasa.",
+    caption: "2 cápsulas con el primer alimento del día. El selenio y el zinc se absorben mejor con grasas saludables.",
   },
   {
-    src: "/img/ec-frasco-pastilla.webp",
+    src: "/img/sincara-2.webp",
     titulo: "La toma diaria",
     momento: "Cada mañana",
-    caption: "Su pastilla en ayunas; MI TIROIDES con el desayuno. Una sola toma al día, un solo frasco para todo.",
+    caption: "1 sola toma al día. Sin recordatorios extra, sin pastilleros complicados — un solo frasco para todo.",
   },
   {
     src: "/img/ec-hero-costa.webp",
-    titulo: "Lleva el frasco contigo",
-    momento: "Si sales temprano",
-    caption: "Cabe en la cartera. Si sale a trabajar antes de desayunar, se las toma allá con un café.",
+    titulo: "Lleve el frasco con usted",
+    momento: "Si sale temprano",
+    caption: "Cabe en la cartera. Si se va a trabajar antes de desayunar, se las toma allá con un café.",
   },
   {
     src: "/img/sincara-4.webp",
     titulo: "Domingo en familia",
     momento: "Día 14",
-    caption: "Dos semanas sin fallar un día. Ya es parte de su mañana, como el café.",
+    caption: "Dos semanas sin fallar un día: las mañanas empiezan a sentirse distintas.",
   },
   {
     src: "/img/sincara-5.webp",
     titulo: "Marque su progreso",
     momento: "Día 30",
-    caption: "Primer mes completo. Los nutrientes funcionan por acumulación: por eso la constancia importa más que la dosis.",
+    caption: "Primer frasco completo. Fíjese cómo se siente en el día, en la tarde y al despertar.",
   },
   {
     src: "/img/sincara-6.webp",
     titulo: "Cierre su día",
     momento: "Día 60-90",
-    caption: "El tratamiento completo: 2 frascos, 90 días. Es el tiempo que recomendamos para notar cómo se siente usted.",
+    caption: "El tratamiento completo. Su tiroides recibe todos los días lo que usa para trabajar, y usted lo nota con la constancia.",
   },
 ];
 
@@ -296,19 +301,19 @@ function Iniciales({ t, size = 44 }: { t: string; size?: number }) {
 const ANGULOS: Record<"agua" | "pastilla" | "secreto" | "esponja", { h1: string; sub: string }> = {
   agua: {
     h1: "No engordó. Se inflamó. Es agua, no grasa.",
-    sub: "Come igual que siempre y el cuerpo no baja. No es falta de disciplina: cuando la tiroides se pone lenta, el cuerpo retiene líquido y se inflama. MI TIROIDES le aporta los 6 nutrientes que su tiroides usa para trabajar, juntos en 2 cápsulas con el desayuno. Va con su pastilla, no la reemplaza.",
+    sub: "Come igual que siempre y el cuerpo no baja. No es falta de disciplina: cuando la tiroides se pone lenta, el cuerpo retiene líquido y se inflama. Los 6 nutrientes que su tiroides usa para volver a trabajar, juntos en 2 cápsulas con el desayuno. Va con su pastilla, no la reemplaza.",
   },
   pastilla: {
     h1: "Su pastilla de la tiroides no trabaja sola.",
-    sub: "Toma la levotiroxina todos los días, sin falta, y aun así vive hinchada, cansada y con el cuerpo pesado. Esa pastilla repone la hormona, pero no le da a su tiroides el selenio, yodo, zinc, L-tirosina, B12 y D3 que usa para funcionar. MI TIROIDES se los aporta juntos. Va con su pastilla, no la reemplaza.",
+    sub: "Toma la levotiroxina todos los días, sin falta, y aun así vive hinchada, cansada y con el cuerpo pesado. Esa pastilla repone la hormona, pero no le da a su tiroides el selenio, yodo, zinc, L-tirosina, B12 y D3 que usa para funcionar. En una sola cápsula. Va con su pastilla, no la reemplaza.",
   },
   secreto: {
     h1: "El secreto que nadie le dijo sobre su barriga.",
-    sub: "No es floja ni comió de más. Casi nadie le revisa la glándula que decide si su cuerpo guarda o suelta el líquido: la tiroides. Cuando se pone lenta, usted se hincha y se cansa. MI TIROIDES le aporta los 6 nutrientes que esa glándula usa para trabajar.",
+    sub: "No es floja ni comió de más. Casi nadie le revisa la glándula que decide si su cuerpo guarda o suelta el líquido: la tiroides. Cuando se pone lenta, usted se hincha y se cansa. Los 6 nutrientes que esa glándula usa para trabajar — para que deje de cargar sola con todo.",
   },
   esponja: {
     h1: "Su cuerpo guarda agua como una esponja mojada.",
-    sub: "Cuando la tiroides está lenta, el cuerpo retiene líquido y usted amanece hinchada, pesada y con la mente nublada. MI TIROIDES le aporta los 6 nutrientes que su tiroides usa para trabajar, en 2 cápsulas con el desayuno. Va con su pastilla, no la reemplaza.",
+    sub: "Cuando la tiroides está lenta, el cuerpo retiene líquido y usted amanece hinchada, pesada y con la mente nublada. Los 6 nutrientes que su tiroides usa para trabajar, en 2 cápsulas con el desayuno Va con su pastilla, no la reemplaza.",
   },
 };
 
@@ -835,7 +840,7 @@ export default function Page() {
             <div className="estres-card">
               <div className="estres-num">3</div>
               <strong>Retiene líquido</strong>
-              <p>Con la tiroides lenta, el cuerpo guarda agua, se inflama y vive cansada… aunque su TSH salga “normal”.</p>
+              <p>Sin esos nutrientes, la conversión a T3 activa se queda corta. El cuerpo guarda agua, se inflama y vive cansada… aunque su TSH salga “normal”.</p>
             </div>
           </div>
 
@@ -861,7 +866,7 @@ export default function Page() {
         <div className="container">
           <div className="eyebrow">Ya intentó lo demás</div>
           <h2 className="h2">Ya probó de todo. Esto es distinto.</h2>
-          <p className="lead">Hizo dietas, caminó, probó el multivitamínico de la farmacia, hasta subió la dosis. Mire en qué es distinto MI TIROIDES.</p>
+          <p className="lead">Hizo dietas, caminó, probó el multivitamínico de la farmacia, hasta subió la dosis. Mire por qué MI TIROIDES va a lo que las demás ni tocan.</p>
 
           {/* Hint mobile: desliza para ver más */}
           <div
@@ -1092,9 +1097,9 @@ export default function Page() {
             cómo se siente usted.
           </p>
           <p style={{ color: "#d6cdb3", marginTop: 12 }}>
-            Un frasco dura 45 días.
+            Las que lo dejan al primer mes no le dan tiempo a su cuerpo.
             <br />
-            <strong style={{ color: "#fff" }}>El tratamiento completo son 2 frascos: 90 días.</strong>
+            <strong style={{ color: "#fff" }}>Las que completan los 3 meses, sí.</strong>
           </p>
         </div>
       </section>
@@ -1192,7 +1197,7 @@ export default function Page() {
               { i: "🥗", t: "Alimentos ideales para su tiroides", d: "Cada semana le enviamos qué incluir y qué evitar según su etapa del tratamiento." },
               { i: "🌱", t: "Hábitos clave cada semana", d: "Pequeños cambios graduales (sueño, estrés, movimiento) que potencian el efecto del suplemento." },
               { i: "📊", t: "Seguimiento de su progreso", d: "Le escribimos cada 7-14 días para saber cómo se siente y ajustar la guía." },
-              { i: "💬", t: "Resuelve dudas cuando quieras", d: "¿Puedo tomarlo con café? ¿Y si tomo levotiroxina? Te respondemos al momento." },
+              { i: "💬", t: "Resuelve dudas cuando quiera", d: "¿Puedo tomarlo con café? ¿Y si tomo levotiroxina? Le respondemos al momento." },
             ].map((it) => (
               <div
                 key={it.t}

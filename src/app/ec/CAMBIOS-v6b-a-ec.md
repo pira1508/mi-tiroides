@@ -1,4 +1,30 @@
-# /ec v2 · qué cambió frente a /v6b (11-nov-2026)
+# /ec v3 · 11-nov-2026 (tarde): vuelta a v6b
+
+**Regla v3:** el copy de v6b manda. Solo se cambia moneda/país, palabras colombianas, INVIMA→ARCSA y lo que ARCSA prohíbe (curar, desinflamar, reducir, resultados prometidos). Ante la duda se queda el de v6b.
+
+## Restaurado a v6b en v3
+| v2 (/ec) | v3 (/ec) = v6b con lo mínimo |
+|---|---|
+| «MI TIROIDES le aporta los 6 nutrientes que su tiroides usa para trabajar…» (heros agua/esponja) | «Los 6 nutrientes que su tiroides usa para volver a trabajar…» (v6b sin «para desinflamar») |
+| «…que usa para funcionar. MI TIROIDES se los aporta juntos.» | «…que usa para funcionar. En una sola cápsula.» (v6b) |
+| «MI TIROIDES le aporta los 6 nutrientes que esa glándula usa para trabajar.» | «Los 6 nutrientes que esa glándula usa para trabajar — para que deje de cargar sola con todo.» |
+| «Con la tiroides lenta, el cuerpo guarda agua…» | «Sin esos nutrientes, la conversión a T3 activa se queda corta. El cuerpo guarda agua…» (v6b) |
+| «Mire en qué es distinto MI TIROIDES.» | «Mire por qué MI TIROIDES va a lo que las demás ni tocan.» (v6b) |
+| «Un frasco dura 45 días. / El tratamiento completo son 2 frascos» | «Las que lo dejan al primer mes no le dan tiempo a su cuerpo. / Las que completan los 3 meses, sí.» (v6b sin «no ven resultados») |
+| Captions del ritual (v2) | Captions de v6b en usted; solo días 14/30/60-90 sin promesa de efecto |
+
+## Imágenes v3 (mismo diseño de v6b, textos EC)
+- ec-hero-v6-agua/esponja/pastilla/secreto: botón «VA CON SU PASTILLA · PAGA AL RECIBIR»; «Desinflamar»→«Va con su pastilla»; «Así se desinflama»→«Así se siente»; «Suelta el líquido»→«Retiene líquido»; «Recupera energía»→«Le aporta nutrientes»; «Vuelve a sentirse liviana»→«Lo que su tiroides usa».
+- ec-hero-2: «repara la causa»→«le aporta lo que le falta»; «reparan»→«conversión T4→T3»; «Recuperas tu energía»→«Va con su pastilla».
+- ec-hero-3: «que repara desde adentro»→«que su tiroides usa»; sellos «Hecho en Colombia / Registro INVIMA»→«Notificación Sanitaria ARCSA / Pago al recibir».
+- ec-hero-4: mariposa→glándula anatómica; «Tu energía vuelve»→«Así se siente, paso a paso»; días = constancia, sin resultados.
+- ec-hero-5: v6b tenía cifras/citas no verificables (94 %, 2.147, 4,7★, «María L.», «Carmen R.»: imagen Higgsfield del 22-may). v3 = cifras reales del CRM (+6.600 / +12.400 / +700) + 2 citas reales de WhatsApp anonimizadas (Neiva, Ipiales).
+- ec-senales-retencion: reemplaza el antes/después «a los 90 días» (imágenes generadas) por «¿Reconoce estas 4 señales?», solo síntoma.
+- Las 6 fotos ec-* (bolón, entrega, etc.) quedan de apoyo, al final del carrusel y en el ritual.
+
+---
+
+# Detalle v2 (algunas filas ya revertidas en v3, ver arriba)
 
 | Antes (v6b) | Después (/ec) | Por qué |
 |---|---|---|
