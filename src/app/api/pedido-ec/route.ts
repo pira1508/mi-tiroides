@@ -69,6 +69,7 @@ export async function POST(req: NextRequest) {
           direccion: data.direccion ?? null,
           referencia: data.referencia ?? null,
           cantidad,
+          total: plan.precio,
           fbclid: data.fbclid || undefined,
           utm_source: data.utm_source || undefined,
           utm_campaign: data.utm_campaign || undefined,

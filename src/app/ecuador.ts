@@ -52,13 +52,20 @@ export function formatearTelefonoEC(raw: string): string {
   return `${d.slice(0, 3)} ${d.slice(3, 6)} ${d.slice(6)}`;
 }
 
-// Precios de lanzamiento Ecuador (USD). Mismos números en la página, en este
-// API y en el webhook del CRM (landing-mi-tiroides-ec). Si se cambian, cambiar los tres.
+// ── PRECIOS ECUADOR (USD) · CAMBIAR AQUÍ ────────────────────────────────────
+// Es el único lugar donde se definen. La página los muestra, /api/pedido-ec los
+// manda como `total` y el webhook del CRM (landing-mi-tiroides-ec) acepta ese total.
+// Precio de prueba mientras Andrés decide (11-nov-2026): 29,90 / 44,90 / 54,90.
 export const PRECIOS_EC: Record<"1" | "2" | "3", { precio: number; frascos: number; label: string }> = {
-  "1": { precio: 34.9, frascos: 1, label: "1 Frasco" },
-  "2": { precio: 49.9, frascos: 2, label: "2 Frascos" },
-  "3": { precio: 64.9, frascos: 3, label: "3 Frascos" },
+  "1": { precio: 29.9, frascos: 1, label: "1 Frasco" },
+  "2": { precio: 44.9, frascos: 2, label: "2 Frascos" },
+  "3": { precio: 54.9, frascos: 3, label: "3 Frascos" },
 };
+
+// Promesas que dependen de la operación de Ecuador. Si se apagan, la página
+// quita esos textos sola.
+export const GARANTIA_EC = true;   // «Garantía de 90 días desde la entrega» (confirmar con Andrés)
+export const ASISTENTE_EC = false; // acompañamiento por WhatsApp: apagado hasta tener número +593
 
 export const usd = (n: number) =>
   "US$" + n.toLocaleString("es-EC", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
