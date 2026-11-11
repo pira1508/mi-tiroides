@@ -55,11 +55,11 @@ export function formatearTelefonoEC(raw: string): string {
 // ── PRECIOS ECUADOR (USD) · CAMBIAR AQUÍ ────────────────────────────────────
 // Es el único lugar donde se definen. La página los muestra, /api/pedido-ec los
 // manda como `total` y el webhook del CRM (landing-mi-tiroides-ec) acepta ese total.
-// Precio de prueba mientras Andrés decide (11-nov-2026): 29,90 / 44,90 / 54,90.
+// Precio confirmado por Andrés (11-nov-2026): 34,90 / 49,90 / 64,90.
 export const PRECIOS_EC: Record<"1" | "2" | "3", { precio: number; frascos: number; label: string }> = {
-  "1": { precio: 29.9, frascos: 1, label: "1 Frasco" },
-  "2": { precio: 44.9, frascos: 2, label: "2 Frascos" },
-  "3": { precio: 54.9, frascos: 3, label: "3 Frascos" },
+  "1": { precio: 34.9, frascos: 1, label: "1 Frasco" },
+  "2": { precio: 49.9, frascos: 2, label: "2 Frascos" },
+  "3": { precio: 64.9, frascos: 3, label: "3 Frascos" },
 };
 
 // Promesas que dependen de la operación de Ecuador. Si se apagan, la página
