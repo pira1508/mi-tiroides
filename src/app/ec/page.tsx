@@ -24,6 +24,7 @@ import {
   PRECIOS_EC,
   GARANTIA_EC,
   ASISTENTE_EC,
+  WHATSAPP_EC,
   sanitizarTelefonoEC,
   esCelularECValido,
   formatearTelefonoEC,
@@ -1320,7 +1321,7 @@ export default function Page() {
               <summary>¿Tiene registro sanitario?</summary>
               <p>
                 Sí. MI TIROIDES Avanzado es un suplemento alimenticio con Notificación Sanitaria ARCSA
-                N.° [PENDIENTE] y se fabrica bajo Buenas Prácticas de Manufactura. No es un medicamento.
+                y se fabrica bajo Buenas Prácticas de Manufactura. No es un medicamento.
               </p>
             </details>
             <details>
@@ -1401,7 +1402,7 @@ export default function Page() {
 
       <footer className="site-footer">
         <div className="container">
-          MI TIROIDES Avanzado · Suplemento alimenticio · Notificación Sanitaria ARCSA N.° [PENDIENTE] · No es un medicamento
+          MI TIROIDES Avanzado · Suplemento alimenticio · Notificación Sanitaria ARCSA · No es un medicamento
           <br />
           Va con su pastilla, no la reemplaza. Este producto no reemplaza el tratamiento médico. Consulte a su profesional de salud.
         </div>
@@ -1526,6 +1527,29 @@ export default function Page() {
                     {usd(pedidoConfirmado.total)}
                   </div>
                 </div>
+                {WHATSAPP_EC && (
+                  <>
+                    <p style={{ fontSize: 13, color: "var(--gris)", margin: "0 0 14px" }}>
+                      ¿Quiere adelantar la confirmación? Escríbanos por WhatsApp con su número de pedido.
+                    </p>
+                    <a
+                      className="btn btn-block"
+                      href={`https://wa.me/${WHATSAPP_EC}?text=${encodeURIComponent(
+                        `¡Hola! Soy ${nombre || "una clienta nueva"} de Ecuador y acabo de hacer mi pedido de MI TIROIDES.\n\n` +
+                        `- Pedido ${pedidoConfirmado.id}\n` +
+                        `- ${cantidad} frasco${cantidad !== "1" ? "s" : ""}\n` +
+                        `- ${usd(pedidoConfirmado.total)} contra entrega\n` +
+                        (ciudad ? `- ${ciudad}\n` : "") +
+                        `\nQuiero confirmar mi pedido.`,
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ textDecoration: "none", marginBottom: 10 }}
+                    >
+                      Confirmar por WhatsApp (opcional)
+                    </a>
+                  </>
+                )}
                 <button className="btn btn-ghost btn-block" onClick={closeModal}>
                   Listo, cerrar
                 </button>

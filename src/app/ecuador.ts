@@ -64,7 +64,7 @@ export const PRECIOS_EC: Record<"1" | "2" | "3", { precio: number; frascos: numb
 
 // Promesas que dependen de la operación de Ecuador. Si se apagan, la página
 // quita esos textos sola.
-export const GARANTIA_EC = true;   // «Garantía de 90 días desde la entrega» (confirmar con Andrés)
+export const GARANTIA_EC = true;   // «Garantía de 90 días desde la entrega», igual que Colombia (confirmado por Andrés 11-nov)
 export const ASISTENTE_EC = false; // acompañamiento por WhatsApp: apagado hasta tener número +593
 
 export const usd = (n: number) =>
@@ -73,4 +73,4 @@ export const usd = (n: number) =>
 // WhatsApp de Ecuador. PENDIENTE: no hay número +593 todavía.
 // Mientras sea null, la página no muestra enlaces de WhatsApp (no se manda a la
 // clienta al número de Colombia).
-export const WHATSAPP_EC: string | null = null;
+export const WHATSAPP_EC: string | null = "573237451763"; // test 11-nov: número colombiano de Camila (decisión de Andrés)
