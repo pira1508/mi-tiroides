@@ -285,6 +285,29 @@ const TESTI_LARGOS = [
   { foto: "CA", nombre: "Carmen", rol: "Buenaventura, Colombia", texto: "Sí, claro que me ha servido mucho, lo necesito. Lo que pasa es que me he quedado sin empleo y no he tenido forma de adquirirlo. Tan pronto tenga hago el pedido.", tag: "Quiere volver a pedir" },
 ];
 
+// Sección «Clientas en Ecuador» (vista previa para inversionista, 11-nov-2026):
+// las 15 fichas del PDF MT-ECUADOR-15-CLIENTAS-v2. Fotos generadas con IA a
+// partir de la v6b → cada foto lleva el rótulo «Foto ilustrativa». Antes de
+// prender pauta a /ec, reemplazar por clientas reales (fotos y mensajes con
+// permiso) o quitar la sección: ARCSA no permite antes/después.
+const CLIENTAS_EC = [
+  { n: "01", nombre: "Patricia", edad: 52, ciudad: "Quito", prov: "Pichincha", oficio: "Ama de casa", texto: "Chuta, yo como lo mismo de siempre y la ropa ya no me cierra. Me tomo mi pastilla todos los días, sin falta, y sigo igualita." },
+  { n: "02", nombre: "Marcela", edad: 49, ciudad: "Guayaquil", prov: "Guayas", oficio: "Secretaria", texto: "Mija, años con la levotiroxina y sigo hinchada y cansada. Y encima en el seguro no había la pastilla, me tocó comprarla yo." },
+  { n: "03", nombre: "Rosa", edad: 55, ciudad: "Machala", prov: "El Oro", oficio: "Comerciante", texto: "Toda la vida me dijeron que era falta de voluntad, ñaña. Nadie me revisó la tiroides. Con este calor ando hinchadísima." },
+  { n: "04", nombre: "Elena", edad: 47, ciudad: "Cuenca", prov: "Azuay", oficio: "Modista", texto: "Me levanto hinchada y con la cabeza nublada, se me olvidan las medidas de las clientas. Ya no soy la misma." },
+  { n: "05", nombre: "Diana", edad: 51, ciudad: "Ambato", prov: "Tungurahua", oficio: "Enfermera", texto: "Yo soy de las que dice que eso no sirve. Pero salgo del turno muerta y me levanto con la cara hinchada." },
+  { n: "06", nombre: "Juliana", edad: 58, ciudad: "Ibarra", prov: "Imbabura", oficio: "Profesora jubilada", texto: "Desde la menopausia el cuerpo se me apagó: achachay, frío todo el día, cansada y el estómago siempre inflado." },
+  { n: "07", nombre: "Lina", edad: 45, ciudad: "Riobamba", prov: "Chimborazo", oficio: "Auxiliar contable", texto: "Paso sentada todo el día y llego a la casa sin fuerzas, con las piernas hinchadas. Pensé que era la edad." },
+  { n: "08", nombre: "Gladys", edad: 50, ciudad: "Manta", prov: "Manabí", oficio: "Vende desayunos", texto: "Me levanto a las cuatro a hacer los bolones y ya amanezco cansada. Trabajo parada todo el día y el cuerpo no me baja." },
+  { n: "09", nombre: "Mercedes", edad: 53, ciudad: "Portoviejo", prov: "Manabí", oficio: "Profesora", texto: "El doctor me dice que mis exámenes están bien, pero yo me siento full mal. Cansada, hinchada y se me cae el pelo." },
+  { n: "10", nombre: "Nancy", edad: 48, ciudad: "Santo Domingo", prov: "Santo Domingo de los Tsáchilas", oficio: "Dueña de tienda", texto: "A las tres de la tarde me duermo en el mostrador. Y esta barriga inflada no se me quita con nada." },
+  { n: "11", nombre: "Teresa", edad: 54, ciudad: "Esmeraldas", prov: "Esmeraldas", oficio: "Cocinera", texto: "Ve, yo cocino todo el día con este calor y amanezco con las manos hinchadas, el anillo ya no me sale." },
+  { n: "12", nombre: "Rocío", edad: 56, ciudad: "Loja", prov: "Loja", oficio: "Ama de casa", texto: "Dios quiera que esto sí me sirva. Ya he probado de todo y sigo cansada y pesada." },
+  { n: "13", nombre: "Blanca", edad: 50, ciudad: "Latacunga", prov: "Cotopaxi", oficio: "Vendedora en el mercado", texto: "Achachay, con este frío y yo cansadísima desde que me levanto. La pastilla a veces no hay en el centro de salud." },
+  { n: "14", nombre: "Silvia", edad: 46, ciudad: "Puyo", prov: "Pastaza", oficio: "Empleada pública", texto: "Aquí no hay endocrinólogo, me toca viajar a Ambato. Mientras tanto vivo hinchada y con sueño todo el día." },
+  { n: "15", nombre: "Carmen", edad: 57, ciudad: "Durán", prov: "Guayas", oficio: "Jubilada", texto: "Desde que me sacaron la tiroides nunca volví a ser la misma. ¿Esto me sirve si ya no tengo tiroides?" },
+];
+
 // Bloque superior de tarjeta igual al de v6b (.cliente-foto), con la inicial en
 // lugar de la foto: no hay fotos de clientas de Ecuador todavía.
 const FOTO_ILUSTRATIVA: Record<string, string> = {
@@ -800,6 +823,44 @@ export default function Page() {
                       <span>{t.ciudad}, Colombia · mensaje real por WhatsApp</span>
                     </div>
                   </footer>
+                </div>
+              ))}
+            </div>
+            <div className="testi-hint">← Desliza para ver más →</div>
+          </div>
+        </div>
+      </section>
+
+      {/* CLIENTAS EN ECUADOR · vista previa (fotos ilustrativas, ver CLIENTAS_EC) */}
+      <section className="section">
+        <div className="container">
+          <div className="eyebrow">Clientas en Ecuador</div>
+          <h2 className="h2">De Quito a Esmeraldas, de Loja al Puyo</h2>
+          <p className="lead">15 mujeres de la Sierra, la Costa y la Amazonía que viven con la tiroides lenta.</p>
+          <div className="testi-scroller">
+            <div className="testi-track">
+              {CLIENTAS_EC.map((c) => (
+                <div key={c.n} className="testi-card" style={{ minWidth: 300 }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+                    {(["antes", "despues"] as const).map((k) => (
+                      <figure key={k} style={{ margin: 0 }}>
+                        <div style={{ position: "relative", overflow: "hidden", borderRadius: 10 }}>
+                          <img src={`/img/ec-clientas/${c.n}-${k}.webp`} alt="Foto ilustrativa" loading="lazy" width={300} height={375} style={{ width: "100%", height: "auto", display: "block" }} />
+                          <span style={{ position: "absolute", right: 4, bottom: 4, background: "rgba(0,0,0,.55)", color: "#fff", fontSize: 9, padding: "1px 5px", borderRadius: 4 }}>Foto ilustrativa</span>
+                        </div>
+                        <figcaption style={{ fontSize: 11, textAlign: "center", marginTop: 4, color: "var(--verde-2)", fontWeight: 700 }}>
+                          {k === "antes" ? "Antes" : "Con MI TIROIDES"}
+                        </figcaption>
+                      </figure>
+                    ))}
+                  </div>
+                  <footer style={{ borderBottom: "1px solid #e6dfcc", paddingBottom: 12, marginTop: 10 }}>
+                    <div>
+                      <strong>{c.nombre}, {c.edad}</strong>
+                      <span>{c.ciudad} · {c.prov} · {c.oficio}</span>
+                    </div>
+                  </footer>
+                  <p>“{c.texto}”</p>
                 </div>
               ))}
             </div>
