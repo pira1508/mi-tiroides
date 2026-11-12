@@ -9,7 +9,8 @@
 // (nada de cura / trata / desinflama / deshincha: se describe el síntoma y
 // se dice «aporta» / «participa»). Precios en src/app/ecuador.ts.
 // Testimonios: mensajes REALES de clientas en Colombia (WhatsApp), rotulados
-// como tales, sin fotos. Las fotos de clientas de v6b no se usan: entraron
+// como tales, con la tarjeta de v6b y la inicial en lugar de foto (sin caras).
+// Fotos de uso (ec-mujer-*.webp): ilustrativas generadas con IA, nunca clientas. Las fotos de clientas de v6b no se usan: entraron
 // con el primer commit (7-may-2026), antes de la primera venta, así que no
 // son de clientas. Las imágenes ec-*.webp son escenas generadas con
 // Higgsfield (GPT Image 2.5), nunca rotuladas como clienta.
@@ -120,6 +121,17 @@ const SIN_CARA = [
     momento: "Día 60-90",
     caption: "El tratamiento completo. Su tiroides recibe todos los días lo que usa para trabajar, y usted lo nota con la constancia.",
   },
+];
+
+// Fotos de uso con el frasco. Son IMÁGENES ILUSTRATIVAS generadas con IA (Higgsfield):
+// no son clientas ni testimonios. Por eso van con texto neutro y aviso visible.
+const FOTOS_USO = [
+  { src: "/img/ec-mujer-quito-52.webp", titulo: "Desayuno en Quito", caption: "2 cápsulas con el desayuno, junto a su café y su pan." },
+  { src: "/img/ec-mujer-guayaquil-46.webp", titulo: "Desayuno en la costa", caption: "Con el desayuno, 1 vez al día. Un solo frasco para todo." },
+  { src: "/img/ec-mujer-cuenca-60.webp", titulo: "Con su tecito", caption: "Puede tomarlo con su desayuno. Su pastilla va en ayunas, aparte." },
+  { src: "/img/ec-mujer-manabi-41.webp", titulo: "Frasco a la vista", caption: "Déjelo en la cocina, junto al vaso de agua del desayuno, para no olvidarlo." },
+  { src: "/img/ec-mujer-ambato-55.webp", titulo: "Lleve el frasco con usted", caption: "Cabe en la cartera. Si sale antes de desayunar, se lo toma con un café." },
+  { src: "/img/ec-mujer-guayaquil-58.webp", titulo: "Desayuno costeño", caption: "Con bolón, fruta y café: 2 cápsulas con el primer alimento del día." },
 ];
 
 function Mark({ v }: { v: string }) {
@@ -283,6 +295,19 @@ const TESTI_LARGOS = [
   { foto: "RB", nombre: "Rosero B.", rol: "Ipiales, Colombia", texto: "Gracias, sigo con el tratamiento, me siento muy bien.", tag: "Sigue con el tratamiento" },
   { foto: "CA", nombre: "Carmen", rol: "Buenaventura, Colombia", texto: "Sí, claro que me ha servido mucho, lo necesito. Lo que pasa es que me he quedado sin empleo y no he tenido forma de adquirirlo. Tan pronto tenga hago el pedido.", tag: "Quiere volver a pedir" },
 ];
+
+// Bloque superior de tarjeta igual al de v6b (.cliente-foto), con la inicial en
+// lugar de la foto: no hay fotos de clientas de Ecuador todavía.
+function FotoIniciales({ t }: { t: string }) {
+  return (
+    <div
+      className="cliente-foto"
+      style={{ display: "flex", alignItems: "center", justifyContent: "center" }}
+    >
+      <Iniciales t={t} size={72} />
+    </div>
+  );
+}
 
 function Iniciales({ t, size = 44 }: { t: string; size?: number }) {
   return (
@@ -759,10 +784,8 @@ export default function Page() {
             <div className="testi-track">
               {testiCortosShuffled.map((t) => (
                 <div key={t.foto} className="testi-card">
-                  <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 8 }}>
-                    <Iniciales t={t.foto} />
-                    <div className="stars">★★★★★</div>
-                  </div>
+                  <FotoIniciales t={t.foto} />
+                  <div className="stars">★★★★★</div>
                   <p>“{t.texto}”</p>
                   <footer>
                     <div>
@@ -1116,8 +1139,8 @@ export default function Page() {
             <div className="testi-track">
               {testiLargosShuffled.map((t) => (
                 <div key={t.foto} className="testi-card">
-                  <footer style={{ borderBottom: "1px solid #e6dfcc", paddingBottom: 12, marginTop: 0, display: "flex", gap: 10, alignItems: "center" }}>
-                    <Iniciales t={t.foto} />
+                  <FotoIniciales t={t.foto} />
+                  <footer style={{ borderBottom: "1px solid #e6dfcc", paddingBottom: 12, marginTop: 0 }}>
                     <div>
                       <strong>{t.nombre}</strong>
                       <span>{t.rol}</span>
@@ -1130,6 +1153,35 @@ export default function Page() {
                       {t.tag}
                     </span>
                   </div>
+                </div>
+              ))}
+            </div>
+            <div className="testi-hint">← Desliza para ver más →</div>
+          </div>
+        </div>
+      </section>
+
+      {/* FOTOS DE USO — ilustrativas (IA), NO son clientas. Mismo carrusel que v6b (sincara-*). */}
+      <section className="section">
+        <div className="container">
+          <div className="eyebrow">Así se toma</div>
+          <h2 className="h2">Así se toma MI TIROIDES</h2>
+          <p className="lead">Con el desayuno, 1 vez al día. Imágenes ilustrativas generadas con IA: no son clientas.</p>
+
+          <div className="sincara-scroller">
+            <div className="sincara-track">
+              {FOTOS_USO.map((f) => (
+                <div key={f.src} className="sincara-card">
+                  <div className="sincara-foto">
+                    <Image
+                      src={f.src}
+                      alt={`${f.titulo}: imagen ilustrativa de una mujer con el frasco de MI TIROIDES AVANZADO`}
+                      width={600}
+                      height={750}
+                    />
+                  </div>
+                  <div className="sincara-titulo">{f.titulo}</div>
+                  <div className="sincara-caption">{f.caption}</div>
                 </div>
               ))}
             </div>
