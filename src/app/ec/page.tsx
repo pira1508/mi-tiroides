@@ -929,7 +929,7 @@ export default function Page() {
                 <tr>
                   <th></th>
                   <th className="ctable-feat">
-                    <Image src="/img/bundle-1.webp" alt="MI TIROIDES" width={80} height={80} />
+                    <Image src="/img/ec-bundle-1.webp" alt="MI TIROIDES" width={80} height={80} />
                     <span>MI TIROIDES</span>
                     <small>{usd(PLANES["1"].precio)} / 45 días</small>
                     <em className="ctable-tag">RECOMENDADO</em>
@@ -1587,7 +1587,7 @@ export default function Page() {
                         )}
                         <div className="modal-plan-img">
                           <Image
-                            src={p.frascos === 1 ? "/img/ec-bundle-1.webp" : `/img/bundle-${p.frascos}.webp`}
+                            src={p.frascos === 1 ? "/img/ec-bundle-1.webp" : `/img/ec-bundle-${p.frascos}.webp`}
                             alt={p.label}
                             width={300}
                             height={300}
