@@ -287,7 +287,25 @@ const TESTI_LARGOS = [
 
 // Bloque superior de tarjeta igual al de v6b (.cliente-foto), con la inicial en
 // lugar de la foto: no hay fotos de clientas de Ecuador todavía.
+const FOTO_ILUSTRATIVA: Record<string, string> = {
+  NQ: "/img/ec-mujer-guayaquil-58.webp",
+  RB: "/img/ec-mujer-ambato-55.webp",
+  AQ: "/img/ec-mujer-manabi-41.webp",
+  CA: "/img/ec-mujer-cierre-60.webp",
+  CV: "/img/ec-mujer-familia-domingo.webp",
+  PC: "/img/ec-mujer-calendario-30.webp",
+};
+
 function FotoIniciales({ t }: { t: string }) {
+  const src = FOTO_ILUSTRATIVA[t];
+  if (src) {
+    return (
+      <div className="cliente-foto" style={{ position: "relative", overflow: "hidden" }}>
+        <img src={src} alt="Foto ilustrativa" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        <span style={{ position: "absolute", right: 8, bottom: 8, background: "rgba(0,0,0,.55)", color: "#fff", fontSize: 10, padding: "2px 6px", borderRadius: 4 }}>Foto ilustrativa</span>
+      </div>
+    );
+  }
   return (
     <div
       className="cliente-foto"
@@ -759,7 +777,7 @@ export default function Page() {
             <div className="avatar-stack">
               {avatarStackShuffled.slice(0, 4).map((t) => (
                 <div key={t.foto} className="avatar">
-                  <Iniciales t={t.foto} size={40} />
+                  {FOTO_ILUSTRATIVA[t.foto] ? <img src={FOTO_ILUSTRATIVA[t.foto]} alt="Foto ilustrativa" style={{ width: 40, height: 40, borderRadius: "50%", objectFit: "cover" }} /> : <Iniciales t={t.foto} size={40} />}
                 </div>
               ))}
             </div>
