@@ -312,7 +312,7 @@ const CLIENTAS_EC = [
 // quitarlo mientras las fichas no sean de clientas reales.
 function RotuloIlustrativo() {
   return (
-    <span style={{ position: "absolute", right: 6, bottom: 6, background: "rgba(0,0,0,.4)", color: "#fff", fontSize: 8, lineHeight: 1.3, padding: "1px 4px", borderRadius: 3, letterSpacing: 0.2 }}>
+    <span style={{ position: "absolute", right: 4, bottom: 4, background: "rgba(0,0,0,.45)", color: "#fff", fontSize: 7, lineHeight: 1.2, padding: "0 3px", borderRadius: 2, letterSpacing: 0 }}>
       Caso ilustrativo
     </span>
   );
