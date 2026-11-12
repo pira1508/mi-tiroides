@@ -815,7 +815,7 @@ export default function Page() {
             <div className="hero-checks">
               <div>Sin suscripción</div>
               <div>Envío gratis en tu primer pedido</div>
-              <div>Garantía de satisfacción 30 días</div>
+              <div><strong>Garantía de 90 días</strong> desde el día que lo recibes</div>
             </div>
           </div>
         </div>
@@ -1028,7 +1028,7 @@ export default function Page() {
                   ["Hecho en Colombia + INVIMA", "yes", "yes", "no"],
                   ["Sin pago en dólares ni aduana", "yes", "yes", "no"],
                   ["Pago contra entrega", "yes", "no", "no"],
-                  ["Garantía 30 días", "yes", "no", "no"],
+                  ["Garantía 90 días desde la entrega", "yes", "no", "no"],
                 ].map(([feat, a, b, c]) => (
                   <tr key={feat as string}>
                     <td>{feat}</td>
@@ -1364,8 +1364,9 @@ export default function Page() {
               <summary>¿Es otro de esos suplementos de TikTok?</summary>
               <p>
                 No. MI TIROIDES tiene <strong>registro INVIMA</strong>, se fabrica en Colombia bajo Buenas
-                Prácticas y se paga <strong>contra entrega</strong>. Si no te convence, tienes
-                <strong> garantía de 30 días</strong> y te devolvemos el dinero.
+                Prácticas y se paga <strong>contra entrega</strong>. Si en
+                <strong> 90 días desde que lo recibes</strong> no notas el cambio, te devolvemos la plata.
+                Sin devolver el frasco, sin preguntas.
               </p>
             </details>
             <details>
@@ -1389,7 +1390,7 @@ export default function Page() {
               <p>
                 Porque no es lo mismo. Aquí pagas por una <strong>fórmula específica con dosis que sí
                 sirven</strong> (yodo + selenio juntos), más el <strong>acompañamiento de Camila por
-                WhatsApp</strong> y la <strong>garantía de 30 días</strong>. Un genérico barato rara vez
+                WhatsApp</strong> y la <strong>garantía de 90 días</strong>. Un genérico barato rara vez
                 trae eso.
               </p>
             </details>
@@ -1504,7 +1505,7 @@ export default function Page() {
             Sí, quiero empezar mi cambio HOY →
           </button>
           <p style={{ color: "#d6cdb3", marginTop: 16, fontSize: 14, fontStyle: "italic" }}>
-            Pago contra entrega · Llega en 24-72h · 30 días de garantía
+            Pago contra entrega · Llega en 24-72h · Garantía de 90 días desde la entrega
           </p>
         </div>
       </section>
@@ -1969,7 +1970,7 @@ export default function Page() {
                         PEDIR AHORA — PAGO AL RECIBIR
                         <br />
                         <span style={{ fontSize: 13, opacity: .9, fontWeight: 500 }}>
-                          ${plan.precio.toLocaleString("es-CO")} · Envío gratis · Garantía 30 días
+                          ${plan.precio.toLocaleString("es-CO")} · Envío gratis · Garantía 90 días
                         </span>
                       </>
                     )}
