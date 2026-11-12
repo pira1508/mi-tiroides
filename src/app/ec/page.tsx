@@ -85,7 +85,7 @@ const HERO_RESTO = [
 
 const SIN_CARA = [
   {
-    src: "/img/ec-desayuno.webp",
+    src: "/img/ec-sincara-1.webp",
     titulo: "7:00 a.m. · Con el desayuno",
     momento: "Día 1",
     caption: "2 cápsulas con el primer alimento del día. El selenio y el zinc se absorben mejor con grasas saludables.",
@@ -97,7 +97,7 @@ const SIN_CARA = [
     caption: "1 sola toma al día. Sin recordatorios extra, sin pastilleros complicados — un solo frasco para todo.",
   },
   {
-    src: "/img/ec-hero-costa.webp",
+    src: "/img/ec-sincara-3.webp",
     titulo: "Lleve el frasco con usted",
     momento: "Si sale temprano",
     caption: "Cabe en la cartera. Si se va a trabajar antes de desayunar, se las toma allá con un café.",

@@ -65,7 +65,7 @@ export const PRECIOS_EC: Record<"1" | "2" | "3", { precio: number; frascos: numb
 // Promesas que dependen de la operación de Ecuador. Si se apagan, la página
 // quita esos textos sola.
 export const GARANTIA_EC = true;   // «Garantía de 90 días desde la entrega», igual que Colombia (confirmado por Andrés 11-nov)
-export const ASISTENTE_EC = false; // acompañamiento por WhatsApp: apagado hasta tener número +593
+export const ASISTENTE_EC = true;  // acompañamiento por WhatsApp: encendido 11-nov por Andrés, lo atiende Camila desde el número de Colombia (WHATSAPP_EC)
 
 export const usd = (n: number) =>
   "US$" + n.toLocaleString("es-EC", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
