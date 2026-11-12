@@ -86,40 +86,40 @@ const HERO_RESTO = [
 
 const SIN_CARA = [
   {
-    src: "/img/ec-mujer-guayaquil-58.webp",
+    src: "/img/ec-sincara-1.webp",
     titulo: "7:00 a.m. · Con el desayuno",
     momento: "Día 1",
     caption: "2 cápsulas con el primer alimento del día. El selenio y el zinc se absorben mejor con grasas saludables.",
   },
   {
-    src: "/img/ec-mujer-manabi-41.webp",
+    src: "/img/ec-sincara-2.webp",
     titulo: "La toma diaria",
     momento: "Cada mañana",
     caption: "1 sola toma al día. Sin recordatorios extra, sin pastilleros complicados — un solo frasco para todo.",
   },
   {
-    src: "/img/ec-mujer-ambato-55.webp",
+    src: "/img/ec-sincara-3.webp",
     titulo: "Lleve el frasco con usted",
     momento: "Si sale temprano",
-    caption: "Cabe en la cartera. Si se va a trabajar antes de desayunar, se las toma allá con un café.",
+    caption: "Cabe en la cartera. Si se va a la oficina antes de desayunar, se las toma allá con un café.",
   },
   {
-    src: "/img/ec-mujer-familia-domingo.webp",
+    src: "/img/ec-sincara-4.webp",
     titulo: "Domingo en familia",
     momento: "Día 14",
-    caption: "Dos semanas sin fallar un día: las mañanas empiezan a sentirse distintas.",
+    caption: "Empieza el cambio: se despierta con menos pesadez, las mañanas dejan de ser una lucha.",
   },
   {
-    src: "/img/ec-mujer-calendario-30.webp",
+    src: "/img/ec-sincara-5.webp",
     titulo: "Marque su progreso",
     momento: "Día 30",
-    caption: "Primer frasco completo. Fíjese cómo se siente en el día, en la tarde y al despertar.",
+    caption: "Energía estable durante el día. Menos siesta de las 3 p.m. Empieza a notar el estómago menos inflado.",
   },
   {
-    src: "/img/ec-mujer-cierre-60.webp",
+    src: "/img/ec-sincara-6.webp",
     titulo: "Cierre su día",
     momento: "Día 60-90",
-    caption: "El tratamiento completo. Su tiroides recibe todos los días lo que usa para trabajar, y usted lo nota con la constancia.",
+    caption: "Duerme mejor. La hinchazón al despertar se va. Su metabolismo y su humor empiezan a sostenerse solos.",
   },
 ];
 
