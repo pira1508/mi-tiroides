@@ -271,17 +271,17 @@ type Cantidad = keyof typeof PLANES;
 // No se editó el sentido; «…» marca un recorte.
 // BOCETO INTERNO (rama boceto-ec-testimonios). Textos de MARCADOR: no son clientas.
 const TESTI_CORTOS = [
-  { foto: "EJ1", nombre: "[Nombre]", ciudad: "[Ciudad]", texto: "[Mensaje real pendiente]" },
-  { foto: "EJ2", nombre: "[Nombre]", ciudad: "[Ciudad]", texto: "[Mensaje real pendiente]" },
-  { foto: "EJ3", nombre: "[Nombre]", ciudad: "[Ciudad]", texto: "[Mensaje real pendiente]" },
-  { foto: "EJ4", nombre: "[Nombre]", ciudad: "[Ciudad]", texto: "[Mensaje real pendiente]" },
+  { foto: "/img/ec-mujer-guayaquil-58.webp", nombre: "Clienta de ejemplo", ciudad: "Guayaquil", texto: "Ya voy por el segundo frasco y me levanto con otro ánimo. Llegó rapidito y pagué al recibir." },
+  { foto: "/img/ec-mujer-ambato-55.webp", nombre: "Clienta de ejemplo", ciudad: "Ambato", texto: "Lo tomo con el desayuno, ya no me da ese sueño pesado de la tarde." },
+  { foto: "/img/ec-mujer-manabi-41.webp", nombre: "Clienta de ejemplo", ciudad: "Manta", texto: "Me siento menos hinchada en las mañanas, los anillos ya me entran." },
+  { foto: "/img/ec-mujer-cierre-60.webp", nombre: "Clienta de ejemplo", ciudad: "Quito", texto: "Sigo con el tratamiento, me siento muy bien. Gracias por estar pendientes." },
 ];
 
 const TESTI_LARGOS = [
-  { foto: "EJ1", nombre: "[Nombre]", rol: "[Ciudad] · [edad]", texto: "[Historia real pendiente]", tag: "Ejemplo" },
-  { foto: "EJ2", nombre: "[Nombre]", rol: "[Ciudad] · [edad]", texto: "[Historia real pendiente]", tag: "Ejemplo" },
-  { foto: "EJ3", nombre: "[Nombre]", rol: "[Ciudad] · [edad]", texto: "[Historia real pendiente]", tag: "Ejemplo" },
-  { foto: "EJ4", nombre: "[Nombre]", rol: "[Ciudad] · [edad]", texto: "[Historia real pendiente]", tag: "Ejemplo" },
+  { foto: "/img/ec-mujer-familia-domingo.webp", nombre: "Clienta de ejemplo", rol: "Cuenca · 57 años", texto: "Llevaba años diciendo que era la edad. Me cansaba subiendo a la casa y en la tarde ya no daba más. Con el primer frasco empecé a notar las mañanas distintas; ya voy por el tercero.", tag: "Ejemplo" },
+  { foto: "/img/ec-mujer-calendario-30.webp", nombre: "Clienta de ejemplo", rol: "Loja · 49 años", texto: "Lo que más me molestaba era el pelo en la almohada y las uñas que se me partían. Lo marco en el calendario cada mañana con el desayuno y voy viendo el cambio poco a poco.", tag: "Ejemplo" },
+  { foto: "/img/ec-mujer-guayaquil-58.webp", nombre: "Clienta de ejemplo", rol: "Guayaquil · 58 años", texto: "Con este calor me hinchaba de cara y de pies. Me daba desconfianza pedir por internet, pero pagué cuando me llegó a la casa y la asesora me escribió para explicarme cómo tomarlo.", tag: "Ejemplo" },
+  { foto: "/img/ec-mujer-ambato-55.webp", nombre: "Clienta de ejemplo", rol: "Ambato · 55 años", texto: "Mi hija me lo pidió. Yo ya tomaba la pastilla del médico y me explicaron que no la reemplaza, que la acompaña. Hoy me siento con más energía para mis cosas.", tag: "Ejemplo" },
 ];
 
 // Bloque superior de tarjeta igual al de v6b (.cliente-foto), con la inicial en
@@ -289,9 +289,16 @@ function FotoIniciales({ t }: { t: string }) {
   return (
     <div
       className="cliente-foto"
-      style={{ display: "flex", alignItems: "center", justifyContent: "center" }}
+      style={{ display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}
     >
-      <Iniciales t={t} size={72} />
+      {t.startsWith("/img/") ? (
+        <>
+          <img src={t} alt="Foto de ejemplo (boceto)" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          <span style={{ position: "absolute", top: 10, left: 10, background: "#b42318", color: "#fff", fontSize: 11, fontWeight: 800, letterSpacing: ".5px", padding: "3px 8px", borderRadius: 4 }}>EJEMPLO</span>
+        </>
+      ) : (
+        <Iniciales t={t} size={72} />
+      )}
     </div>
   );
 }
@@ -761,7 +768,7 @@ export default function Page() {
             <div className="avatar-stack">
               {avatarStackShuffled.slice(0, 4).map((t) => (
                 <div key={t.foto} className="avatar">
-                  <Iniciales t={t.foto} size={40} />
+                  <img src={t.foto} alt="Ejemplo" style={{ width: 40, height: 40, borderRadius: "50%", objectFit: "cover" }} />
                 </div>
               ))}
             </div>
