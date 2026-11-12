@@ -308,6 +308,16 @@ const CLIENTAS_EC = [
   { n: "15", nombre: "Carmen", edad: 57, ciudad: "Durán", prov: "Guayas", oficio: "Jubilada", texto: "Desde que me sacaron la tiroides nunca volví a ser la misma. ¿Esto me sirve si ya no tengo tiroides?" },
 ];
 
+// Rótulo de las fichas ilustrativas: pequeño pero legible. No achicarlo más ni
+// quitarlo mientras las fichas no sean de clientas reales.
+function RotuloIlustrativo() {
+  return (
+    <span style={{ position: "absolute", right: 6, bottom: 6, background: "rgba(0,0,0,.4)", color: "#fff", fontSize: 8, lineHeight: 1.3, padding: "1px 4px", borderRadius: 3, letterSpacing: 0.2 }}>
+      Caso ilustrativo
+    </span>
+  );
+}
+
 // Bloque superior de tarjeta igual al de v6b (.cliente-foto), con la inicial en
 // lugar de la foto: no hay fotos de clientas de Ecuador todavía.
 const FOTO_ILUSTRATIVA: Record<string, string> = {
@@ -795,12 +805,12 @@ export default function Page() {
       {/* MINI TESTIMONIOS */}
       <section className="section-tight section-beige">
         <div className="container">
-          <div className="eyebrow">Lo que escriben nuestras clientas en Colombia</div>
+          <div className="eyebrow">¿Qué dicen nuestras clientas?</div>
           <div className="review-strip">
             <div className="avatar-stack">
-              {avatarStackShuffled.slice(0, 4).map((t) => (
-                <div key={t.foto} className="avatar">
-                  {FOTO_ILUSTRATIVA[t.foto] ? <img src={FOTO_ILUSTRATIVA[t.foto]} alt="Foto ilustrativa" style={{ width: 40, height: 40, borderRadius: "50%", objectFit: "cover" }} /> : <Iniciales t={t.foto} size={40} />}
+              {CLIENTAS_EC.slice(0, 4).map((c) => (
+                <div key={c.n} className="avatar avatar-photo">
+                  <img src={`/img/ec-clientas/${c.n}-despues.webp`} alt="Caso ilustrativo" width={80} height={80} />
                 </div>
               ))}
             </div>
@@ -812,55 +822,20 @@ export default function Page() {
 
           <div className="testi-scroller">
             <div className="testi-track">
-              {testiCortosShuffled.map((t) => (
-                <div key={t.foto} className="testi-card">
-                  <FotoIniciales t={t.foto} />
+              {CLIENTAS_EC.slice(0, 4).map((c) => (
+                <div key={c.n} className="testi-card">
+                  <div className="cliente-foto" style={{ position: "relative" }}>
+                    <img src={`/img/ec-clientas/${c.n}-despues.webp`} alt="Caso ilustrativo" loading="lazy" width={420} height={340} style={{ objectPosition: "center 25%" }} />
+                    <RotuloIlustrativo />
+                  </div>
                   <div className="stars">★★★★★</div>
-                  <p>“{t.texto}”</p>
+                  <p>“{c.texto}”</p>
                   <footer>
                     <div>
-                      <strong>{t.nombre}</strong>
-                      <span>{t.ciudad}, Colombia · mensaje real por WhatsApp</span>
-                    </div>
-                  </footer>
-                </div>
-              ))}
-            </div>
-            <div className="testi-hint">← Desliza para ver más →</div>
-          </div>
-        </div>
-      </section>
-
-      {/* CLIENTAS EN ECUADOR · vista previa (fotos ilustrativas, ver CLIENTAS_EC) */}
-      <section className="section">
-        <div className="container">
-          <div className="eyebrow">Clientas en Ecuador</div>
-          <h2 className="h2">De Quito a Esmeraldas, de Loja al Puyo</h2>
-          <p className="lead">15 mujeres de la Sierra, la Costa y la Amazonía que viven con la tiroides lenta.</p>
-          <div className="testi-scroller">
-            <div className="testi-track">
-              {CLIENTAS_EC.map((c) => (
-                <div key={c.n} className="testi-card" style={{ minWidth: 300 }}>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
-                    {(["antes", "despues"] as const).map((k) => (
-                      <figure key={k} style={{ margin: 0 }}>
-                        <div style={{ position: "relative", overflow: "hidden", borderRadius: 10 }}>
-                          <img src={`/img/ec-clientas/${c.n}-${k}.webp`} alt="Foto ilustrativa" loading="lazy" width={300} height={375} style={{ width: "100%", height: "auto", display: "block" }} />
-                          <span style={{ position: "absolute", right: 4, bottom: 4, background: "rgba(0,0,0,.55)", color: "#fff", fontSize: 9, padding: "1px 5px", borderRadius: 4 }}>Foto ilustrativa</span>
-                        </div>
-                        <figcaption style={{ fontSize: 11, textAlign: "center", marginTop: 4, color: "var(--verde-2)", fontWeight: 700 }}>
-                          {k === "antes" ? "Antes" : "Con MI TIROIDES"}
-                        </figcaption>
-                      </figure>
-                    ))}
-                  </div>
-                  <footer style={{ borderBottom: "1px solid #e6dfcc", paddingBottom: 12, marginTop: 10 }}>
-                    <div>
                       <strong>{c.nombre}, {c.edad}</strong>
-                      <span>{c.ciudad} · {c.prov} · {c.oficio}</span>
+                      <span>{c.ciudad} · {c.prov}</span>
                     </div>
                   </footer>
-                  <p>“{c.texto}”</p>
                 </div>
               ))}
             </div>
@@ -1199,26 +1174,36 @@ export default function Page() {
       {/* TESTIMONIOS LARGOS */}
       <section className="section section-beige" id="testimonios">
         <div className="container">
-          <div className="eyebrow">Mensajes reales · clientas en Colombia</div>
-          <h2 className="h2">Lo que nos escriben por WhatsApp</h2>
-          <p className="lead">Copiados tal cual de los chats de clientas de MI TIROIDES en Colombia. Solo dejamos la inicial del apellido y la ciudad.</p>
+          <div className="eyebrow">Clientas en Ecuador</div>
+          <h2 className="h2">Historias de clientas</h2>
+          <p className="lead">De Quito a Esmeraldas, de Loja al Puyo: mujeres de la Sierra, la Costa y la Amazonía que viven con la tiroides lenta.</p>
 
           <div className="testi-scroller">
             <div className="testi-track">
-              {testiLargosShuffled.map((t) => (
-                <div key={t.foto} className="testi-card">
-                  <FotoIniciales t={t.foto} />
+              {CLIENTAS_EC.map((c) => (
+                <div key={c.n} className="testi-card">
+                  <div className="cliente-foto" style={{ position: "relative", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
+                    {(["antes", "despues"] as const).map((k) => (
+                      <div key={k} style={{ position: "relative", overflow: "hidden" }}>
+                        <img src={`/img/ec-clientas/${c.n}-${k}.webp`} alt="Caso ilustrativo" loading="lazy" width={300} height={375} style={{ objectPosition: "center 25%" }} />
+                        <span style={{ position: "absolute", left: 6, top: 6, background: k === "antes" ? "rgba(0,0,0,.45)" : "var(--verde-2)", color: "#fff", fontSize: 10, fontWeight: 700, padding: "2px 6px", borderRadius: 4, textTransform: "uppercase", letterSpacing: 0.5 }}>
+                          {k === "antes" ? "Antes" : "Con MI TIROIDES"}
+                        </span>
+                      </div>
+                    ))}
+                    <RotuloIlustrativo />
+                  </div>
                   <footer style={{ borderBottom: "1px solid #e6dfcc", paddingBottom: 12, marginTop: 0 }}>
                     <div>
-                      <strong>{t.nombre}</strong>
-                      <span>{t.rol}</span>
+                      <strong>{c.nombre}</strong>
+                      <span>{c.oficio} · {c.edad} · {c.ciudad}</span>
                     </div>
                   </footer>
-                  <p>“{t.texto}”</p>
+                  <p>“{c.texto}”</p>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "auto" }}>
                     <span className="stars">★★★★★</span>
                     <span style={{ fontSize: 11, color: "var(--verde-2)", textTransform: "uppercase", letterSpacing: 1, fontWeight: 700 }}>
-                      {t.tag}
+                      {c.prov}
                     </span>
                   </div>
                 </div>
