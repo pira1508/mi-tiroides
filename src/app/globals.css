@@ -1603,3 +1603,45 @@ footer.site-footer {
 .v2-paso { background: var(--crema); border-radius: 12px; padding: 14px; font-size: 14px; line-height: 1.5; }
 .v2-paso b { display: block; color: var(--verde); font-size: 15px; margin-bottom: 4px; }
 .v2-gfoot { margin: 14px 0 0; font-size: 13px; color: var(--gris); text-align: center; }
+
+/* ===== SEÑALES (11-nov-2026) · prelandings «Funnel 4 señales» · prefijo sen- (no toca v6b) ===== */
+.sen-gloria { margin-top: 10px; font-size: 13px; color: var(--gris); text-align: center; }
+.sen-carta p { font-size: 17px; line-height: 1.7; color: var(--tinta); margin: 0 0 16px; }
+.sen-disclaimer { font-size: 12px; color: var(--gris); font-style: italic; margin-top: 8px; }
+.sen-signs { display: grid; gap: 14px; grid-template-columns: 1fr; }
+@media (min-width: 760px) { .sen-signs { grid-template-columns: 1fr 1fr; } }
+.sen-sign { background: #fff; border: 1px solid #ebe2cc; border-radius: 14px; padding: 18px; }
+.sen-sign.propia { grid-column: 1 / -1; border: 2px solid var(--verde); box-shadow: 0 8px 22px rgba(31,61,43,.12); }
+.sen-sign-head { display: flex; gap: 12px; align-items: center; }
+.sen-sign-icono { font-size: 30px; }
+.sen-sign-tag { display: inline-block; background: var(--verde); color: #fff; font-size: 10px; font-weight: 700; letter-spacing: 1px; padding: 3px 8px; border-radius: 4px; margin-bottom: 4px; }
+.sen-sign h3 { margin: 0; font-size: 19px; color: var(--verde); }
+.sen-sign p { color: var(--gris); font-size: 15px; line-height: 1.6; margin: 10px 0; }
+.sen-sign blockquote { margin: 10px 0 0; padding: 10px 14px; background: #f7f3e8; border-left: 3px solid var(--dorado); border-radius: 6px; font-size: 14px; line-height: 1.55; color: var(--tinta); }
+.sen-sign cite { display: block; font-style: normal; font-size: 11px; color: var(--gris); margin-top: 4px; }
+.sen-sign-cierre { color: var(--verde) !important; font-weight: 700; }
+.sen-probe { list-style: none; padding: 0; margin: 18px 0 0; display: grid; gap: 10px; }
+.sen-probe li { background: #fff; border: 1px solid #ebe2cc; border-radius: 10px; padding: 12px 14px; font-size: 15px; color: var(--tinta); }
+.sen-probe li span { color: #b85a1e; font-weight: 800; margin-right: 6px; }
+.sen-nutrientes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; max-width: 640px; margin: 22px auto 0; }
+@media (min-width: 760px) { .sen-nutrientes { grid-template-columns: repeat(3, 1fr); } }
+.sen-nutriente { background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.18); border-radius: 12px; padding: 14px 10px; text-align: center; color: #fff; display: flex; flex-direction: column; gap: 4px; }
+.sen-nutriente strong { font-size: 20px; color: var(--dorado); }
+.sen-nutriente span { font-size: 13px; color: #d6cdb3; }
+.sen-comp { border: 1px solid #ebe2cc; border-radius: 12px; overflow: hidden; background: #fff; font-size: 14px; }
+.sen-comp-row { display: grid; grid-template-columns: 1.1fr 1fr 1.2fr; gap: 8px; padding: 12px 14px; border-top: 1px solid #f1ebdb; align-items: center; }
+.sen-comp-row.head { background: #f7f3e8; font-weight: 700; color: var(--verde); border-top: 0; }
+.sen-no { color: var(--gris); }
+.sen-si { color: var(--verde); font-weight: 700; }
+.sen-nevera { background: #fff; border: 2px dashed #c9a14a; border-radius: 14px; padding: 22px 20px; }
+.sen-nevera-titulo { font-size: 13px; letter-spacing: 2px; color: #c9a14a; font-weight: 800; margin-bottom: 12px; text-transform: uppercase; }
+.sen-nevera-paso { font-size: 16px; color: var(--tinta); margin-bottom: 10px; line-height: 1.5; }
+.sen-nevera-nota { font-size: 13px; color: var(--gris); margin-top: 6px; }
+.sen-recorrido { display: grid; gap: 12px; margin-top: 18px; }
+@media (min-width: 760px) { .sen-recorrido { grid-template-columns: repeat(3, 1fr); } }
+.sen-rec-card { background: #fff; border: 1px solid #ebe2cc; border-radius: 12px; padding: 16px; }
+.sen-rec-tag { font-size: 11px; font-weight: 800; letter-spacing: 1px; color: #b85a1e; text-transform: uppercase; }
+.sen-rec-card h3 { margin: 6px 0; font-size: 17px; color: var(--verde); }
+.sen-rec-card p { margin: 0; font-size: 14px; color: var(--gris); line-height: 1.55; }
+.sen-limite { margin-top: 18px; padding: 14px 16px; background: rgba(31,61,43,.06); border-radius: 10px; font-size: 15px; line-height: 1.6; color: #1f3d2b; }
+.sen-gloria, .sen-disclaimer { display: block; }
