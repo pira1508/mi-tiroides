@@ -10,7 +10,7 @@
 // se dice «aporta» / «participa»). Precios en src/app/ecuador.ts.
 // Testimonios: mensajes REALES de clientas en Colombia (WhatsApp), rotulados
 // como tales, con la tarjeta de v6b y la inicial en lugar de foto (sin caras).
-// Fotos de uso (ec-mujer-*.webp): ilustrativas generadas con IA, nunca clientas. Las fotos de clientas de v6b no se usan: entraron
+// Fotos de la rutina (ec-mujer-*.webp): ilustraciones generadas con IA, sin nombres, edades ni citas. Las fotos de clientas de v6b no se usan: entraron
 // con el primer commit (7-may-2026), antes de la primera venta, así que no
 // son de clientas. Las imágenes ec-*.webp son escenas generadas con
 // Higgsfield (GPT Image 2.5), nunca rotuladas como clienta.
@@ -86,52 +86,41 @@ const HERO_RESTO = [
 
 const SIN_CARA = [
   {
-    src: "/img/ec-sincara-1.webp",
+    src: "/img/ec-mujer-guayaquil-58.webp",
     titulo: "7:00 a.m. · Con el desayuno",
     momento: "Día 1",
     caption: "2 cápsulas con el primer alimento del día. El selenio y el zinc se absorben mejor con grasas saludables.",
   },
   {
-    src: "/img/sincara-2.webp",
+    src: "/img/ec-mujer-manabi-41.webp",
     titulo: "La toma diaria",
     momento: "Cada mañana",
     caption: "1 sola toma al día. Sin recordatorios extra, sin pastilleros complicados — un solo frasco para todo.",
   },
   {
-    src: "/img/ec-sincara-3.webp",
+    src: "/img/ec-mujer-ambato-55.webp",
     titulo: "Lleve el frasco con usted",
     momento: "Si sale temprano",
     caption: "Cabe en la cartera. Si se va a trabajar antes de desayunar, se las toma allá con un café.",
   },
   {
-    src: "/img/sincara-4.webp",
+    src: "/img/ec-mujer-familia-domingo.webp",
     titulo: "Domingo en familia",
     momento: "Día 14",
     caption: "Dos semanas sin fallar un día: las mañanas empiezan a sentirse distintas.",
   },
   {
-    src: "/img/sincara-5.webp",
+    src: "/img/ec-mujer-calendario-30.webp",
     titulo: "Marque su progreso",
     momento: "Día 30",
     caption: "Primer frasco completo. Fíjese cómo se siente en el día, en la tarde y al despertar.",
   },
   {
-    src: "/img/sincara-6.webp",
+    src: "/img/ec-mujer-cierre-60.webp",
     titulo: "Cierre su día",
     momento: "Día 60-90",
     caption: "El tratamiento completo. Su tiroides recibe todos los días lo que usa para trabajar, y usted lo nota con la constancia.",
   },
-];
-
-// Fotos de uso con el frasco. Son IMÁGENES ILUSTRATIVAS generadas con IA (Higgsfield):
-// no son clientas ni testimonios. Por eso van con texto neutro y aviso visible.
-const FOTOS_USO = [
-  { src: "/img/ec-mujer-quito-52.webp", titulo: "Desayuno en Quito", caption: "2 cápsulas con el desayuno, junto a su café y su pan." },
-  { src: "/img/ec-mujer-guayaquil-46.webp", titulo: "Desayuno en la costa", caption: "Con el desayuno, 1 vez al día. Un solo frasco para todo." },
-  { src: "/img/ec-mujer-cuenca-60.webp", titulo: "Con su tecito", caption: "Puede tomarlo con su desayuno. Su pastilla va en ayunas, aparte." },
-  { src: "/img/ec-mujer-manabi-41.webp", titulo: "Frasco a la vista", caption: "Déjelo en la cocina, junto al vaso de agua del desayuno, para no olvidarlo." },
-  { src: "/img/ec-mujer-ambato-55.webp", titulo: "Lleve el frasco con usted", caption: "Cabe en la cartera. Si sale antes de desayunar, se lo toma con un café." },
-  { src: "/img/ec-mujer-guayaquil-58.webp", titulo: "Desayuno costeño", caption: "Con bolón, fruta y café: 2 cápsulas con el primer alimento del día." },
 ];
 
 function Mark({ v }: { v: string }) {
@@ -1153,35 +1142,6 @@ export default function Page() {
                       {t.tag}
                     </span>
                   </div>
-                </div>
-              ))}
-            </div>
-            <div className="testi-hint">← Desliza para ver más →</div>
-          </div>
-        </div>
-      </section>
-
-      {/* FOTOS DE USO — ilustrativas (IA), NO son clientas. Mismo carrusel que v6b (sincara-*). */}
-      <section className="section">
-        <div className="container">
-          <div className="eyebrow">Así se toma</div>
-          <h2 className="h2">Así se toma MI TIROIDES</h2>
-          <p className="lead">Con el desayuno, 1 vez al día. Imágenes ilustrativas generadas con IA: no son clientas.</p>
-
-          <div className="sincara-scroller">
-            <div className="sincara-track">
-              {FOTOS_USO.map((f) => (
-                <div key={f.src} className="sincara-card">
-                  <div className="sincara-foto">
-                    <Image
-                      src={f.src}
-                      alt={`${f.titulo}: imagen ilustrativa de una mujer con el frasco de MI TIROIDES AVANZADO`}
-                      width={600}
-                      height={750}
-                    />
-                  </div>
-                  <div className="sincara-titulo">{f.titulo}</div>
-                  <div className="sincara-caption">{f.caption}</div>
                 </div>
               ))}
             </div>
