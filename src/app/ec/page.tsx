@@ -269,24 +269,22 @@ type Cantidad = keyof typeof PLANES;
 // Mensajes REALES de clientas de MI TIROIDES en Colombia, copiados de su
 // WhatsApp con Camila (CRM, tabla mensajes). Solo inicial del apellido y ciudad.
 // No se editó el sentido; «…» marca un recorte.
+// BOCETO INTERNO (rama boceto-ec-testimonios). Textos de MARCADOR: no son clientas.
 const TESTI_CORTOS = [
-  { foto: "NQ", nombre: "Nidia Q.", ciudad: "Neiva", texto: "Sí, muy muy bueno… voy a continuar con el tratamiento porque me ha servido bastante." },
-  { foto: "RB", nombre: "Rosero B.", ciudad: "Ipiales", texto: "Gracias, sigo con el tratamiento, me siento muy bien." },
-  { foto: "AQ", nombre: "Ángela Q.", ciudad: "Itagüí", texto: "…ya que me siento muy bien con MI TIROIDES." },
-  { foto: "CA", nombre: "Carmen", ciudad: "Buenaventura", texto: "Sí, claro que me ha servido mucho, lo necesito…" },
+  { foto: "EJ1", nombre: "[Nombre]", ciudad: "[Ciudad]", texto: "[Mensaje real pendiente]" },
+  { foto: "EJ2", nombre: "[Nombre]", ciudad: "[Ciudad]", texto: "[Mensaje real pendiente]" },
+  { foto: "EJ3", nombre: "[Nombre]", ciudad: "[Ciudad]", texto: "[Mensaje real pendiente]" },
+  { foto: "EJ4", nombre: "[Nombre]", ciudad: "[Ciudad]", texto: "[Mensaje real pendiente]" },
 ];
 
 const TESTI_LARGOS = [
-  { foto: "CV", nombre: "Carolina V.", rol: "Cartagena, Colombia", texto: "Sí, me siento mejor. Compré el producto porque leí que había que complementar la levotiroxina con minerales, pero no quería tomar una pastilla de cada una, así que vi la fórmula que trae todas y me dije: esta es.", tag: "Va con su pastilla" },
-  { foto: "PC", nombre: "Patricia C.", rol: "Pitalito, Colombia", texto: "La verdad no he sido juiciosa, pero sí me siento mejor, menos cansancio…", tag: "Mensaje de WhatsApp" },
-  { foto: "NQ", nombre: "Nidia Q.", rol: "Neiva, Colombia · nota de voz", texto: "Sí, muy muy bueno, pues estoy en la espera de que termine el tarrito, que todavía me faltan, para solicitar otro. La verdad sí voy a continuar con el tratamiento porque me ha servido bastante.", tag: "Va por su segundo pedido" },
-  { foto: "AQ", nombre: "Ángela Q.", rol: "Itagüí, Colombia", texto: "¿Y puedo seguir tomando las de la tiroides así pida alguna de ellas, o cómo las debo alternar? Ya que me siento muy bien con MI TIROIDES.", tag: "Clienta que repite" },
-  { foto: "RB", nombre: "Rosero B.", rol: "Ipiales, Colombia", texto: "Gracias, sigo con el tratamiento, me siento muy bien.", tag: "Sigue con el tratamiento" },
-  { foto: "CA", nombre: "Carmen", rol: "Buenaventura, Colombia", texto: "Sí, claro que me ha servido mucho, lo necesito. Lo que pasa es que me he quedado sin empleo y no he tenido forma de adquirirlo. Tan pronto tenga hago el pedido.", tag: "Quiere volver a pedir" },
+  { foto: "EJ1", nombre: "[Nombre]", rol: "[Ciudad] · [edad]", texto: "[Historia real pendiente]", tag: "Ejemplo" },
+  { foto: "EJ2", nombre: "[Nombre]", rol: "[Ciudad] · [edad]", texto: "[Historia real pendiente]", tag: "Ejemplo" },
+  { foto: "EJ3", nombre: "[Nombre]", rol: "[Ciudad] · [edad]", texto: "[Historia real pendiente]", tag: "Ejemplo" },
+  { foto: "EJ4", nombre: "[Nombre]", rol: "[Ciudad] · [edad]", texto: "[Historia real pendiente]", tag: "Ejemplo" },
 ];
 
 // Bloque superior de tarjeta igual al de v6b (.cliente-foto), con la inicial en
-// lugar de la foto: no hay fotos de clientas de Ecuador todavía.
 function FotoIniciales({ t }: { t: string }) {
   return (
     <div
@@ -628,6 +626,10 @@ export default function Page() {
 
   return (
     <>
+      <div style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 9999, background: "#b00020", color: "#fff", textAlign: "center", padding: "8px 12px", fontWeight: 700, fontSize: 13 }}>
+        BOCETO INTERNO · testimonios de ejemplo, no publicar
+      </div>
+      <div style={{ paddingTop: 36 }}>
       {/* MARQUEE */}
       <div className="marquee">
         <div className="marquee-track">
@@ -754,7 +756,7 @@ export default function Page() {
       {/* MINI TESTIMONIOS */}
       <section className="section-tight section-beige">
         <div className="container">
-          <div className="eyebrow">Lo que escriben nuestras clientas en Colombia</div>
+          <div className="eyebrow">BOCETO · testimonios de ejemplo</div>
           <div className="review-strip">
             <div className="avatar-stack">
               {avatarStackShuffled.slice(0, 4).map((t) => (
@@ -779,7 +781,7 @@ export default function Page() {
                   <footer>
                     <div>
                       <strong>{t.nombre}</strong>
-                      <span>{t.ciudad}, Colombia · mensaje real por WhatsApp</span>
+                      <span>{t.ciudad} · Ejemplo</span>
                     </div>
                   </footer>
                 </div>
@@ -1120,9 +1122,9 @@ export default function Page() {
       {/* TESTIMONIOS LARGOS */}
       <section className="section section-beige" id="testimonios">
         <div className="container">
-          <div className="eyebrow">Mensajes reales · clientas en Colombia</div>
-          <h2 className="h2">Lo que nos escriben por WhatsApp</h2>
-          <p className="lead">Copiados tal cual de los chats de clientas de MI TIROIDES en Colombia. Solo dejamos la inicial del apellido y la ciudad.</p>
+          <div className="eyebrow">BOCETO · testimonios de ejemplo</div>
+          <h2 className="h2">Maqueta: testimonios por completar</h2>
+          <p className="lead">Bloque de maqueta. Los textos son marcadores hasta tener testimonios reales y autorizados.</p>
 
           <div className="testi-scroller">
             <div className="testi-track">
@@ -1931,6 +1933,7 @@ export default function Page() {
           </div>
         </div>
       )}
+      </div>
     </>
   );
 }
