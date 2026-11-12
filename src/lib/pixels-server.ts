@@ -26,6 +26,9 @@ export interface PurchaseEvent {
   eventSourceUrl?: string;  // URL donde ocurrió la conversión
   contentName?: string;     // ej. "MI TIROIDES Ecuador" (default: sin content_name en Meta, "MI TIROIDES" en TikTok)
   contentIds?: string[];    // default ["mi-tiroides"]
+  pais?: "co" | "ec";       // default "co" · decide prefijo del teléfono y country (12-nov: EC iba como 57593… y country=co)
+  fbp?: string | null;      // cookie _fbp del navegador
+  fbc?: string | null;      // cookie _fbc del navegador (si no hay, se arma con fbclid)
 }
 
 // SHA-256 lowercase (formato que aceptan ambas APIs para PII)
@@ -44,6 +47,20 @@ function normPhone(tel?: string): string | null {
   return d.length >= 10 ? d : null;
 }
 
+// Teléfono completo con código de país, solo dígitos (formato que piden Meta y TikTok).
+// CO: 57 + 10 dígitos · EC: 593 + 9 dígitos (celular 9XXXXXXXX).
+function telefonoInternacional(tel: string | undefined, pais: "co" | "ec"): string | null {
+  if (!tel) return null;
+  let d = tel.replace(/\D/g, "");
+  if (pais === "ec") {
+    if (d.startsWith("593")) d = d.slice(3);
+    if (d.length === 10 && d.startsWith("0")) d = d.slice(1);
+    return d.length === 9 ? "593" + d : null;
+  }
+  const co = normPhone(d);
+  return co ? "57" + co : null;
+}
+
 // ────────────────────────────────────────────────────────────
 // META CAPI (Graph API v21.0)
 // ────────────────────────────────────────────────────────────
@@ -59,16 +76,18 @@ export async function sendMetaCAPIPurchase(ev: PurchaseEvent): Promise<{ ok: boo
     return { ok: false, status: 0, body: "no_token" };
   }
 
-  const phone = normPhone(ev.telefono);
+  const pais = ev.pais || "co";
+  const phone = telefonoInternacional(ev.telefono, pais);
   const userData: Record<string, unknown> = {};
-  if (phone) userData.ph = [sha256("57" + phone)]; // Meta espera país+número
+  if (phone) userData.ph = [sha256(phone)]; // Meta espera país+número
   if (ev.email) userData.em = [sha256(ev.email)];
   if (ev.nombre) userData.fn = [sha256(ev.nombre.split(/\s+/)[0])];
-  if (ev.fbclid) userData.fbc = `fb.1.${Date.now()}.${ev.fbclid}`;
+  if (ev.fbc) userData.fbc = ev.fbc;
+  else if (ev.fbclid) userData.fbc = `fb.1.${Date.now()}.${ev.fbclid}`;
+  if (ev.fbp) userData.fbp = ev.fbp;
   if (ev.ip) userData.client_ip_address = ev.ip;
   if (ev.userAgent) userData.client_user_agent = ev.userAgent;
-  // country=co + ciudad cuando aplique
-  userData.country = [sha256("co")];
+  userData.country = [sha256(pais)];
 
   const event = {
     event_name: "Purchase",
@@ -122,9 +141,9 @@ export async function sendTikTokEventPurchase(ev: PurchaseEvent): Promise<{ ok: 
     return { ok: false, status: 0, body: "no_token" };
   }
 
-  const phone = normPhone(ev.telefono);
+  const phoneTT = telefonoInternacional(ev.telefono, ev.pais || "co");
   const user: Record<string, unknown> = {};
-  if (phone) user.phone_number = sha256("+57" + phone); // TikTok espera +código
+  if (phoneTT) user.phone_number = sha256("+" + phoneTT); // TikTok espera +código
   if (ev.email) user.email = sha256(ev.email);
   if (ev.ttclid) user.ttclid = ev.ttclid;
   if (ev.ip) user.ip = ev.ip;
@@ -189,10 +208,11 @@ export async function sendTikTokEventPurchase(ev: PurchaseEvent): Promise<{ ok: 
 // ────────────────────────────────────────────────────────────
 
 export async function sendPurchaseToAllPixels(ev: PurchaseEvent): Promise<void> {
-  // Fire and forget: no esperamos respuesta para no bloquear el response al cliente.
+  // Devuelve la promesa: las rutas la pasan a after() de Next para que Vercel NO congele
+  // la función antes de que salga el evento (12-nov: EC 5 compras en Meta vs 12 reales).
   // Los logs quedan en la consola de Vercel para debug.
-  Promise.allSettled([
+  await Promise.allSettled([
     sendMetaCAPIPurchase(ev),
     sendTikTokEventPurchase(ev),
-  ]).catch(() => { /* nunca debería rechazar (allSettled), pero por si acaso */ });
+  ]);
 }

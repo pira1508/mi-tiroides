@@ -1,4 +1,4 @@
-import { NextResponse, NextRequest } from "next/server";
+import { NextResponse, NextRequest, after } from "next/server";
 import { sendPurchaseToAllPixels } from "@/lib/pixels-server";
 import { PROVINCIAS_EC, PRECIOS_EC, sanitizarTelefonoEC, esCelularECValido } from "../../ecuador";
 
@@ -76,6 +76,11 @@ export async function POST(req: NextRequest) {
           utm_content: data.utm_content || undefined,
           utm_medium: data.utm_medium || undefined,
           referrer: data.referrer || undefined,
+          // Navegador y cookies de Meta (12-nov): el CRM los guarda para el rescate CAPI.
+          client_ua: req.headers.get("user-agent") || undefined,
+          client_ip: req.headers.get("x-forwarded-for")?.split(",")[0].trim() || req.headers.get("x-real-ip") || undefined,
+          fbp: req.cookies.get("_fbp")?.value || undefined,
+          fbc: req.cookies.get("_fbc")?.value || undefined,
         }),
       });
       crmOk = r.ok;
@@ -90,19 +95,22 @@ export async function POST(req: NextRequest) {
 
   if (valido) {
     const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() || req.headers.get("x-real-ip") || null;
-    sendPurchaseToAllPixels({
+    after(() => sendPurchaseToAllPixels({
       eventId: id,
       value: plan.precio,
       currency: "USD",
+      pais: "ec",
+      fbp: req.cookies.get("_fbp")?.value || null,
+      fbc: req.cookies.get("_fbc")?.value || null,
       telefono: `593${tel}`,
       nombre,
       fbclid: (data.fbclid as string) || null,
       ip,
       userAgent: req.headers.get("user-agent") || null,
-      eventSourceUrl: (data.referrer as string) || "https://mi-tiroides.vercel.app/ec",
+      eventSourceUrl: "https://mi-tiroides.vercel.app/ec", // la página donde compró (el referrer es m.facebook.com)
       contentName: "MI TIROIDES Ecuador",
       contentIds: ["mi-tiroides-ec"],
-    });
+    }));
   }
 
   return NextResponse.json({ ok: true, id, estado: valido ? "pedido_confirmado" : esAbandono ? "abandono_form" : "preliminar", valido, crmOk });

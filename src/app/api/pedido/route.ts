@@ -1,4 +1,4 @@
-import { NextResponse, NextRequest } from "next/server";
+import { NextResponse, NextRequest, after } from "next/server";
 import { DEPARTAMENTOS } from "../../colombia";
 import { sendPurchaseToAllPixels } from "@/lib/pixels-server";
 
@@ -277,8 +277,10 @@ export async function POST(req: NextRequest) {
       null;
     const userAgent = req.headers.get("user-agent") || null;
 
-    sendPurchaseToAllPixels({
+    after(() => sendPurchaseToAllPixels({
       eventId: id,
+      fbp: req.cookies.get("_fbp")?.value || null,
+      fbc: req.cookies.get("_fbc")?.value || null,
       value: plan.precio,
       currency: "COP",
       telefono: pedido.cliente.telefono,
@@ -288,7 +290,7 @@ export async function POST(req: NextRequest) {
       ip,
       userAgent,
       eventSourceUrl: data.referrer || "https://mi-tiroides.vercel.app",
-    });
+    }));
   }
 
   return NextResponse.json({
