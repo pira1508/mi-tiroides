@@ -993,7 +993,7 @@ function Page() {
             <div className="hero-checks">
               <div>Sin suscripción</div>
               <div>Envío gratis en tu primer pedido</div>
-              <div>Garantía de satisfacción 30 días</div>
+              <div>Garantía de satisfacción 90 días</div>
             </div>
           </div>
         </div>
@@ -1165,7 +1165,7 @@ function Page() {
                   ["Hecho en Colombia + INVIMA", "yes", "yes", "no"],
                   ["Sin pago en dólares ni aduana", "yes", "yes", "no"],
                   ["Pago contra entrega", "yes", "no", "no"],
-                  ["Garantía 30 días", "yes", "no", "no"],
+                  ["Garantía 90 días", "yes", "no", "no"],
                 ].map(([feat, a, b, c]) => (
                   <tr key={feat as string}>
                     <td>{feat}</td>
@@ -2046,7 +2046,7 @@ function Page() {
                         PEDIR AHORA — PAGO AL RECIBIR
                         <br />
                         <span style={{ fontSize: 13, opacity: .9, fontWeight: 500 }}>
-                          ${plan.precio.toLocaleString("es-CO")} · Envío gratis · Garantía 30 días
+                          ${plan.precio.toLocaleString("es-CO")} · Envío gratis · Garantía 90 días
                         </span>
                       </>
                     )}

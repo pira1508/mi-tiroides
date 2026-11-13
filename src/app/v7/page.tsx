@@ -919,7 +919,7 @@ export default function Page() {
             <div className="hero-checks">
               <div>Sin suscripción</div>
               <div>Envío gratis en tu primer pedido</div>
-              <div>Garantía de satisfacción 30 días</div>
+              <div>Garantía de satisfacción 90 días</div>
             </div>
           </div>
         </div>
@@ -1243,7 +1243,7 @@ export default function Page() {
                   ["Hecho en Colombia + INVIMA", "yes", "yes", "no"],
                   ["Sin pago en dólares ni aduana", "yes", "yes", "no"],
                   ["Pago contra entrega", "yes", "no", "no"],
-                  ["Garantía 30 días", "yes", "no", "no"],
+                  ["Garantía 90 días", "yes", "no", "no"],
                 ].map(([feat, a, b, c]) => (
                   <tr key={feat as string}>
                     <td>{feat}</td>
@@ -1668,7 +1668,7 @@ export default function Page() {
             <details>
               <summary>¿Y si no me sirve?</summary>
               <p>
-                Tienes 30 días de garantía de satisfacción. Nos escribes por WhatsApp y lo resolvemos.
+                Tienes 90 días de garantía de satisfacción. Nos escribes por WhatsApp y lo resolvemos.
                 Eso sí, sé honesta contigo: un frasco a medias no es una prueba justa — la
                 suplementación tiroidea funciona por acumulación.
               </p>
@@ -1838,7 +1838,7 @@ export default function Page() {
             Sí, quiero empezar mi cambio HOY →
           </button>
           <p style={{ color: "#d6cdb3", marginTop: 16, fontSize: 14, fontStyle: "italic" }}>
-            Pago contra entrega · Llega en 24-72h · 30 días de garantía
+            Pago contra entrega · Llega en 24-72h · 90 días de garantía
           </p>
         </div>
       </section>
@@ -2357,7 +2357,7 @@ export default function Page() {
                         PEDIR AHORA — PAGO AL RECIBIR
                         <br />
                         <span style={{ fontSize: 13, opacity: .9, fontWeight: 500 }}>
-                          ${plan.precio.toLocaleString("es-CO")} · Envío gratis · Garantía 30 días
+                          ${plan.precio.toLocaleString("es-CO")} · Envío gratis · Garantía 90 días
                         </span>
                       </>
                     )}
