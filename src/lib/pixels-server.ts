@@ -71,10 +71,6 @@ function telefonoInternacional(tel: string | undefined, pais: "co" | "ec"): stri
 export async function sendMetaCAPIPurchase(ev: PurchaseEvent): Promise<{ ok: boolean; status?: number; body?: string }> {
   const pixelId = process.env.META_PIXEL_ID || "722614530760265";
   const token = process.env.META_ACCESS_TOKEN || "";
-  if (!token) {
-    console.warn("[CAPI Meta] META_ACCESS_TOKEN no configurado — skip");
-    return { ok: false, status: 0, body: "no_token" };
-  }
 
   const pais = ev.pais || "co";
   const phone = telefonoInternacional(ev.telefono, pais);
@@ -105,24 +101,52 @@ export async function sendMetaCAPIPurchase(ev: PurchaseEvent): Promise<{ ok: boo
     },
   };
 
-  try {
-    const r = await fetch(
-      `https://graph.facebook.com/v21.0/${pixelId}/events?access_token=${encodeURIComponent(token)}`,
-      {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ data: [event] }),
+  // 1) Token propio de la landing.
+  if (token) {
+    try {
+      const r = await fetch(
+        `https://graph.facebook.com/v21.0/${pixelId}/events?access_token=${encodeURIComponent(token)}`,
+        {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ data: [event] }),
+        }
+      );
+      const body = await r.text();
+      if (r.ok) {
+        console.log(`[CAPI Meta] ✓ Purchase event_id=${ev.eventId} value=${ev.value}`);
+        return { ok: true, status: r.status, body: body.slice(0, 300) };
       }
-    );
-    const body = await r.text();
-    if (!r.ok) {
-      console.warn(`[CAPI Meta] HTTP ${r.status}: ${body.slice(0, 250)}`);
-    } else {
-      console.log(`[CAPI Meta] ✓ Purchase event_id=${ev.eventId} value=${ev.value}`);
+      console.warn(`[CAPI Meta] HTTP ${r.status}: ${body.slice(0, 250)} → relevo del CRM`);
+    } catch (e) {
+      console.warn("[CAPI Meta] excepción:", (e as Error).message, "→ relevo del CRM");
     }
+  }
+  // 2) Relevo del CRM (13-nov-2026): el META_ACCESS_TOKEN de aquí murió («user logged out») y
+  //    el Purchase del servidor no llegaba a Meta. El CRM lo reenvía con el token de sistema
+  //    del píxel. Mismo evento y mismo event_id → Meta deduplica con el del navegador.
+  return relevoCRM(pixelId, event, ev.eventId);
+}
+
+async function relevoCRM(pixelId: string, event: Record<string, unknown>, eventId: string): Promise<{ ok: boolean; status?: number; body?: string }> {
+  const base = process.env.BOT_CONFIRMADOR_URL;
+  const secret = process.env.BOT_CONFIRMADOR_SECRET;
+  if (!base || !secret) {
+    console.warn("[CAPI relevo] sin BOT_CONFIRMADOR_URL/SECRET — evento perdido", eventId);
+    return { ok: false, status: 0, body: "sin_relevo" };
+  }
+  try {
+    const r = await fetch(`${new URL(base).origin}/api/capi/relay`, {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-secret": secret },
+      body: JSON.stringify({ pixel_id: pixelId, data: [event] }),
+    });
+    const body = await r.text();
+    if (r.ok) console.log(`[CAPI relevo] ✓ Purchase event_id=${eventId}`);
+    else console.warn(`[CAPI relevo] HTTP ${r.status}: ${body.slice(0, 250)}`);
     return { ok: r.ok, status: r.status, body: body.slice(0, 300) };
   } catch (e) {
-    console.warn("[CAPI Meta] excepción:", (e as Error).message);
+    console.warn("[CAPI relevo] excepción:", (e as Error).message);
     return { ok: false, body: (e as Error).message };
   }
 }
