@@ -701,7 +701,7 @@ export default function Page() {
       <div className="marquee">
         <div className="marquee-track">
           {Array.from({ length: 12 }).map((_, i) => (
-            <span key={i}>✦ Precio de clienta &nbsp;&nbsp; ✦ Envío gratis &nbsp;&nbsp; ✦ Pago seguro en línea &nbsp;&nbsp;</span>
+            <span key={i}>✦ Precio de clienta &nbsp;&nbsp; ✦ Pagas hoy y sale hoy mismo &nbsp;&nbsp; ✦ Hasta 40 % en tus próximas compras &nbsp;&nbsp; ✦ Envío gratis &nbsp;&nbsp;</span>
           ))}
         </div>
       </div>
@@ -725,7 +725,7 @@ export default function Page() {
         </strong>
         <span style={{ opacity: 0.9 }}>
           Porque ya hiciste tu primer pedido con nosotros. Es el mismo valor que
-          te dijimos por teléfono. Lo pagas en línea con el link seguro y tu pedido sale el mismo día.
+          te dijimos por teléfono. Si lo pagas hoy por el link seguro, sale hoy mismo y te mandamos la guía por WhatsApp. Y como ya eres clienta, en tus próximas compras tienes descuento de hasta 40 % 🎁
         </span>
       </div>
 
@@ -1921,7 +1921,7 @@ export default function Page() {
                       margin: "4px 0 8px",
                     }}
                   >
-                    🔒 Al confirmar te llevamos al pago seguro de Wompi (tarjeta, PSE, Nequi o Bancolombia). Pagas y tu pedido sale el mismo día; la guía te llega por WhatsApp.
+                    ⚡ <strong>Si lo pagas hoy, sale hoy mismo</strong> y te mandamos la guía por WhatsApp; te acompañamos hasta que te llegue.<br />🎁 Como ya eres clienta, en tus próximas compras tienes <strong>descuento de hasta 40 %</strong>.<br />🔒 Pago seguro con Wompi: tarjeta, PSE, Nequi o Bancolombia.
                   </div>
 
                   {error && (
@@ -1948,7 +1948,7 @@ export default function Page() {
                   >
                     {enviando ? "Enviando…" : (
                       <>
-                        CONFIRMAR Y PAGAR SEGURO
+                        PAGAR Y QUE SALGA HOY
                         <br />
                         <span style={{ fontSize: 13, opacity: .9, fontWeight: 500 }}>
                           ${plan.precio.toLocaleString("es-CO")} · Envío gratis · Garantía 90 días
