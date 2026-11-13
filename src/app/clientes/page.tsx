@@ -264,7 +264,7 @@ const TESTI_CORTOS = [
     edad: 36,
     ciudad: "Pereira",
     texto:
-      "Antes pedía a iHerb 4 frascos distintos. Ahora un solo frasco colombiano con todo. Llegó en 3 días a la puerta de mi casa.",
+      "Antes pedía a iHerb 4 frascos distintos. Ahora un solo frasco colombiano con todo. Llegó en 3 días con pago contra entrega.",
   },
   {
     foto: "/img/cliente-diana.webp",
@@ -386,7 +386,7 @@ const TESTI_LARGOS = [
     nombre: "Paula Mosquera",
     rol: "Líder comunitaria · Quibdó",
     texto:
-      "En el Chocó conseguir un suplemento decente era misión imposible. MI TIROIDES nos llega hasta la casa y la fórmula es justo lo que la endocrinóloga me había recomendado.",
+      "En el Chocó conseguir un suplemento decente era misión imposible. MI TIROIDES nos llega contra entrega y la fórmula es justo lo que la endocrinóloga me había recomendado.",
     tag: "Pacífico colombiano",
   },
 ];
@@ -396,7 +396,7 @@ export default function Page() {
   const [cantidad, setCantidad] = useState<Cantidad>("2");
   const [enviando, setEnviando] = useState(false);
   const [ok, setOk] = useState(false);
-  const [pedidoConfirmado, setPedidoConfirmado] = useState<{ id: string; total: number; pagoUrl: string | null } | null>(null);
+  const [pedidoConfirmado, setPedidoConfirmado] = useState<{ id: string; total: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [heroIdx, setHeroIdx] = useState(0);
   const [modalOpen, setModalOpen] = useState(false);
@@ -638,9 +638,6 @@ export default function Page() {
 
     let pedidoId = `MIT-${Date.now().toString(36).toUpperCase()}`;
     let registroOk = false;
-    // 13-nov-2026: la página de clientas es SOLO pago anticipado. El CRM crea el link de
-    // Wompi y lo devuelve; la mandamos a pagar de una (también le llega por WhatsApp).
-    let pagoUrl: string | null = null;
 
     try {
       const res = await fetch("/api/pedido", {
@@ -654,7 +651,6 @@ export default function Page() {
         try {
           const j = await res.clone().json();
           if (j?.id) pedidoId = j.id;
-          if (typeof j?.pago_url === "string" && j.pago_url.startsWith("https://checkout.wompi.co/l/")) pagoUrl = j.pago_url;
           // Backend marca valido=true solo cuando ciudad+depto están en lista oficial
           backendValido = j?.valido === true;
         } catch {}
@@ -681,12 +677,8 @@ export default function Page() {
 
     if (registroOk) {
       try { localStorage.removeItem(AUTOSAVE_KEY); } catch {}
-      setPedidoConfirmado({ id: pedidoId, total, pagoUrl });
+      setPedidoConfirmado({ id: pedidoId, total });
       setOk(true);
-      if (pagoUrl) {
-        const destino = pagoUrl;
-        setTimeout(() => { window.location.href = destino; }, 1200);
-      }
     } else {
       setError("No pudimos registrar tu pedido. Intenta de nuevo o escríbenos por WhatsApp.");
     }
@@ -701,7 +693,7 @@ export default function Page() {
       <div className="marquee">
         <div className="marquee-track">
           {Array.from({ length: 12 }).map((_, i) => (
-            <span key={i}>✦ Precio de clienta &nbsp;&nbsp; ✦ Pagas hoy y sale hoy mismo &nbsp;&nbsp; ✦ Hasta 40 % en tus próximas compras &nbsp;&nbsp; ✦ Envío gratis &nbsp;&nbsp;</span>
+            <span key={i}>✦ Precio de clienta &nbsp;&nbsp; ✦ Envío gratis &nbsp;&nbsp; ✦ Pago contra entrega &nbsp;&nbsp;</span>
           ))}
         </div>
       </div>
@@ -725,7 +717,7 @@ export default function Page() {
         </strong>
         <span style={{ opacity: 0.9 }}>
           Porque ya hiciste tu primer pedido con nosotros. Es el mismo valor que
-          te dijimos por teléfono. Si lo pagas hoy por el link seguro, sale hoy mismo y te mandamos la guía por WhatsApp. Y como ya eres clienta, en tus próximas compras tienes descuento de hasta 40 % 🎁
+          te dijimos por teléfono, y lo pagas cuando te llegue.
         </span>
       </div>
 
@@ -811,7 +803,7 @@ export default function Page() {
             </div>
 
             <button className="btn btn-block" onClick={openModal}>
-              Empezar mi cambio HOY · Sale el mismo día
+              Empezar mi cambio HOY · Pago contra entrega
             </button>
             <div className="hero-checks">
               <div>Sin suscripción</div>
@@ -1027,7 +1019,7 @@ export default function Page() {
                   ["Una sola cápsula al día", "yes", "yes", "no"],
                   ["Hecho en Colombia + INVIMA", "yes", "yes", "no"],
                   ["Sin pago en dólares ni aduana", "yes", "yes", "no"],
-                  ["Envío gratis a toda Colombia", "yes", "no", "no"],
+                  ["Pago contra entrega", "yes", "no", "no"],
                   ["Garantía 90 días", "yes", "no", "no"],
                 ].map(([feat, a, b, c]) => (
                   <tr key={feat as string}>
@@ -1391,7 +1383,7 @@ export default function Page() {
               <summary>¿Es una suscripción?</summary>
               <p>
                 No. Es una compra única. Tú decides cuándo volver a pedir. Sin cargos automáticos.
-                Pagas una sola vez en línea, por el link seguro de Wompi.
+                Pagas contra entrega cuando el producto llega a tu puerta.
               </p>
             </details>
             <details>
@@ -1472,7 +1464,7 @@ export default function Page() {
             Sí, quiero empezar mi cambio HOY →
           </button>
           <p style={{ color: "#d6cdb3", marginTop: 16, fontSize: 14, fontStyle: "italic" }}>
-            Pago seguro en línea · Sale el mismo día · 90 días de garantía
+            Pago contra entrega · Llega en 24-72h · 90 días de garantía
           </p>
         </div>
       </section>
@@ -1487,7 +1479,7 @@ export default function Page() {
 
       {/* CTA flotante en mobile */}
       <button className="cta-float" onClick={openModal}>
-        Pedir ahora · Precio de clienta
+        Pedir ahora · Pago contra entrega
       </button>
 
       {/* MODAL INGREDIENTE */}
@@ -1539,7 +1531,7 @@ export default function Page() {
               <div className="modal-pill">+2.500 clientas felices</div>
               <div className="modal-trustline">
                 <span>📦 Envíos rápidos</span>
-                <span>🔒 Pago seguro Wompi</span>
+                <span>💵 Paga al recibir</span>
                 <span>🇨🇴 Hecho en Colombia</span>
               </div>
               {/* Gancho urgencia dentro del modal — el momento más crítico */}
@@ -1565,12 +1557,10 @@ export default function Page() {
               <div className="modal-success" style={{ textAlign: "center", padding: "8px 0" }}>
                 <div style={{ fontSize: 56, marginBottom: 6 }}>✅</div>
                 <h3 style={{ margin: "0 0 8px", color: "#1f3d2b" }}>
-                  {pedidoConfirmado.pagoUrl ? "¡Listo! Ahora el pago seguro" : "¡Pedido recibido!"}
+                  ¡Pedido recibido!
                 </h3>
                 <p style={{ color: "var(--gris)", margin: "0 0 14px", lineHeight: 1.5 }}>
-                  {pedidoConfirmado.pagoUrl
-                    ? "Te estamos llevando al pago seguro de Wompi. Apenas pagues, tu pedido sale el mismo día y te mandamos la guía por WhatsApp."
-                    : "En unos minutos te llega por WhatsApp el link de pago seguro. Apenas pagues, tu pedido sale y te mandamos la guía."}
+                  Te contactamos por WhatsApp en las próximas horas para confirmar la dirección y la fecha de entrega.
                 </p>
                 <div
                   style={{
@@ -1589,37 +1579,28 @@ export default function Page() {
                     <code style={{ fontFamily: "monospace" }}>{pedidoConfirmado.id}</code>
                   </div>
                   <div>
-                    <strong>Total a pagar:</strong>{" "}
+                    <strong>Total a pagar al recibir:</strong>{" "}
                     ${pedidoConfirmado.total.toLocaleString("es-CO")} COP
                   </div>
                 </div>
-                {pedidoConfirmado.pagoUrl && (
-                  <a
-                    className="btn btn-block"
-                    href={pedidoConfirmado.pagoUrl}
-                    style={{ textDecoration: "none", marginBottom: 10 }}
-                  >
-                    🔒 Pagar ahora ${pedidoConfirmado.total.toLocaleString("es-CO")}
-                  </a>
-                )}
                 <p style={{ fontSize: 13, color: "var(--gris)", margin: "0 0 14px" }}>
-                  ¿Tienes alguna duda con el pago? Escríbenos por WhatsApp con tu número de pedido.
+                  ¿Quieres adelantar la confirmación? Escríbenos por WhatsApp con tu número de pedido.
                 </p>
                 <a
                   className="btn btn-block"
                   href={`https://wa.me/573237451763?text=${encodeURIComponent(
                     `¡Hola! Soy ${nombre || 'una clienta nueva'} y acabo de hacer mi pedido en MI TIROIDES.\n\n` +
                     `- ${cantidad} frasco${cantidad !== '1' ? 's' : ''}\n` +
-                    `- $${pedidoConfirmado.total.toLocaleString('es-CO')} (pago en línea)\n` +
+                    `- $${pedidoConfirmado.total.toLocaleString('es-CO')} contra entrega\n` +
                     (ciudad ? `- ${ciudad}\n` : '') +
                     (direccion ? `- ${direccion}\n` : '') +
-                    `\nTengo una pregunta sobre el pago.`,
+                    `\nQuiero confirmar mi pedido.`,
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{ textDecoration: "none", marginBottom: 10 }}
                 >
-                  Escribir por WhatsApp
+                  Confirmar por WhatsApp (opcional)
                 </a>
                 <button className="btn btn-ghost btn-block" onClick={closeModal}>
                   Listo, cerrar
@@ -1921,7 +1902,7 @@ export default function Page() {
                       margin: "4px 0 8px",
                     }}
                   >
-                    ⚡ <strong>Si lo pagas hoy, sale hoy mismo</strong> y te mandamos la guía por WhatsApp; te acompañamos hasta que te llegue.<br />🎁 Como ya eres clienta, en tus próximas compras tienes <strong>descuento de hasta 40 %</strong>.<br />🔒 Pago seguro con Wompi: tarjeta, PSE, Nequi o Bancolombia.
+                    📦 No pagas nada ahora. Te llega a tu casa y pagas cuando lo recibes.
                   </div>
 
                   {error && (
@@ -1948,7 +1929,7 @@ export default function Page() {
                   >
                     {enviando ? "Enviando…" : (
                       <>
-                        PAGAR Y QUE SALGA HOY
+                        PEDIR AHORA — PAGO AL RECIBIR
                         <br />
                         <span style={{ fontSize: 13, opacity: .9, fontWeight: 500 }}>
                           ${plan.precio.toLocaleString("es-CO")} · Envío gratis · Garantía 90 días
@@ -1970,8 +1951,8 @@ export default function Page() {
                     }}
                   >
                     <div>
-                      <div style={{ fontSize: 20 }}>🔒</div>
-                      Pago seguro en línea
+                      <div style={{ fontSize: 20 }}>💵</div>
+                      Pago contra entrega
                     </div>
                     <div>
                       <div style={{ fontSize: 20 }}>🚚</div>
