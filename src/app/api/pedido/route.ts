@@ -205,6 +205,7 @@ export async function POST(req: NextRequest) {
   console.log("[PEDIDO]", JSON.stringify(pedido));
 
   // Si hay bot-confirmador configurado, intenta enviar (no bloquea si falla)
+  let pagoUrl: string | null = null;
   const url = process.env.BOT_CONFIRMADOR_URL;
   const secret = process.env.BOT_CONFIRMADOR_SECRET;
   if (url && secret) {
@@ -252,6 +253,12 @@ export async function POST(req: NextRequest) {
       });
       if (!r.ok) {
         console.warn(`[${esAbandono ? "ABANDONO" : "PEDIDO"}] bot respondió`, r.status, await r.text());
+      } else if (variant === "clientes" && !esAbandono) {
+        // Página de clientas = solo pago anticipado (13-nov-2026): el CRM devuelve el link de Wompi.
+        try {
+          const jr = await r.json();
+          if (typeof jr?.pago_url === "string" && jr.pago_url.startsWith("https://checkout.wompi.co/l/")) pagoUrl = jr.pago_url;
+        } catch {}
       }
     } catch (e) {
       console.warn("[PEDIDO] bot-confirmador falló (ignorado):", e);
@@ -298,5 +305,6 @@ export async function POST(req: NextRequest) {
     id,
     estado: estadoFinal,
     valido: ciudadOK && !esAbandono, // ← frontend chequea esto para Pixel
+    pago_url: pagoUrl,
   });
 }
