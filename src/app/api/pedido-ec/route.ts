@@ -1,6 +1,7 @@
 import { NextResponse, NextRequest, after } from "next/server";
 import { sendPurchaseToAllPixels } from "@/lib/pixels-server";
 import { PROVINCIAS_EC, PRECIOS_EC, sanitizarTelefonoEC, esCelularECValido } from "../../ecuador";
+import { DESTINOS_EC, TRANSPORTADORA_EC } from "../../ecuador-destinos";
 
 // ============================================================
 // POST /api/pedido-ec — pedidos de la landing de Ecuador (/ec)
@@ -49,6 +50,11 @@ export async function POST(req: NextRequest) {
   const provinciaKey = Object.keys(PROVINCIAS_EC).find((p) => norm(p) === norm(data.provincia));
   const ciudad = String(data.ciudad ?? "").trim();
   const valido = !esAbandono && !!provinciaKey && ciudad.length >= 2;
+  // Transportadora por prioridad (Goo Envíos → Laar → Servientrega) según la cobertura del 14-nov.
+  // Si la ciudad no está en ninguna lista queda null y el CRM la marca para revisar a mano.
+  const sinParen = (t: string) => norm(t.replace(/\(.*?\)/g, ""));
+  const destino = provinciaKey ? (DESTINOS_EC[provinciaKey] || []).find(([c]) => sinParen(c) === sinParen(ciudad)) : undefined;
+  const transportadora = destino ? TRANSPORTADORA_EC[destino[1]] : null;
 
   const id = `${esAbandono ? "ECAB" : "EC"}-${Date.now().toString(36).toUpperCase()}`;
 
@@ -68,6 +74,7 @@ export async function POST(req: NextRequest) {
           ciudad: ciudad || null,
           direccion: data.direccion ?? null,
           referencia: data.referencia ?? null,
+          transportadora,
           cantidad,
           total: plan.precio,
           fbclid: data.fbclid || undefined,
@@ -91,7 +98,7 @@ export async function POST(req: NextRequest) {
   } else {
     console.warn("[PEDIDO-EC] sin URL del CRM para Ecuador; pedido solo en logs");
   }
-  console.log("[PEDIDO-EC]", JSON.stringify({ id, esAbandono, cantidad, total: plan.precio, provincia: provinciaKey, ciudad, crmOk }));
+  console.log("[PEDIDO-EC]", JSON.stringify({ id, esAbandono, cantidad, total: plan.precio, provincia: provinciaKey, ciudad, transportadora, crmOk }));
 
   if (valido) {
     const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() || req.headers.get("x-real-ip") || null;

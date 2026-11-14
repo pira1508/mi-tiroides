@@ -20,7 +20,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import {
-  PROVINCIAS_EC,
   NOMBRES_PROVINCIAS_EC,
   PRECIOS_EC,
   GARANTIA_EC,
@@ -31,7 +30,9 @@ import {
   formatearTelefonoEC,
   usd,
 } from "../ecuador";
+import { DESTINOS_EC } from "../ecuador-destinos";
 import { leerTracking, useCapturarTrackingOnMount } from "../_use-tracking";
+const sinTilde = (t: string) => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 
 const AUTOSAVE_KEY = "mit_ec_form_v2";
 const CONTENT_NAME = "MI TIROIDES Ecuador";
@@ -1678,6 +1679,11 @@ export default function Page() {
                   <span style={{ marginLeft: "auto", color: "var(--gris)" }}>Gratis</span>
                 </div>
 
+                {/* AVISO (recomendación de las transportadoras de Ecuador, 14-nov) */}
+                <div style={{ color: "#c62828", fontWeight: 700, textAlign: "center", fontSize: 16, lineHeight: 1.35, margin: "10px 4px 6px" }}>
+                  🚨 Recomendación 🚨 Alguien debe permanecer pendiente al teléfono y en la dirección de entrega
+                </div>
+
                 {/* DATOS */}
                 <div className="modal-section-title green">Ingrese su dirección de envío</div>
                 <form className="modal-form" onSubmit={onSubmit} noValidate>
@@ -1773,12 +1779,14 @@ export default function Page() {
                       />
                     </div>
                     {depto && ciudadFocus && (() => {
-                      const opciones = PROVINCIAS_EC[depto] || [];
-                      const q = ciudadInput.trim().toLowerCase();
+                      // Destinos reales de Goo Envíos, Laar y Servientrega (ecuador-destinos.ts).
+                      // Puede escribir una ciudad que no esté en la lista: el pedido entra igual.
+                      const opciones = (DESTINOS_EC[depto] || []).map(([c]) => c);
+                      const q = sinTilde(ciudadInput);
                       const filtradas = q
-                        ? opciones.filter((c) => c.toLowerCase().includes(q))
+                        ? opciones.filter((c) => sinTilde(c).includes(q))
                         : opciones;
-                      if (filtradas.length === 0) return null;
+                      if (filtradas.length === 0 || (filtradas.length === 1 && sinTilde(filtradas[0]) === q)) return null;
                       return (
                         <div
                           style={{
@@ -1789,13 +1797,13 @@ export default function Page() {
                             background: "#fff",
                             border: "1px solid #ddd",
                             borderRadius: 8,
-                            maxHeight: 200,
+                            maxHeight: 240,
                             overflowY: "auto",
                             zIndex: 10,
                             boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
                           }}
                         >
-                          {filtradas.slice(0, 12).map((c) => (
+                          {filtradas.slice(0, 80).map((c) => (
                             <button
                               key={c}
                               type="button"
