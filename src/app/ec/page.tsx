@@ -30,7 +30,7 @@ import {
   formatearTelefonoEC,
   usd,
 } from "../ecuador";
-import { DESTINOS_EC } from "../ecuador-destinos";
+import { CIUDADES_HOKO_EC, hokoCityIdEC } from "../ecuador-ciudades-hoko";
 import { leerTracking, useCapturarTrackingOnMount } from "../_use-tracking";
 const sinTilde = (t: string) => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 
@@ -500,6 +500,7 @@ export default function Page() {
             telefono: tel,
             provincia: depto || null,
             ciudad: ciudad || null,
+            hoko_city_id: depto ? hokoCityIdEC(depto, ciudad) ?? undefined : undefined,
             direccion: direccion || null,
             referencia: referencia || null,
             cantidad,
@@ -596,11 +597,14 @@ export default function Page() {
     const empresaHoneypot = ((e.currentTarget as HTMLFormElement)?.querySelector("input[name='empresa']") as HTMLInputElement | null)?.value || "";
     const formLoadedAt = typeof performance !== "undefined" && performance.timeOrigin ? Math.round(performance.timeOrigin) : Date.now();
     const tracking = leerTracking();
+    // Si la ciudad coincide con una de Hoko (sin tildes ni mayúsculas) va su id; si es texto libre, no va.
+    const hokoId = hokoCityIdEC(depto, ciudad);
     const data = {
       nombre: nombre.trim(),
       telefono: telSanitizado,
       provincia: depto,
       ciudad: ciudad.trim(),
+      ...(hokoId !== null ? { hoko_city_id: hokoId } : {}),
       referencia: referencia.trim(),
       direccion: direccion.trim(),
       cantidad,
@@ -1779,14 +1783,14 @@ export default function Page() {
                       />
                     </div>
                     {depto && ciudadFocus && (() => {
-                      // Destinos reales de Goo Envíos, Laar y Servientrega (ecuador-destinos.ts).
-                      // Puede escribir una ciudad que no esté en la lista: el pedido entra igual.
-                      const opciones = (DESTINOS_EC[depto] || []).map(([c]) => c);
+                      // Ciudades oficiales de Hoko para la provincia (ecuador-ciudades-hoko.ts).
+                      // Puede escribir una ciudad que no esté en la lista: el pedido entra igual, sin hoko_city_id.
+                      const opciones = CIUDADES_HOKO_EC[depto] || [];
                       const q = sinTilde(ciudadInput);
                       const filtradas = q
-                        ? opciones.filter((c) => sinTilde(c).includes(q))
+                        ? opciones.filter((c) => sinTilde(c.nombre).includes(q))
                         : opciones;
-                      if (filtradas.length === 0 || (filtradas.length === 1 && sinTilde(filtradas[0]) === q)) return null;
+                      if (filtradas.length === 0 || (filtradas.length === 1 && sinTilde(filtradas[0].nombre) === q)) return null;
                       return (
                         <div
                           style={{
@@ -1805,12 +1809,12 @@ export default function Page() {
                         >
                           {filtradas.slice(0, 80).map((c) => (
                             <button
-                              key={c}
+                              key={c.id}
                               type="button"
                               onMouseDown={(e) => {
                                 e.preventDefault();
-                                setCiudad(c);
-                                setCiudadInput(c);
+                                setCiudad(c.nombre);
+                                setCiudadInput(c.nombre);
                                 setCiudadFocus(false);
                               }}
                               style={{
@@ -1825,7 +1829,7 @@ export default function Page() {
                                 borderBottom: "1px solid #f1f1f1",
                               }}
                             >
-                              {c}
+                              {c.nombre}
                             </button>
                           ))}
                         </div>
