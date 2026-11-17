@@ -1,26 +1,29 @@
-// Genera src/app/ecuador-ciudades-hoko.ts a partir de las listas oficiales de Hoko Ecuador.
-// Uso: node scripts/gen-ciudades-hoko-ec.mjs <carpeta con cities.json y states.json>
-// Los JSON se leen como datos (JSON.parse), nunca se ejecutan.
+// Genera src/app/ecuador-ciudades-hoko.ts y src/app/ecuador-parroquias-hoko.ts.
+// Uso: node scripts/gen-ciudades-hoko-ec.mjs
+// Lee como DATOS (JSON.parse, nunca se ejecutan):
+//   scripts/data/cobertura-ec.json       → 586 ciudades de Hoko Ecuador con las transportadoras que cotizan
+//                                          hoy (id, name, prov, cour). Solo salen las que tienen cobertura (cour no vacío).
+//   scripts/data/dpa-parroquias-ec.json  → parroquias, cantones y provincias oficiales (DPA, INEC/CONALI).
+//                                          Fuente: capa Parroquias_del_Ecuador, servicio ArcGIS services7.arcgis.com/iFGeGXTAJXnjq0YN.
+// Las parroquias que no son ciudad de Hoko se mapean a la ciudad de Hoko de su cantón, solo si esa ciudad tiene cobertura.
+// NO editar a mano los .ts generados.
 import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const dirHoko = resolve(process.argv[2] || "");
-if (!process.argv[2]) throw new Error("Falta la carpeta con cities.json y states.json");
-const cities = JSON.parse(readFileSync(join(dirHoko, "cities.json"), "utf8"));
-const states = JSON.parse(readFileSync(join(dirHoko, "states.json"), "utf8"));
+const aqui = dirname(fileURLToPath(import.meta.url));
+const cobertura = JSON.parse(readFileSync(resolve(aqui, "data", "cobertura-ec.json"), "utf8"));
+const dpa = JSON.parse(readFileSync(resolve(aqui, "data", "dpa-parroquias-ec.json"), "utf8")).registros;
+const SRC = join(aqui, "..", "src", "app");
 
-// Hoko cod → nombre de provincia que ya usa el formulario (ecuador.ts → PROVINCIAS_EC).
-const PROVINCIA_FORM = {
-  1: "Azuay", 2: "Bolívar", 3: "Cañar", 4: "Carchi", 5: "Cotopaxi", 6: "Chimborazo",
-  7: "El Oro", 8: "Esmeraldas", 9: "Guayas", 10: "Imbabura", 11: "Loja", 12: "Los Ríos",
-  13: "Manabí", 14: "Morona Santiago", 15: "Napo", 16: "Pastaza", 17: "Pichincha",
-  18: "Tungurahua", 19: "Zamora Chinchipe", 20: "Galápagos", 21: "Sucumbíos", 22: "Orellana",
-  23: "Santo Domingo de los Tsáchilas", 24: "Santa Elena",
-};
-// 25 = «Zonas No Delimitadas» (Las Golondrinas, Manga del Cura, El Piedrero): no es provincia en el formulario, se deja fuera.
+// Nombres de provincia del formulario (ecuador.ts → PROVINCIAS_EC).
+const PROVINCIAS_FORM = [
+  "Azuay", "Bolívar", "Cañar", "Carchi", "Cotopaxi", "Chimborazo", "El Oro", "Esmeraldas", "Guayas", "Imbabura",
+  "Loja", "Los Ríos", "Manabí", "Morona Santiago", "Napo", "Pastaza", "Pichincha", "Tungurahua", "Zamora Chinchipe",
+  "Galápagos", "Sucumbíos", "Orellana", "Santo Domingo de los Tsáchilas", "Santa Elena",
+];
 
-// Nombres con acento que se pueden restaurar con seguridad (clave: nombre en mayúsculas sin tilde).
+// Nombres con acento que se restauran al generar (clave: nombre en mayúsculas sin tilde).
 const ACENTOS = {
   "GIRON": "Girón", "ONA": "Oña", "SIGSIG": "Sígsig", "SIG SIG": "Sígsig", "PONCE ENRIQUEZ": "Ponce Enríquez",
   "BANOS": "Baños", "SAN MIGUEL DE BOLIVAR": "San Miguel de Bolívar", "ECHEANDIA": "Echeandía",
@@ -38,97 +41,168 @@ const ACENTOS = {
   "TRES POSTES": "Tres Postes", "JUJAN": "Jujan", "CHONGON": "Chongón", "PUENTE LUCIA": "Puente Lucía",
   "LAS ANIMAS": "Las Ánimas", "CUMANDA": "Cumandá", "VIRGEN DE FATIMA": "Virgen de Fátima",
   "DATA DE PLAYAS": "Data de Playas", "PUCARA": "Pucará", "LA COMPANIA": "La Compañía",
-  "CARCHI": "Carchi", "SAN ISIDRO (BAHIA)": "San Isidro (Bahía)", "BACHILLERO": "Bachillero",
-  "CHUQUIPATA": "Chuquipata", "CHIVERIA": "Chiveria", "SAN LORENZO": "San Lorenzo", "JAMA": "Jama",
-  "PUERTO ESPEJO": "Puerto Espejo", "SAN MIGUEL": "San Miguel", "HUACA": "Huaca", "PAUTE": "Paute",
-  "ALAHUELA": "Alahuela", "GUAYAQUIL": "Guayaquil", "MUISNE": "Muisne", "PALORA": "Palora",
-  "SANTA ANA": "Santa Ana", "CHAULLABAMBA": "Chaullabamba", "SUCRE BAHIA": "Sucre (Bahía)",
-  "CHILLANES": "Chillanes", "GUANUJO": "Guanujo", "CALUMA": "Caluma", "BALAO": "Balao",
+  "SAN ISIDRO (BAHIA)": "San Isidro (Bahía)", "BACHILLERO": "Bachillero",
+  "CHUQUIPATA": "Chuquipata", "CHIVERIA": "Chiveria", "PUERTO ESPEJO": "Puerto Espejo", "ALAHUELA": "Alahuela",
+  "SUCRE BAHIA": "Sucre (Bahía)", "CHILLANES": "Chillanes", "GUANUJO": "Guanujo", "CALUMA": "Caluma",
   "TONSUPA": "Tonsupa", "VICHE": "Viche", "SAME": "Same", "MUEY": "Muey", "ANCON": "Ancón",
   "CERECITA": "Cerecita", "BUCAY": "Bucay", "JARAMIJO": "Jaramijó", "CANUTO": "Canuto",
   "ESTANCILLA": "Estancilla", "SAN PABLO DE ATENAS": "San Pablo de Atenas", "SALINAS DE GUARANDA": "Salinas de Guaranda",
+  "SAN PEDRO DE GUANUJO": "San Pedro de Guanujo", "PELILEO": "Pelileo", "GUAPAN": "Guapán", "BIBLIAN": "Biblián",
 };
 
+// Canton DPA → nombre en Hoko cuando no coincide tal cual (clave y valor normalizados con n()).
+// Además de esto, se prueba «<canton> <provincia>» (p. ej. OLMEDO LOJA / OLMEDO MANABI).
+const ALIAS_CANTON = {
+  "SAN PEDRO DE PELILEO": "PELILEO", "SANTIAGO DE PILLARO": "PILLARO", "BANOS DE AGUA SANTA": "BANOS",
+  "SAN PEDRO DE HUACA": "HUACA", "SAN MIGUEL": "SAN MIGUEL DE BOLIVAR", "EMPALME": "EL EMPALME",
+  "EL TAMBO": "TAMBO", "GUANO": "EL GUANO", "RIOVERDE": "RIO VERDE", "CAMILO PONCE ENRIQUEZ": "PONCE ENRIQUEZ",
+  "PUEBLOVIEJO": "PUEBLO VIEJO", "LA JOYA DE LOS SACHAS": "JOYA DE LOS SACHAS", "CRNEL MARCELINO MARIDUENA": "MARCELINO MARIDUENA",
+  "GNRAL ANTONIO ELIZALDE": "GENERAL ANTONIO ELIZALDE", "SAN JACINTO DE YAGUACHI": "YAGUACHI", "PAQUISHA": "PAQUIZHA",
+  "RUMIÑAHUI": "RUMINAHUI", "LOGROÑO": "LOGRONO",
+};
+
+// n(): comparación sin tildes, sin mayúsculas, sin signos. «Ð» en el DPA es una «Ñ» mal codificada.
+const n = (t) => String(t ?? "").replace(/Ð/g, "Ñ").normalize("NFD").replace(/[̀-ͯ]/g, "").toUpperCase().replace(/[^A-Z0-9 ]/g, " ").replace(/\s+/g, " ").trim();
 const quitarTildes = (t) => t.normalize("NFD").replace(/[̀-ͯ]/g, "");
-const clave = (t) => quitarTildes(t).replace(/\s+/g, " ").trim().toUpperCase();
 const MINUS_EN_MEDIO = new Set(["de", "del", "la", "las", "los", "y", "en"]);
 
 function tituloDe(nombre) {
-  const limpio = nombre.replace(/\s+/g, " ").trim();
-  // Si ya tiene mayúsculas mixtas (Cuenca, Gualaceo...), se respeta tal cual.
+  const limpio = String(nombre).replace(/\s+/g, " ").trim();
   if (limpio !== limpio.toUpperCase() && limpio !== limpio.toLowerCase()) return limpio;
-  const cla = clave(limpio);
+  const cla = n(limpio);
   if (ACENTOS[cla]) return ACENTOS[cla];
-  return limpio
-    .toLowerCase()
-    .split(" ")
-    .map((w, i) => {
-      if (i > 0 && MINUS_EN_MEDIO.has(w)) return w;
-      return w.replace(/(^|[^a-záéíóúüñ])([a-záéíóúüñ])/g, (_, a, b) => a + b.toUpperCase());
-    })
-    .join(" ");
+  return limpio.toLowerCase().split(" ").map((w, i) => {
+    if (i > 0 && MINUS_EN_MEDIO.has(w)) return w;
+    return w.replace(/(^|[^a-záéíóúüñ])([a-záéíóúüñ])/g, (_, a, b) => a + b.toUpperCase());
+  }).join(" ");
 }
 
-const excluidos = [];
+// Provincia de Hoko («Manabi», «Santo Domingo», «Zamora») o del DPA → nombre del formulario, o null (zonas).
+function provForm(raw) {
+  const t = n(raw);
+  if (!t || t.startsWith("ZONA")) return null;
+  return PROVINCIAS_FORM.find((f) => n(f) === t) ?? PROVINCIAS_FORM.find((f) => n(f).startsWith(t) || t.startsWith(n(f))) ?? null;
+}
+
+// ── Ciudades de Hoko con cobertura ──────────────────────────────────────────
+const inactiva = (c) => /inactiv/i.test(c.name) || /^santiago no$/i.test(String(c.name).trim());
+const ciudadesCon = []; // {id, nombre, prov (form), cour}
+for (const c of cobertura) {
+  const prov = provForm(c.prov);
+  if (!prov || inactiva(c) || !c.cour?.length) continue;
+  ciudadesCon.push({ id: c.id, nombre: tituloDe(String(c.name).replace(/\s+/g, " ").trim()), prov, cour: c.cour });
+}
 const porProvincia = {};
-for (const c of cities) {
-  const provincia = PROVINCIA_FORM[c.department_id];
-  if (!provincia) continue; // Zonas No Delimitadas
-  const nombreOriginal = String(c.name).replace(/\s+/g, " ").trim();
-  if (/inactiv/i.test(nombreOriginal) || /^santiago no$/i.test(nombreOriginal)) {
-    excluidos.push(`${c.id} ${nombreOriginal} (inactiva)`);
-    continue;
-  }
-  const nombre = tituloDe(nombreOriginal);
-  const lista = (porProvincia[provincia] ??= []);
-  // Duplicados (mismo nombre en la misma provincia): se queda el primero con su id.
-  if (lista.some((x) => clave(x.nombre) === clave(nombre))) {
-    excluidos.push(`${c.id} ${nombreOriginal} (duplicada de ${nombre})`);
-    continue;
-  }
-  lista.push({ id: c.id, nombre });
+const excluidas = [];
+for (const c of ciudadesCon) {
+  const lista = (porProvincia[c.prov] ??= []);
+  if (lista.some((x) => n(x.nombre) === n(c.nombre))) { excluidas.push(`${c.id} ${c.nombre} (duplicada)`); continue; }
+  lista.push({ id: c.id, nombre: c.nombre });
 }
+for (const k of Object.keys(porProvincia)) porProvincia[k].sort((a, b) => quitarTildes(a.nombre).localeCompare(quitarTildes(b.nombre), "es"));
+const totalCiudades = Object.values(porProvincia).reduce((s, l) => s + l.length, 0);
 
-// Orden alfabético dentro de cada provincia (con acentos ignorados) para el menú.
-for (const k of Object.keys(porProvincia)) {
-  porProvincia[k].sort((a, b) => quitarTildes(a.nombre).localeCompare(quitarTildes(b.nombre), "es"));
-}
-
-const provinciasHoko = states.filter((s) => PROVINCIA_FORM[s.cod]).map((s) => PROVINCIA_FORM[s.cod]);
-const total = Object.values(porProvincia).reduce((n, l) => n + l.length, 0);
-
-const lineas = [];
-lineas.push(`// Ciudades de Hoko Ecuador por provincia (lista oficial de Hoko, generada con scripts/gen-ciudades-hoko-ec.mjs).`);
-lineas.push(`// NO editar a mano: se regenera desde los JSON de Hoko. El id es el que Hoko espera (hoko_city_id).`);
-lineas.push(`// Nombres: se pone mayúscula inicial y acentos conocidos; el cruce con el pedido es sin tildes ni mayúsculas.`);
-lineas.push(`// ${total} ciudades en ${provinciasHoko.length} provincias.`);
-lineas.push(``);
-lineas.push(`export type CiudadHokoEC = { id: number; nombre: string };`);
-lineas.push(``);
-lineas.push(`export const CIUDADES_HOKO_EC: Record<string, CiudadHokoEC[]> = {`);
-for (const prov of provinciasHoko) {
-  lineas.push(`  ${JSON.stringify(prov)}: [`);
-  for (const c of porProvincia[prov] || []) {
-    lineas.push(`    { id: ${c.id}, nombre: ${JSON.stringify(c.nombre)} },`);
+// ── Parroquias → ciudad de Hoko de su cantón (solo si tiene cobertura) ───────
+// Ciudad de Hoko del cantón: primero por nombre dentro de la provincia (nombre, alias, «cantón provincia»); cubiertas primero.
+const ciudadesTodas = cobertura.map((c) => ({ ...c, form: provForm(c.prov), cubierta: !!c.cour?.length })).filter((c) => c.form && !inactiva(c));
+function ciudadDeCanton(canton, provincia) {
+  const base = n(canton);
+  const candidatos = [base, ALIAS_CANTON[base], `${base} ${n(provincia)}`, ALIAS_CANTON[base] && `${ALIAS_CANTON[base]} ${n(provincia)}`].filter(Boolean);
+  const enProv = ciudadesTodas.filter((c) => c.form === provincia);
+  for (const nom of candidatos) {
+    const m = enProv.filter((c) => n(c.name) === nom).sort((a, b) => Number(b.cubierta) - Number(a.cubierta));
+    if (m.length) return m[0];
   }
-  lineas.push(`  ],`);
+  return null;
 }
-lineas.push(`};`);
-lineas.push(``);
-lineas.push(`const sinTildeHoko = (t: string) =>`);
-lineas.push(`  t.normalize("NFD").replace(/[\\u0300-\\u036f]/g, "").replace(/\\s+/g, " ").trim().toLowerCase();`);
-lineas.push(``);
-lineas.push(`// Devuelve el id de Hoko si el texto coincide con una ciudad de esa provincia (sin tildes ni mayúsculas).`);
-lineas.push(`// Si no coincide (texto libre) devuelve null: el pedido entra igual, sin hoko_city_id.`);
-lineas.push(`export function hokoCityIdEC(provincia: string, texto: string): number | null {`);
-lineas.push(`  const q = sinTildeHoko(texto);`);
-lineas.push(`  if (!q) return null;`);
-lineas.push(`  const c = (CIUDADES_HOKO_EC[provincia] || []).find((x) => sinTildeHoko(x.nombre) === q);`);
-lineas.push(`  return c ? c.id : null;`);
-lineas.push(`}`);
-lineas.push(``);
+const cantonesMapa = new Map(); // cod_canton → {canton, prov, ciudad|null}
+for (const r of dpa) {
+  const prov = provForm(r.provincia);
+  if (!prov) continue;
+  if (!cantonesMapa.has(r.cod_canton)) cantonesMapa.set(r.cod_canton, { canton: r.canton, prov, ciudad: ciudadDeCanton(r.canton, prov) });
+}
+const cantonesSinCiudad = [...cantonesMapa.values()].filter((c) => !c.ciudad).length;
 
-const out = join(dirname(fileURLToPath(import.meta.url)), "..", "src", "app", "ecuador-ciudades-hoko.ts");
-writeFileSync(out, lineas.join("\n"));
-console.log(`OK ${total} ciudades, ${provinciasHoko.length} provincias → ${out}`);
-console.log(`Excluidas (${excluidos.length}):\n  ${excluidos.join("\n  ")}`);
+const parroquias = {}; // provincia → [{nombre, ciudad(Hoko), id}]
+let parroquiasMapeadas = 0;
+const dedupe = new Set();
+for (const r of dpa) {
+  const cm = cantonesMapa.get(r.cod_canton);
+  if (!cm || !cm.ciudad || !cm.ciudad.cubierta) continue; // solo cantones cuya ciudad de Hoko tiene cobertura
+  const nombre = tituloDe(r.parroquia);
+  if (n(nombre) === n(cm.ciudad.name)) continue; // la cabecera cantonal ya es la ciudad
+  // Si el nombre ya es una ciudad cubierta de esa provincia, se elige desde la lista de ciudades.
+  if ((porProvincia[cm.prov] || []).some((x) => n(x.nombre) === n(nombre))) continue;
+  const clave = `${cm.prov}|${n(r.parroquia)}|${cm.ciudad.id}`;
+  if (dedupe.has(clave)) continue;
+  dedupe.add(clave);
+  (parroquias[cm.prov] ??= []).push({ nombre, canton: tituloDe(cm.ciudad.name), id: cm.ciudad.id });
+  parroquiasMapeadas++;
+}
+for (const k of Object.keys(parroquias)) parroquias[k].sort((a, b) => quitarTildes(a.nombre).localeCompare(quitarTildes(b.nombre), "es"));
+
+// ── Escritura: ciudades ──────────────────────────────────────────────────────
+const cab = [
+  `// Ciudades de Hoko Ecuador CON COBERTURA por provincia (generado por scripts/gen-ciudades-hoko-ec.mjs).`,
+  `// NO editar a mano: se regenera desde scripts/data/cobertura-ec.json (cotización en vivo de Hoko, COD).`,
+  `// El id es el que Hoko espera (hoko_city_id). Ciudades de Hoko sin ninguna transportadora no salen en el menú.`,
+  `// Si la ciudad que escribe la clienta no está aquí, el pedido entra igual (sin hoko_city_id) y le confirmamos por WhatsApp.`,
+  `// ${totalCiudades} ciudades con cobertura en ${Object.keys(porProvincia).length} provincias.`,
+  ``,
+  `export type CiudadHokoEC = { id: number; nombre: string };`,
+  ``,
+  `export const CIUDADES_HOKO_EC: Record<string, CiudadHokoEC[]> = {`,
+];
+for (const prov of PROVINCIAS_FORM) {
+  if (!porProvincia[prov]) continue;
+  cab.push(`  ${JSON.stringify(prov)}: [`);
+  for (const c of porProvincia[prov]) cab.push(`    { id: ${c.id}, nombre: ${JSON.stringify(c.nombre)} },`);
+  cab.push(`  ],`);
+}
+cab.push(`};`, ``,
+  `const sinTildeHoko = (t: string) =>`,
+  `  t.normalize("NFD").replace(/[\\u0300-\\u036f]/g, "").replace(/\\s+/g, " ").trim().toLowerCase();`,
+  ``,
+  `// Devuelve el id de Hoko si el texto coincide con una ciudad con cobertura de esa provincia (sin tildes ni mayúsculas).`,
+  `// Si no coincide (texto libre) devuelve null: el pedido entra igual, sin hoko_city_id.`,
+  `export function hokoCityIdEC(provincia: string, texto: string): number | null {`,
+  `  const q = sinTildeHoko(texto);`,
+  `  if (!q) return null;`,
+  `  const c = (CIUDADES_HOKO_EC[provincia] || []).find((x) => sinTildeHoko(x.nombre) === q);`,
+  `  return c ? c.id : null;`,
+  `}`, ``);
+writeFileSync(join(SRC, "ecuador-ciudades-hoko.ts"), cab.join("\n"));
+
+// ── Escritura: parroquias ────────────────────────────────────────────────────
+const pab = [
+  `// Parroquias del Ecuador → ciudad de Hoko de su cantón, SOLO si esa ciudad tiene cobertura (generado por`,
+  `// scripts/gen-ciudades-hoko-ec.mjs). NO editar a mano.`,
+  `// Fuente: INEC/CONALI, Clasificador Geográfico Estadístico (DPA), capa Parroquias_del_Ecuador,`,
+  `// servicio ArcGIS services7.arcgis.com/iFGeGXTAJXnjq0YN (copia en scripts/data/dpa-parroquias-ec.json).`,
+  `// Se excluyen las cabeceras cantonales y los nombres que ya son ciudad de Hoko con cobertura en la provincia.`,
+  `// ${parroquiasMapeadas} parroquias en ${Object.keys(parroquias).length} provincias.`,
+  ``,
+  `export type ParroquiaHokoEC = { nombre: string; canton: string; id: number };`,
+  ``,
+  `export const PARROQUIAS_HOKO_EC: Record<string, ParroquiaHokoEC[]> = {`,
+];
+for (const prov of PROVINCIAS_FORM) {
+  if (!parroquias[prov]) continue;
+  pab.push(`  ${JSON.stringify(prov)}: [`);
+  for (const p of parroquias[prov]) pab.push(`    { nombre: ${JSON.stringify(p.nombre)}, canton: ${JSON.stringify(p.canton)}, id: ${p.id} },`);
+  pab.push(`  ],`);
+}
+pab.push(`};`, ``,
+  `const normP = (t: string) => t.normalize("NFD").replace(/[\\u0300-\\u036f]/g, "").replace(/[^a-zA-Z0-9 ]/g, " ").replace(/\\s+/g, " ").trim().toLowerCase();`,
+  ``,
+  `// Parroquias de la provincia que empiezan por el texto (para el menú) o que coinciden exactamente.`,
+  `export function parroquiasHokoEC(provincia: string, texto: string): ParroquiaHokoEC[] {`,
+  `  const q = normP(texto);`,
+  `  if (q.length < 2) return [];`,
+  `  return (PARROQUIAS_HOKO_EC[provincia] || []).filter((p) => normP(p.nombre).startsWith(q) || normP(p.nombre).split(" ").includes(q));`,
+  `}`, ``);
+writeFileSync(join(SRC, "ecuador-parroquias-hoko.ts"), pab.join("\n"));
+
+console.log(`OK ${totalCiudades} ciudades con cobertura en ${Object.keys(porProvincia).length} provincias`);
+console.log(`OK ${parroquiasMapeadas} parroquias mapeadas a ciudad con cobertura (cantones sin ciudad de Hoko: ${cantonesSinCiudad})`);
+console.log(`Excluidas: ${excluidas.join("; ") || "ninguna"}`);

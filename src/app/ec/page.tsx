@@ -31,8 +31,14 @@ import {
   usd,
 } from "../ecuador";
 import { CIUDADES_HOKO_EC, hokoCityIdEC } from "../ecuador-ciudades-hoko";
+import { parroquiasHokoEC } from "../ecuador-parroquias-hoko";
 import { leerTracking, useCapturarTrackingOnMount } from "../_use-tracking";
 const sinTilde = (t: string) => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+// Estilo de cada opción del menú de ciudad / parroquia.
+const OPCION_CIUDAD_EC: React.CSSProperties = {
+  display: "block", width: "100%", textAlign: "left", padding: "10px 14px", background: "transparent",
+  border: "none", cursor: "pointer", fontSize: 15, borderBottom: "1px solid #f1f1f1",
+};
 
 const AUTOSAVE_KEY = "mit_ec_form_v2";
 const CONTENT_NAME = "MI TIROIDES Ecuador";
@@ -557,6 +563,9 @@ export default function Page() {
 
   // Validación en tiempo real (deshabilita el botón hasta que todo esté bien).
   // En Ecuador la ciudad es texto libre: la provincia sí debe ser una de las 24.
+  // Ciudad que no está en el menú de Hoko con cobertura ni es una parroquia conocida: se avisa, no se bloquea.
+  const sinCobertura = !!depto && ciudad.trim().length >= 2 && hokoCityIdEC(depto, ciudad) === null &&
+    !parroquiasHokoEC(depto, ciudad).some((p) => sinTilde(p.nombre) === sinTilde(ciudad.trim()));
   const formValido =
     esCelularECValido(telefono) &&
     nombre.trim().length >= 3 &&
@@ -1783,14 +1792,16 @@ export default function Page() {
                       />
                     </div>
                     {depto && ciudadFocus && (() => {
-                      // Ciudades oficiales de Hoko para la provincia (ecuador-ciudades-hoko.ts).
-                      // Puede escribir una ciudad que no esté en la lista: el pedido entra igual, sin hoko_city_id.
+                      // Menú: ciudades de Hoko CON cobertura (ecuador-ciudades-hoko.ts) + parroquias que son de un cantón con cobertura
+                      // (ecuador-parroquias-hoko.ts). Puede escribir otra ciudad: el pedido entra igual, sin hoko_city_id.
                       const opciones = CIUDADES_HOKO_EC[depto] || [];
                       const q = sinTilde(ciudadInput);
                       const filtradas = q
                         ? opciones.filter((c) => sinTilde(c.nombre).includes(q))
                         : opciones;
-                      if (filtradas.length === 0 || (filtradas.length === 1 && sinTilde(filtradas[0].nombre) === q)) return null;
+                      const parroquias = parroquiasHokoEC(depto, ciudadInput);
+                      if (filtradas.length === 0 && parroquias.length === 0) return null;
+                      if (filtradas.length === 1 && parroquias.length === 0 && sinTilde(filtradas[0].nombre) === q) return null;
                       return (
                         <div
                           style={{
@@ -1809,7 +1820,7 @@ export default function Page() {
                         >
                           {filtradas.slice(0, 80).map((c) => (
                             <button
-                              key={c.id}
+                              key={`c${c.id}`}
                               type="button"
                               onMouseDown={(e) => {
                                 e.preventDefault();
@@ -1817,24 +1828,38 @@ export default function Page() {
                                 setCiudadInput(c.nombre);
                                 setCiudadFocus(false);
                               }}
-                              style={{
-                                display: "block",
-                                width: "100%",
-                                textAlign: "left",
-                                padding: "10px 14px",
-                                background: "transparent",
-                                border: "none",
-                                cursor: "pointer",
-                                fontSize: 15,
-                                borderBottom: "1px solid #f1f1f1",
-                              }}
+                              style={OPCION_CIUDAD_EC}
                             >
                               {c.nombre}
+                            </button>
+                          ))}
+                          {parroquias.slice(0, 40).map((p) => (
+                            <button
+                              key={`p${p.id}-${p.nombre}`}
+                              type="button"
+                              onMouseDown={(e) => {
+                                // Parroquia: la ciudad es su cantón (Hoko) y el nombre de la parroquia va a la referencia.
+                                e.preventDefault();
+                                setCiudad(p.canton);
+                                setCiudadInput(`${p.nombre} (${p.canton})`);
+                                setCiudadFocus(false);
+                                setReferencia((r) => (r.toLowerCase().includes(p.nombre.toLowerCase())
+                                  ? r
+                                  : r.trim() ? `Parroquia ${p.nombre} · ${r.trim()}` : `Parroquia ${p.nombre}`));
+                              }}
+                              style={OPCION_CIUDAD_EC}
+                            >
+                              {p.nombre} <span style={{ color: "#777" }}>({p.canton})</span>
                             </button>
                           ))}
                         </div>
                       );
                     })()}
+                    {sinCobertura && (
+                      <span style={{ display: "block", fontSize: 13, color: "#8a5a00", marginTop: 6, lineHeight: 1.35 }}>
+                        Si su ciudad no aparece, escríbala igual: le confirmamos por WhatsApp cómo llega (domicilio o retiro en oficina).
+                      </span>
+                    )}
                   </label>
 
                   <label>
